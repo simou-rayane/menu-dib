@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu - Commandez en ligne</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🍕 Notre Menu</h1>
+            <div class="cart-icon" id="cartIcon">
+                🛒 <span id="cartCount">0</span>
+            </div>
+        </header>
+        
+        <div class="table-info">
+            Table n°<span id="tableNumber"></span>
+        </div>
+
+        <div class="menu-filters">
+            <button class="filter-btn active" data-category="all">Tous</button>
+            <button class="filter-btn" data-category="entrees">Entrées</button>
+            <button class="filter-btn" data-category="plats">Plats</button>
+            <button class="filter-btn" data-category="desserts">Desserts</button>
+            <button class="filter-btn" data-category="boissons">Boissons</button>
+        </div>
+
+        <div class="menu-grid" id="menuGrid"></div>
+
+        <!-- Modal Panier -->
+        <div id="cartModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Votre Panier</h2>
+                <div id="cartItems"></div>
+                <div class="cart-total">
+                    <strong>Total: </strong><span id="cartTotal">0</span> €
+                </div>
+                <button id="sendWhatsAppBtn" class="btn-primary">📱 Envoyer sur WhatsApp</button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
