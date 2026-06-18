@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commandes en temps réel</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 Commandes en temps réel</h1>
+        <div id="ordersList"></div>
+    </div>
+    <script>
+        const ordersRef = database.ref('orders/commandes');
+        
+        ordersRef.on('value', (snapshot) => {
+            const orders = snapshot.val();
+            const container = document.getElementById('ordersList');
+            
+            if (!orders) {
+                container.innerHTML = '<p>Aucune commande pour le moment</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            Object.keys(orders).reverse().forEach(key => {
+                const order = orders[key];
+                const orderDiv = document.createElement('div');
+                orderDiv.className = 'order-card';
+                orderDiv.style.cssText = 'border: 2px solid #667eea; margin: 10px 0; padding: 15px; border-radius: 10px; background: white;';
+                orderDiv.innerHTML = `
+                    <h3>Table ${order.table}</h3>
+                    <p>🕐 ${new Date(order.timestamp).toLocaleString()}</p>
+                    <p><strong>Plats commandés:</strong></p>
+                    <ul>
+                        ${order.items.map(item => `<li>${item.name} x${item.quantity} - ${(item.price * item.quantity).toFixed(2)}€</li>`).join('')}
+                    </ul>
+                    <p><strong>Total: ${order.total.toFixed(2)}€</strong></p>
+                    <p>Status: <span style="color: ${order.status === 'préparé' ? 'green' : 'orange'}">${order.status}</span></p>
+                    ${order.status !== 'préparé' ? `<button onclick="markAsPrepared('${key}')" style="background: #4caf50; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer;">✅ Marquer comme préparé</button>` : '✅ Commande préparée'}
+                `;
+                container.appendChild(orderDiv);
+            });
+        });
+        
+        function markAsPrepared(orderId) {
+            database.ref(`orders/commandes/${orderId}`).update({
+                status: 'préparé'
+            });
+        }
+    </script>
+</body>
+</html>
