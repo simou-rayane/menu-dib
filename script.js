@@ -197,7 +197,7 @@ function sendToWhatsApp() {
     
     const encodedMessage = encodeURIComponent(message);
     const phoneNumber = "1234567890"; // Remplacez par votre numéro WhatsApp
-    const url = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+    const url = `https://wa.me/${212610164989}?text=${encodedMessage}`;
     
     window.open(url, '_blank');
 }
