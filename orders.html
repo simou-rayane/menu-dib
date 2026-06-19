@@ -3,55 +3,767 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Commandes en temps réel</title>
-    <link rel="stylesheet" href="style.css">
+    <title>📋 Commandes en temps réel</title>
+    
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="firebase-config.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        header h1 {
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .header-stats {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .stat-badge {
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        .stat-badge.new {
+            background: #ff6b6b;
+        }
+        
+        .stat-badge.prepared {
+            background: #4caf50;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .filter-btn {
+            padding: 8px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .orders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        
+        .order-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-left: 5px solid #667eea;
+        }
+        
+        .order-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+        }
+        
+        .order-card.status-en_attente {
+            border-left-color: #ff6b6b;
+            animation: pulse 2s infinite;
+        }
+        
+        .order-card.status-prepare {
+            border-left-color: #ffa94d;
+        }
+        
+        .order-card.status-prepared {
+            border-left-color: #4caf50;
+            opacity: 0.8;
+        }
+        
+        .order-card.status-served {
+            border-left-color: #999;
+            opacity: 0.6;
+        }
+        
+        .order-card.status-cancelled {
+            border-left-color: #f44336;
+            opacity: 0.5;
+            text-decoration: line-through;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 107, 107, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0); }
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        
+        .order-table {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .order-time {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .order-status {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .order-status.en_attente {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .order-status.prepare {
+            background: #ffa94d;
+            color: white;
+        }
+        
+        .order-status.prepared {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .order-status.served {
+            background: #999;
+            color: white;
+        }
+        
+        .order-status.cancelled {
+            background: #f44336;
+            color: white;
+        }
+        
+        .order-items {
+            margin: 15px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .order-item:last-child {
+            border-bottom: none;
+        }
+        
+        .order-total {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: right;
+            color: #667eea;
+            margin-top: 10px;
+        }
+        
+        .order-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .order-actions button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 80px;
+        }
+        
+        .order-actions button:hover {
+            transform: scale(1.05);
+        }
+        
+        .btn-prepare {
+            background: #ffa94d;
+            color: white;
+        }
+        
+        .btn-prepare:hover {
+            background: #ff8c00;
+        }
+        
+        .btn-prepared {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .btn-prepared:hover {
+            background: #388e3c;
+        }
+        
+        .btn-served {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .btn-served:hover {
+            background: #1976D2;
+        }
+        
+        .btn-cancel {
+            background: #f44336;
+            color: white;
+        }
+        
+        .btn-cancel:hover {
+            background: #c62828;
+        }
+        
+        .btn-whatsapp {
+            background: #25D366;
+            color: white;
+        }
+        
+        .btn-whatsapp:hover {
+            background: #128C7E;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 10px;
+            grid-column: 1 / -1;
+        }
+        
+        .empty-state h2 {
+            color: #999;
+            font-size: 24px;
+        }
+        
+        .empty-state p {
+            color: #bbb;
+            margin-top: 10px;
+        }
+        
+        .notification-badge {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ff6b6b;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+            animation: slideIn 0.5s ease;
+            z-index: 1000;
+            display: none;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .sound-toggle {
+            background: none;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .sound-toggle:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .sound-toggle.muted {
+            opacity: 0.5;
+        }
+        
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .orders-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-stats {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .order-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>📋 Commandes en temps réel</h1>
-        <div id="ordersList"></div>
-    </div>
-    <script>
-        const ordersRef = database.ref('orders/commandes');
+        <header>
+            <h1>
+                📋 Commandes en temps réel
+                <span id="newOrderBadge" style="background: #ff6b6b; color: white; border-radius: 50%; padding: 2px 10px; font-size: 14px; display: none;">0</span>
+            </h1>
+            <div class="header-stats">
+                <span class="stat-badge new" id="newCount">🆕 Nouvelles: 0</span>
+                <span class="stat-badge prepared" id="preparedCount">✅ Préparées: 0</span>
+                <button class="sound-toggle" id="soundToggle" title="Activer/Désactiver le son des notifications">
+                    🔔 Son
+                </button>
+            </div>
+        </header>
         
-        ordersRef.on('value', (snapshot) => {
-            const orders = snapshot.val();
-            const container = document.getElementById('ordersList');
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all">📊 Toutes</button>
+            <button class="filter-btn" data-filter="en_attente">🆕 En attente</button>
+            <button class="filter-btn" data-filter="prepare">⏳ En préparation</button>
+            <button class="filter-btn" data-filter="prepared">✅ Préparées</button>
+            <button class="filter-btn" data-filter="served">📤 Servies</button>
+            <button class="filter-btn" data-filter="cancelled">❌ Annulées</button>
+        </div>
+        
+        <div id="ordersContainer" class="orders-grid">
+            <div class="empty-state">
+                <h2>🔄 Chargement des commandes...</h2>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification Toast -->
+    <div id="notification" class="notification-badge">
+        🔔 Nouvelle commande !
+    </div>
+    
+    <!-- Configuration Firebase -->
+    <script src="firebase-config.js"></script>
+    
+    <!-- Script principal -->
+    <script>
+        // ============ ORDERS.JS COMPLET ============
+        
+        let allOrders = [];
+        let currentFilter = 'all';
+        let soundEnabled = true;
+        let lastOrderCount = 0;
+        let notificationSound = null;
+        
+        // ============ INITIALISATION DU SON ============
+        function initSound() {
+            try {
+                // Utiliser un son de notification gratuit
+                notificationSound = new Audio('https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3');
+                notificationSound.volume = 0.7;
+                console.log('✅ Son initialisé');
+            } catch (error) {
+                console.warn('⚠️ Impossible de charger le son:', error);
+                soundEnabled = false;
+            }
+        }
+        
+        // ============ JOUER LE SON ============
+        function playNotificationSound() {
+            if (soundEnabled && notificationSound) {
+                notificationSound.currentTime = 0;
+                notificationSound.play()
+                    .catch(error => console.warn('⚠️ Impossible de jouer le son:', error));
+            }
+        }
+        
+        // ============ AFFICHER LA NOTIFICATION ============
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message || '🔔 Nouvelle commande !';
+            notification.style.display = 'block';
             
-            if (!orders) {
-                container.innerHTML = '<p>Aucune commande pour le moment</p>';
+            // Faire disparaître après 5 secondes
+            clearTimeout(notification._timeout);
+            notification._timeout = setTimeout(() => {
+                notification.style.display = 'none';
+            }, 5000);
+            
+            // Jouer le son
+            playNotificationSound();
+        }
+        
+        // ============ ÉCOUTER LES COMMANDES ============
+        function listenToOrders() {
+            const ordersRef = database.ref('orders/commandes');
+            
+            ordersRef.orderByChild('timestamp').limitToLast(100).on('value', (snapshot) => {
+                const data = snapshot.val();
+                console.log('📦 Commandes reçues:', data);
+                
+                if (data) {
+                    const orders = Object.keys(data).map(key => ({
+                        id: key,
+                        ...data[key]
+                    })).sort((a, b) => b.timestamp - a.timestamp); // Plus récentes en premier
+                    
+                    // Vérifier si de nouvelles commandes sont arrivées
+                    const newOrders = orders.filter(o => o.status === 'en_attente');
+                    if (newOrders.length > lastOrderCount) {
+                        showNotification(`🆕 ${newOrders.length - lastOrderCount} nouvelle(s) commande(s) !`);
+                    }
+                    lastOrderCount = newOrders.length;
+                    
+                    allOrders = orders;
+                    displayOrders();
+                    updateStats();
+                } else {
+                    allOrders = [];
+                    displayOrders();
+                    updateStats();
+                }
+            }, (error) => {
+                console.error('❌ Erreur Firebase:', error);
+                document.getElementById('ordersContainer').innerHTML = `
+                    <div class="empty-state">
+                        <h2>❌ Erreur de connexion</h2>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            });
+        }
+        
+        // ============ AFFICHER LES COMMANDES ============
+        function displayOrders() {
+            const container = document.getElementById('ordersContainer');
+            if (!container) return;
+            
+            // Filtrer les commandes
+            let filteredOrders = allOrders;
+            if (currentFilter !== 'all') {
+                filteredOrders = filteredOrders.filter(o => o.status === currentFilter);
+            }
+            
+            if (filteredOrders.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h2>📭 Aucune commande</h2>
+                        <p>${currentFilter === 'all' ? 'En attente de la première commande...' : 'Aucune commande avec ce statut'}</p>
+                    </div>
+                `;
                 return;
             }
             
             container.innerHTML = '';
-            Object.keys(orders).reverse().forEach(key => {
-                const order = orders[key];
-                const orderDiv = document.createElement('div');
-                orderDiv.className = 'order-card';
-                orderDiv.style.cssText = 'border: 2px solid #667eea; margin: 10px 0; padding: 15px; border-radius: 10px; background: white;';
-                orderDiv.innerHTML = `
-                    <h3>Table ${order.table}</h3>
-                    <p>🕐 ${new Date(order.timestamp).toLocaleString()}</p>
-                    <p><strong>Plats commandés:</strong></p>
-                    <ul>
-                        ${order.items.map(item => `<li>${item.name} x${item.quantity} - ${(item.price * item.quantity).toFixed(2)}€</li>`).join('')}
-                    </ul>
-                    <p><strong>Total: ${order.total.toFixed(2)}€</strong></p>
-                    <p>Status: <span style="color: ${order.status === 'préparé' ? 'green' : 'orange'}">${order.status}</span></p>
-                    ${order.status !== 'préparé' ? `<button onclick="markAsPrepared('${key}')" style="background: #4caf50; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer;">✅ Marquer comme préparé</button>` : '✅ Commande préparée'}
+            filteredOrders.forEach(order => {
+                const card = document.createElement('div');
+                card.className = `order-card status-${order.status}`;
+                
+                // Formater la date
+                const date = new Date(order.timestamp);
+                const timeStr = date.toLocaleString('fr-FR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                // Status en français
+                const statusLabels = {
+                    'en_attente': '🆕 En attente',
+                    'prepare': '⏳ En préparation',
+                    'prepared': '✅ Préparée',
+                    'served': '📤 Servie',
+                    'cancelled': '❌ Annulée'
+                };
+                
+                const statusLabel = statusLabels[order.status] || order.status;
+                
+                // Actions selon le statut
+                let actionsHTML = '';
+                if (order.status === 'en_attente') {
+                    actionsHTML = `
+                        <button class="btn-prepare" onclick="updateOrderStatus('${order.id}', 'prepare')">⏳ Préparer</button>
+                        <button class="btn-cancel" onclick="updateOrderStatus('${order.id}', 'cancelled')">❌ Annuler</button>
+                    `;
+                } else if (order.status === 'prepare') {
+                    actionsHTML = `
+                        <button class="btn-prepared" onclick="updateOrderStatus('${order.id}', 'prepared')">✅ Prêt</button>
+                        <button class="btn-cancel" onclick="updateOrderStatus('${order.id}', 'cancelled')">❌ Annuler</button>
+                    `;
+                } else if (order.status === 'prepared') {
+                    actionsHTML = `
+                        <button class="btn-served" onclick="updateOrderStatus('${order.id}', 'served')">📤 Servir</button>
+                    `;
+                }
+                
+                // Bouton WhatsApp toujours disponible
+                actionsHTML += `
+                    <button class="btn-whatsapp" onclick="sendWhatsAppOrder('${order.id}')">📱 WhatsApp</button>
                 `;
-                container.appendChild(orderDiv);
+                
+                // Construction du HTML
+                card.innerHTML = `
+                    <div class="order-header">
+                        <div>
+                            <div class="order-table">🪑 Table ${order.table}</div>
+                            <div class="order-time">${timeStr}</div>
+                        </div>
+                        <div>
+                            <span class="order-status ${order.status}">${statusLabel}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="order-items">
+                        ${order.items.map(item => `
+                            <div class="order-item">
+                                <span>${item.name} × ${item.quantity}</span>
+                                <span>${(item.price * item.quantity).toFixed(2)}€</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="order-total">
+                        Total: ${order.total.toFixed(2)}€
+                    </div>
+                    
+                    ${order.customerName ? `<div style="margin-top: 10px; color: #666; font-size: 14px;">👤 ${order.customerName}</div>` : ''}
+                    ${order.note ? `<div style="margin-top: 5px; color: #999; font-size: 13px;">📝 ${order.note}</div>` : ''}
+                    
+                    <div class="order-actions">
+                        ${actionsHTML}
+                    </div>
+                `;
+                
+                container.appendChild(card);
             });
-        });
+            
+            console.log(`✅ ${filteredOrders.length} commandes affichées`);
+        }
         
-        function markAsPrepared(orderId) {
-            database.ref(`orders/commandes/${orderId}`).update({
-                status: 'préparé'
+        // ============ METTRE À JOUR LE STATUT ============
+        function updateOrderStatus(orderId, status) {
+            const ordersRef = database.ref(`orders/commandes/${orderId}`);
+            
+            ordersRef.update({
+                status: status,
+                updatedAt: Date.now()
+            })
+            .then(() => {
+                console.log(`✅ Commande ${orderId} → ${status}`);
+                const statusLabels = {
+                    'en_attente': '🆕 en attente',
+                    'prepare': '⏳ en préparation',
+                    'prepared': '✅ préparée',
+                    'served': '📤 servie',
+                    'cancelled': '❌ annulée'
+                };
+                showNotification(`✅ Commande mise à jour : ${statusLabels[status] || status}`);
+            })
+            .catch(error => {
+                console.error('❌ Erreur:', error);
+                alert('❌ Erreur: ' + error.message);
             });
         }
+        
+        // ============ ENVOYER SUR WHATSAPP ============
+        function sendWhatsAppOrder(orderId) {
+            const order = allOrders.find(o => o.id === orderId);
+            if (!order) return;
+            
+            let message = `🍽️ *COMMANDE #${orderId.slice(-6)}*\n`;
+            message += `📌 Table: ${order.table}\n`;
+            message += `⏰ ${new Date(order.timestamp).toLocaleString('fr-FR')}\n\n`;
+            message += `*DÉTAILS:*\n`;
+            
+            order.items.forEach(item => {
+                message += `• ${item.name} x${item.quantity} = ${(item.price * item.quantity).toFixed(2)}€\n`;
+            });
+            
+            message += `\n*Total: ${order.total.toFixed(2)}€*`;
+            message += `\n*Statut: ${order.status}*`;
+            
+            if (order.customerName) {
+                message += `\n👤 ${order.customerName}`;
+            }
+            if (order.note) {
+                message += `\n📝 ${order.note}`;
+            }
+            
+            const encodedMessage = encodeURIComponent(message);
+            const phoneNumber = "1234567890"; // Remplacez par votre numéro
+            const url = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+            
+            window.open(url, '_blank');
+        }
+        
+        // ============ METTRE À JOUR LES STATISTIQUES ============
+        function updateStats() {
+            const newCount = allOrders.filter(o => o.status === 'en_attente').length;
+            const preparedCount = allOrders.filter(o => o.status === 'prepared').length;
+            const prepareCount = allOrders.filter(o => o.status === 'prepare').length;
+            
+            document.getElementById('newCount').textContent = `🆕 Nouvelles: ${newCount}`;
+            document.getElementById('preparedCount').textContent = `✅ Préparées: ${preparedCount}`;
+            
+            const badge = document.getElementById('newOrderBadge');
+            if (newCount > 0) {
+                badge.textContent = newCount;
+                badge.style.display = 'inline';
+                document.title = `📋 ${newCount} nouvelle(s) commande(s)`;
+            } else {
+                badge.style.display = 'none';
+                document.title = '📋 Commandes en temps réel';
+            }
+            
+            // Mettre à jour le compteur de notification dans la page
+            if (newCount > 0) {
+                const newBadge = document.querySelector('.stat-badge.new');
+                if (newBadge) {
+                    newBadge.style.animation = 'pulse 1s infinite';
+                }
+            }
+        }
+        
+        // ============ FILTRES ============
+        function setupFilters() {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.dataset.filter;
+                    displayOrders();
+                });
+            });
+        }
+        
+        // ============ TOGGLE SON ============
+        function setupSoundToggle() {
+            const btn = document.getElementById('soundToggle');
+            btn.addEventListener('click', function() {
+                soundEnabled = !soundEnabled;
+                this.textContent = soundEnabled ? '🔔 Son' : '🔕 Muet';
+                this.classList.toggle('muted');
+                
+                // Tester le son
+                if (soundEnabled) {
+                    playNotificationSound();
+                }
+            });
+        }
+        
+        // ============ NOTIFICATION DE NAVIGATEUR ============
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }
+        
+        // ============ AUDIO CONTEXT (pour iOS) ============
+        function setupAudioContext() {
+            // Nécessaire pour iOS Safari
+            document.addEventListener('click', () => {
+                if (notificationSound) {
+                    notificationSound.play().catch(() => {});
+                }
+            }, { once: true });
+        }
+        
+        // ============ INITIALISATION ============
+        console.log('🚀 Démarrage de Orders...');
+        
+        // Initialiser le son
+        initSound();
+        
+        // Configurer le toggle son
+        setupSoundToggle();
+        
+        // Configurer les filtres
+        setupFilters();
+        
+        // Démarrer l'écoute des commandes
+        listenToOrders();
+        
+        // Demander la permission de notification
+        requestNotificationPermission();
+        
+        // Configurer l'audio pour iOS
+        setupAudioContext();
+        
+        console.log('✅ Orders initialisé');
+        
+        // ============ EXPOSER LES FONCTIONS AU GLOBAL ============
+        window.updateOrderStatus = updateOrderStatus;
+        window.sendWhatsAppOrder = sendWhatsAppOrder;
+        
     </script>
 </body>
 </html>
