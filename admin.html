@@ -3,12 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Administration - Gestion des produits</title>
+    <title>Administration - Firebase</title>
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body>
     <div class="container">
-        <h1>🔧 Administration du Menu</h1>
+        <h1>🔧 Administration Firebase</h1>
+        
+        <div id="connectionStatus" style="background: #f0f0f0; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
+            🔄 Connexion à Firebase...
+        </div>
         
         <div class="admin-section">
             <h2>Ajouter un produit</h2>
@@ -22,33 +30,326 @@
                     <option value="boissons">Boissons</option>
                 </select>
                 <textarea id="productDesc" placeholder="Description"></textarea>
-                <button type="submit" class="btn-primary">➕ Ajouter</button>
+                <button type="submit" class="btn-primary" id="addBtn">➕ Ajouter</button>
             </form>
         </div>
 
         <div class="admin-section">
-            <h2>Gestion des produits</h2>
+            <h2>Gestion des produits (<span id="productCount">0</span>)</h2>
             <div id="productsList" class="products-list"></div>
         </div>
+        
+        <button onclick="resetFirebaseProducts()" style="background: #ff9800; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px;">
+            🔄 Réinitialiser les produits
+        </button>
     </div>
-
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
-  <script>  
-import { initializeApp } from "firebase/app";
-const firebaseConfig = {
-  apiKey: "AIzaSyAp9akZE9yGLmZAVkcZ7YB4pM1kUP8cJWM",
-  authDomain: "restaurant-menu-9179b.firebaseapp.com",
-  projectId: "restaurant-menu-9179b",
-  storageBucket: "restaurant-menu-9179b.firebasestorage.app",
-  messagingSenderId: "57456460201",
-  appId: "1:57456460201:web:8b40ceeffe81eea918c4b8"
-};
-const app = initializeApp(firebaseConfig);
-      const database = firebase.database();
+    <!-- Configuration Firebase -->
+    <script src="firebase-config.js"></script>
+    
+    <!-- Script principal -->
+    <script>
+        // ============ ADMIN AVEC FIREBASE ============
+        
+        let products = [];
+        let isConnected = false;
+        
+        // ============ ÉTAT DE CONNEXION ============
+        function updateConnectionStatus(connected) {
+            const statusEl = document.getElementById('connectionStatus');
+            if (connected) {
+                statusEl.innerHTML = '✅ Connecté à Firebase';
+                statusEl.style.background = '#d4edda';
+                statusEl.style.color = '#155724';
+                isConnected = true;
+            } else {
+                statusEl.innerHTML = '❌ Déconnecté de Firebase - Vérifiez votre configuration';
+                statusEl.style.background = '#f8d7da';
+                statusEl.style.color = '#721c24';
+                isConnected = false;
+            }
+        }
+        
+        // Vérifier la connexion
+        database.ref('.info/connected').on('value', (snapshot) => {
+            updateConnectionStatus(snapshot.val());
+        });
+        
+        // ============ ÉCOUTER LES PRODUITS EN TEMPS RÉEL ============
+        function listenToProducts() {
+            productsRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                console.log('📦 Données reçues de Firebase:', data);
+                
+                if (data) {
+                    products = Object.keys(data).map(key => ({
+                        id: key,
+                        ...data[key]
+                    }));
+                    console.log('✅ Produits chargés:', products.length);
+                } else {
+                    products = [];
+                    console.log('ℹ️ Aucun produit dans Firebase');
+                    // Créer des produits par défaut si vide
+                    createDefaultProducts();
+                }
+                
+                displayProducts();
+                document.getElementById('productCount').textContent = products.length;
+            }, (error) => {
+                console.error('❌ Erreur Firebase:', error);
+                alert('Erreur de connexion à Firebase: ' + error.message);
+            });
+        }
+        
+        // ============ CRÉER DES PRODUITS PAR DÉFAUT ============
+        function createDefaultProducts() {
+            console.log('🔄 Création des produits par défaut...');
+            
+            const defaultProducts = {
+                'prod1': {
+                    name: "Salade César",
+                    price: 12,
+                    category: "entrees",
+                    description: "Salade, poulet, parmesan, sauce césar",
+                    visible: true,
+                    createdAt: Date.now()
+                },
+                'prod2': {
+                    name: "Steak Frites",
+                    price: 18,
+                    category: "plats",
+                    description: "Steak grillé 200g, frites maison",
+                    visible: true,
+                    createdAt: Date.now()
+                },
+                'prod3': {
+                    name: "Tiramisu",
+                    price: 7,
+                    category: "desserts",
+                    description: "Café, mascarpone, cacao",
+                    visible: true,
+                    createdAt: Date.now()
+                },
+                'prod4': {
+                    name: "Coca-Cola",
+                    price: 3,
+                    category: "boissons",
+                    description: "33cl",
+                    visible: true,
+                    createdAt: Date.now()
+                }
+            };
+            
+            productsRef.set(defaultProducts)
+                .then(() => {
+                    console.log('✅ Produits par défaut créés dans Firebase');
+                })
+                .catch(error => {
+                    console.error('❌ Erreur création produits:', error);
+                });
+        }
+        
+        // ============ AFFICHER LES PRODUITS ============
+        function displayProducts() {
+            const container = document.getElementById('productsList');
+            if (!container) return;
+            
+            if (products.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #999;">Aucun produit. Ajoutez-en un !</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            products.forEach((product) => {
+                const productDiv = document.createElement('div');
+                productDiv.className = 'product-item';
+                productDiv.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;';
+                
+                productDiv.innerHTML = `
+                    <div style="flex: 1;">
+                        <strong>${product.name}</strong> - ${product.price.toFixed(2)}€ 
+                        <span style="color: #666;">(${product.category})</span>
+                        <br><small>${product.description || 'Pas de description'}</small>
+                    </div>
+                    <div>
+                        <span class="status ${product.visible ? 'visible' : 'hidden'}" 
+                              onclick="toggleVisibility('${product.id}')" 
+                              style="cursor: pointer; padding: 5px 10px; border-radius: 5px; 
+                                     background: ${product.visible ? '#4caf50' : '#f44336'}; 
+                                     color: white; margin: 0 5px;">
+                            ${product.visible ? '✓ Visible' : '✗ Masqué'}
+                        </span>
+                        <button onclick="editProduct('${product.id}')" style="background: #2196F3; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin: 0 5px;">✏️</button>
+                        <button onclick="deleteProduct('${product.id}')" style="background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin: 0 5px;">🗑</button>
+                    </div>
+                `;
+                container.appendChild(productDiv);
+            });
+        }
+        
+        // ============ VALIDATION ============
+        function validateProduct(product) {
+            const errors = [];
+            
+            if (!product.name || product.name.trim() === '') {
+                errors.push('Le nom est requis');
+            }
+            
+            if (!product.price || isNaN(product.price) || product.price <= 0) {
+                errors.push('Le prix doit être un nombre positif');
+            }
+            
+            const validCategories = ['entrees', 'plats', 'desserts', 'boissons'];
+            if (!product.category || !validCategories.includes(product.category)) {
+                errors.push('Catégorie invalide');
+            }
+            
+            if (errors.length > 0) {
+                alert('❌ ' + errors.join('\n'));
+                return false;
+            }
+            return true;
+        }
+        
+        // ============ AJOUTER UN PRODUIT ============
+        function addProduct(productData) {
+            if (!validateProduct(productData)) {
+                return Promise.reject(new Error('Validation échouée'));
+            }
+            
+            const newProduct = {
+                name: productData.name.trim(),
+                price: parseFloat(productData.price),
+                category: productData.category,
+                description: productData.description ? productData.description.trim() : '',
+                visible: true,
+                createdAt: Date.now()
+            };
+            
+            // Ajouter à Firebase
+            return productsRef.push().set(newProduct)
+                .then(() => {
+                    console.log('✅ Produit ajouté à Firebase');
+                    alert('✅ Produit ajouté avec succès !');
+                    return true;
+                })
+                .catch((error) => {
+                    console.error('❌ Erreur Firebase:', error);
+                    alert('❌ Erreur: ' + error.message);
+                    throw error;
+                });
+        }
+        
+        // ============ MODIFIER UN PRODUIT ============
+        function editProduct(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            const newName = prompt('Nouveau nom:', product.name);
+            const newPrice = prompt('Nouveau prix:', product.price);
+            const newDesc = prompt('Nouvelle description:', product.description);
+            
+            if (newName && newPrice) {
+                productsRef.child(productId).update({
+                    name: newName.trim(),
+                    price: parseFloat(newPrice),
+                    description: newDesc ? newDesc.trim() : '',
+                    updatedAt: Date.now()
+                })
+                .then(() => {
+                    console.log('✅ Produit modifié');
+                    alert('✅ Produit modifié !');
+                })
+                .catch(error => {
+                    console.error('❌ Erreur:', error);
+                    alert('❌ Erreur: ' + error.message);
+                });
+            }
+        }
+        
+        // ============ SUPPRIMER UN PRODUIT ============
+        function deleteProduct(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            if (confirm(`Supprimer "${product.name}" définitivement ?`)) {
+                productsRef.child(productId).remove()
+                    .then(() => {
+                        console.log('✅ Produit supprimé');
+                        alert('✅ Produit supprimé !');
+                    })
+                    .catch(error => {
+                        console.error('❌ Erreur:', error);
+                        alert('❌ Erreur: ' + error.message);
+                    });
+            }
+        }
+        
+        // ============ MASQUER/AFFICHER ============
+        function toggleVisibility(productId) {
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                productsRef.child(productId).update({
+                    visible: !product.visible,
+                    updatedAt: Date.now()
+                })
+                .then(() => {
+                    console.log('✅ Visibilité modifiée');
+                })
+                .catch(error => {
+                    console.error('❌ Erreur:', error);
+                    alert('❌ Erreur: ' + error.message);
+                });
+            }
+        }
+        
+        // ============ RÉINITIALISER ============
+        function resetFirebaseProducts() {
+            if (confirm('⚠️ Supprimer tous les produits et les réinitialiser ?')) {
+                createDefaultProducts();
+                alert('✅ Produits réinitialisés !');
+            }
+        }
+        
+        // ============ FORMULAIRE ============
+        document.getElementById('productForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('📝 Formulaire soumis');
+            
+            const productData = {
+                name: document.getElementById('productName').value,
+                price: document.getElementById('productPrice').value,
+                category: document.getElementById('productCategory').value,
+                description: document.getElementById('productDesc').value
+            };
+            
+            console.log('Données du formulaire:', productData);
+            
+            const btn = document.getElementById('addBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Ajout en cours...';
+            
+            addProduct(productData)
+                .then(() => {
+                    this.reset();
+                })
+                .catch(() => {
+                    // Erreur déjà gérée
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.textContent = '➕ Ajouter';
+                });
+        });
+        
+        // ============ INITIALISATION ============
+        console.log('🚀 Démarrage de l\'administration Firebase...');
+        listenToProducts();
+        
+        // Affichage des infos Firebase
+        console.log('🔍 Firebase Database URL:', database.ref().toString());
+        
     </script>
-    
-    <script src="admin.js"></script>
 </body>
 </html>
