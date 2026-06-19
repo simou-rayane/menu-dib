@@ -1,15 +1,15 @@
-// ============ SCRIPT.JS - MENU ET PANIER AVEC FIREBASE ============
+// ============ SCRIPT.JS - VERSION CORRIGÉE AVEC VIDAGE DU PANIER ============
 
 let products = [];
 let cart = [];
 let currentTable = null;
 let currentFilter = 'all';
+let isCartListenerActive = true; // Pour contrôler l'écouteur
 
 // ============ CHARGER LA TABLE ============
 function loadTableInfo() {
     currentTable = localStorage.getItem('current_table');
     if (!currentTable) {
-        // Si pas de table, essayer de récupérer de l'URL
         const urlParams = new URLSearchParams(window.location.search);
         currentTable = urlParams.get('table') || '1';
         localStorage.setItem('current_table', currentTable);
@@ -62,10 +62,8 @@ function displayMenu() {
     const grid = document.getElementById('menuGrid');
     if (!grid) return;
     
-    // Filtrer les produits visibles
     let filteredProducts = products.filter(p => p.visible !== false);
     
-    // Appliquer le filtre de catégorie
     if (currentFilter !== 'all') {
         filteredProducts = filteredProducts.filter(p => p.category === currentFilter);
     }
@@ -104,7 +102,6 @@ function displayMenu() {
             card.style.boxShadow = '0 2px 10px rgba(0,0,0,0.08)';
         };
         
-        // Image du produit
         let imageHTML = '';
         if (product.image) {
             imageHTML = `
@@ -123,7 +120,6 @@ function displayMenu() {
             `;
         }
         
-        // Badge de catégorie
         const categoryLabels = {
             'entrees': '🥗 Entrée',
             'plats': '🍽️ Plat',
@@ -192,6 +188,7 @@ function addToCart(productId) {
 // ============ SAUVEGARDER LE PANIER ============
 function saveCart() {
     if (currentTable) {
+        console.log('💾 Sauvegarde du panier:', cart);
         cartsRef.child(`table_${currentTable}`).set(cart)
             .then(() => {
                 console.log('✅ Panier sauvegardé');
@@ -202,17 +199,58 @@ function saveCart() {
     }
 }
 
+// ============ VIDER LE PANIER (FONCTION SPÉCIALISÉE) ============
+function clearCart() {
+    console.log('🗑️ Vidage du panier...');
+    cart = [];
+    
+    if (currentTable) {
+        // Supprimer les données du panier dans Firebase
+        cartsRef.child(`table_${currentTable}`).remove()
+            .then(() => {
+                console.log('✅ Panier vidé dans Firebase');
+                updateCartCount();
+                if (document.getElementById('cartItems')) {
+                    displayCart();
+                }
+                showToast('🗑️ Panier vidé', 'info');
+            })
+            .catch(error => {
+                console.error('❌ Erreur vidage panier:', error);
+                // Tentative alternative
+                cartsRef.child(`table_${currentTable}`).set([])
+                    .then(() => {
+                        console.log('✅ Panier vidé (alternative)');
+                        updateCartCount();
+                        if (document.getElementById('cartItems')) {
+                            displayCart();
+                        }
+                    })
+                    .catch(err => {
+                        console.error('❌ Erreur vidage panier (alternative):', err);
+                    });
+            });
+    }
+}
+
 // ============ CHARGER LE PANIER ============
 function loadCart() {
     if (currentTable) {
+        // Supprimer l'ancien listener s'il existe
+        cartsRef.child(`table_${currentTable}`).off();
+        
         cartsRef.child(`table_${currentTable}`).on('value', (snapshot) => {
             const data = snapshot.val();
-            if (data) {
+            console.log('📥 Données du panier reçues:', data);
+            
+            if (data && Array.isArray(data) && data.length > 0) {
                 cart = data;
                 console.log('✅ Panier chargé:', cart);
             } else {
                 cart = [];
+                console.log('📭 Panier vide');
             }
+            
             updateCartCount();
             if (document.getElementById('cartItems')) {
                 displayCart();
@@ -227,7 +265,6 @@ function updateCartCount() {
     const cartCountSpan = document.getElementById('cartCount');
     if (cartCountSpan) {
         cartCountSpan.textContent = count;
-        // Animation du badge
         if (count > 0) {
             cartCountSpan.style.animation = 'none';
             setTimeout(() => {
@@ -252,14 +289,14 @@ function displayCart() {
                 <p style="color: #bbb; font-size: 14px;">Ajoutez des produits depuis le menu</p>
             </div>
         `;
-        cartTotalSpan.textContent = '0';
+        if (cartTotalSpan) cartTotalSpan.textContent = '0';
         return;
     }
     
     cartItemsDiv.innerHTML = '';
     let total = 0;
     
-    cart.forEach((item, index) => {
+    cart.forEach((item) => {
         total += item.price * item.quantity;
         const itemDiv = document.createElement('div');
         itemDiv.className = 'cart-item';
@@ -307,10 +344,10 @@ function displayCart() {
         cartItemsDiv.appendChild(itemDiv);
     });
     
-    cartTotalSpan.textContent = total.toFixed(2);
+    if (cartTotalSpan) cartTotalSpan.textContent = total.toFixed(2);
 }
 
-// ============ METTRE À JOUR UN ARTICLE DU PANIER ============
+// ============ METTRE À JOUR UN ARTICLE ============
 function updateCartItem(productId, delta) {
     const item = cart.find(i => i.id === productId);
     if (!item) return;
@@ -340,19 +377,6 @@ function removeFromCart(productId) {
     }
 }
 
-// ============ VIDER LE PANIER ============
-function clearCart() {
-    if (cart.length === 0) return;
-    
-    if (confirm('Vider le panier ?')) {
-        cart = [];
-        saveCart();
-        displayCart();
-        updateCartCount();
-        showToast('🗑 Panier vidé', 'info');
-    }
-}
-
 // ============ ENVOYER SUR WHATSAPP AVEC VIDAGE AUTOMATIQUE ============
 function sendToWhatsApp() {
     if (cart.length === 0) {
@@ -360,7 +384,6 @@ function sendToWhatsApp() {
         return;
     }
     
-    // Désactiver le bouton pour éviter les doubles envois
     const sendBtn = document.getElementById('sendWhatsAppBtn');
     if (sendBtn) {
         sendBtn.disabled = true;
@@ -401,15 +424,29 @@ function sendToWhatsApp() {
         customerPhone: ''
     };
     
+    // Sauvegarder la commande
     ordersRef.child('commandes').push(orderData)
         .then(() => {
             console.log('✅ Commande sauvegardée dans Firebase');
             
-            // ========== VIDER LE PANIER AUTOMATIQUEMENT ==========
+            // ========== VIDER LE PANIER ==========
+            // Méthode 1: Vider le tableau local
             cart = [];
-            saveCart();
-            displayCart();
+            
+            // Méthode 2: Supprimer dans Firebase
+            if (currentTable) {
+                return cartsRef.child(`table_${currentTable}`).remove();
+            }
+            return Promise.resolve();
+        })
+        .then(() => {
+            console.log('✅ Panier vidé avec succès');
+            
+            // Mettre à jour l'affichage
             updateCartCount();
+            if (document.getElementById('cartItems')) {
+                displayCart();
+            }
             
             // Fermer le modal
             const modal = document.getElementById('cartModal');
@@ -418,54 +455,24 @@ function sendToWhatsApp() {
                 document.body.style.overflow = '';
             }
             
-            // Afficher un message de confirmation
-            showToast('✅ Commande envoyée avec succès ! Panier vidé.', 'success');
+            showToast('✅ Commande envoyée ! Panier vidé.', 'success');
         })
         .catch(error => {
             console.error('❌ Erreur:', error);
             showToast('❌ Erreur: ' + error.message, 'error');
         })
         .finally(() => {
-            // Réactiver le bouton
             if (sendBtn) {
                 sendBtn.disabled = false;
                 sendBtn.innerHTML = '📱 Envoyer sur WhatsApp';
             }
         });
     
-    // Encoder le message pour WhatsApp
-    const encodedMessage = encodeURIComponent(message);
-    const phoneNumber = "1234567890"; // Remplacez par votre numéro WhatsApp
-    const url = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
-    
     // Ouvrir WhatsApp
+    const encodedMessage = encodeURIComponent(message);
+    const phoneNumber = "1234567890"; // Remplacez par votre numéro
+    const url = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
     window.open(url, '_blank');
-        }
-    
-    // Proposer de vider le panier
-    setTimeout(() => {
-        if (confirm('✅ Commande envoyée ! Vider le panier ?')) {
-            cart = [];
-            saveCart();
-            displayCart();
-            updateCartCount();
-            document.getElementById('cartModal').style.display = 'none';
-        }
-    }, 1000);
-}
-
-// ============ AJOUTER UNE NOTE SUR UN ARTICLE ============
-function addNoteToItem(productId) {
-    const item = cart.find(i => i.id === productId);
-    if (!item) return;
-    
-    const note = prompt('Ajouter une note pour ce produit (ex: "Sans oignons") :', item.notes || '');
-    if (note !== null) {
-        item.notes = note.trim();
-        saveCart();
-        displayCart();
-        showToast('✅ Note ajoutée', 'success');
-    }
 }
 
 // ============ CONFIGURATION DU MODAL PANIER ============
@@ -496,10 +503,13 @@ function setupCartModal() {
     }
     
     if (clearBtn) {
-        clearBtn.onclick = clearCart;
+        clearBtn.onclick = () => {
+            if (confirm('🗑️ Vider le panier ?')) {
+                clearCart();
+            }
+        };
     }
     
-    // Fermer en cliquant à l'extérieur
     window.onclick = (event) => {
         if (event.target === modal) {
             modal.style.display = 'none';
@@ -507,7 +517,6 @@ function setupCartModal() {
         }
     };
     
-    // Fermer avec la touche ESC
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape' && modal.style.display === 'block') {
             modal.style.display = 'none';
@@ -525,7 +534,6 @@ function setupFilters() {
             currentFilter = this.dataset.category;
             displayMenu();
             
-            // Animation de transition
             const grid = document.getElementById('menuGrid');
             grid.style.opacity = '0';
             setTimeout(() => {
@@ -538,7 +546,6 @@ function setupFilters() {
 
 // ============ TOAST NOTIFICATIONS ============
 function showToast(message, type = 'info') {
-    // Supprimer les toasts existants
     const existing = document.querySelector('.menu-toast');
     if (existing) existing.remove();
     
@@ -583,7 +590,7 @@ function showToast(message, type = 'info') {
     }, 3500);
 }
 
-// ============ METTRE À JOUR LE STATUT DU MENU ============
+// ============ METTRE À JOUR LE STATUT ============
 function updateMenuStatus() {
     const statusEl = document.getElementById('menuStatus');
     if (!statusEl) return;
@@ -598,7 +605,7 @@ function updateMenuStatus() {
     }
 }
 
-// ============ RECONNEXION MANUELLE ============
+// ============ RECONNEXION ============
 function reconnectMenu() {
     showToast('🔄 Reconnexion en cours...', 'info');
     database.ref('.info/connected').once('value')
@@ -606,6 +613,7 @@ function reconnectMenu() {
             if (snapshot.val()) {
                 showToast('✅ Reconnecté avec succès !', 'success');
                 listenToProducts();
+                loadCart();
             } else {
                 showToast('❌ Impossible de se connecter', 'error');
             }
@@ -640,7 +648,6 @@ window.removeFromCart = removeFromCart;
 window.updateCartItem = updateCartItem;
 window.clearCart = clearCart;
 window.sendToWhatsApp = sendToWhatsApp;
-window.addNoteToItem = addNoteToItem;
 window.reconnectMenu = reconnectMenu;
 
 console.log('✅ Menu initialisé - Table', currentTable);
