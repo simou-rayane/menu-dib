@@ -1,10 +1,10 @@
-// ============ SCRIPT.JS - VERSION CORRIGÉE AVEC VIDAGE DU PANIER ============
+// ============ SCRIPT.JS - VIDAGE GARANTI AVEC GESTION D'ÉCOUTEUR ============
 
 let products = [];
 let cart = [];
 let currentTable = null;
 let currentFilter = 'all';
-let isCartListenerActive = true; // Pour contrôler l'écouteur
+let cartListenerRef = null; // Pour garder une référence à l'écouteur
 
 // ============ CHARGER LA TABLE ============
 function loadTableInfo() {
@@ -23,7 +23,7 @@ function loadTableInfo() {
     console.log('🪑 Table actuelle:', currentTable);
 }
 
-// ============ ÉCOUTER LES PRODUITS EN TEMPS RÉEL ============
+// ============ ÉCOUTER LES PRODUITS ============
 function listenToProducts() {
     productsRef.on('value', (snapshot) => {
         const data = snapshot.val();
@@ -189,7 +189,7 @@ function addToCart(productId) {
 function saveCart() {
     if (currentTable) {
         console.log('💾 Sauvegarde du panier:', cart);
-        cartsRef.child(`table_${currentTable}`).set(cart)
+        return cartsRef.child(`table_${currentTable}`).set(cart)
             .then(() => {
                 console.log('✅ Panier sauvegardé');
             })
@@ -199,56 +199,82 @@ function saveCart() {
     }
 }
 
-// ============ VIDER LE PANIER (FONCTION SPÉCIALISÉE) ============
+// ============ VIDER LE PANIER (FONCTION PRINCIPALE) ============
 function clearCart() {
-    console.log('🗑️ Vidage du panier...');
-    cart = [];
+    console.log('🗑️ VIDAGE DU PANIER...');
     
+    // 1. Vider le tableau local
+    cart = [];
+    updateCartCount();
+    
+    if (document.getElementById('cartItems')) {
+        displayCart();
+    }
+    
+    // 2. Supprimer les données dans Firebase
     if (currentTable) {
-        // Supprimer les données du panier dans Firebase
-        cartsRef.child(`table_${currentTable}`).remove()
+        console.log('🗑️ Suppression dans Firebase...');
+        
+        // ARRÊTER L'ÉCOUTEUR PENDANT LE VIDAGE
+        stopCartListener();
+        
+        // Supprimer les données
+        return cartsRef.child(`table_${currentTable}`).remove()
             .then(() => {
-                console.log('✅ Panier vidé dans Firebase');
-                updateCartCount();
-                if (document.getElementById('cartItems')) {
-                    displayCart();
-                }
-                showToast('🗑️ Panier vidé', 'info');
+                console.log('✅ Panier supprimé de Firebase');
+                showToast('🗑️ Panier vidé avec succès', 'success');
+                
+                // Réactiver l'écouteur
+                setTimeout(() => {
+                    startCartListener();
+                }, 500);
             })
             .catch(error => {
-                console.error('❌ Erreur vidage panier:', error);
-                // Tentative alternative
-                cartsRef.child(`table_${currentTable}`).set([])
+                console.error('❌ Erreur vidage:', error);
+                
+                // Tentative alternative: set à un tableau vide
+                return cartsRef.child(`table_${currentTable}`).set([])
                     .then(() => {
                         console.log('✅ Panier vidé (alternative)');
-                        updateCartCount();
-                        if (document.getElementById('cartItems')) {
-                            displayCart();
-                        }
-                    })
-                    .catch(err => {
-                        console.error('❌ Erreur vidage panier (alternative):', err);
+                        showToast('🗑️ Panier vidé', 'success');
+                        setTimeout(() => {
+                            startCartListener();
+                        }, 500);
                     });
             });
     }
+    return Promise.resolve();
 }
 
-// ============ CHARGER LE PANIER ============
-function loadCart() {
+// ============ ARRÊTER L'ÉCOUTEUR DU PANIER ============
+function stopCartListener() {
     if (currentTable) {
-        // Supprimer l'ancien listener s'il existe
-        cartsRef.child(`table_${currentTable}`).off();
+        console.log('⏹️ Arrêt de l\'écouteur du panier');
+        cartsRef.child(`table_${currentTable}`).off('value');
+        cartListenerRef = null;
+    }
+}
+
+// ============ DÉMARRER L'ÉCOUTEUR DU PANIER ============
+function startCartListener() {
+    if (currentTable) {
+        console.log('▶️ Démarrage de l\'écouteur du panier');
         
-        cartsRef.child(`table_${currentTable}`).on('value', (snapshot) => {
+        // Arrêter l'ancien écouteur s'il existe
+        stopCartListener();
+        
+        cartListenerRef = cartsRef.child(`table_${currentTable}`).on('value', (snapshot) => {
             const data = snapshot.val();
             console.log('📥 Données du panier reçues:', data);
             
+            // Ne pas écraser le panier si on est en train de le vider
             if (data && Array.isArray(data) && data.length > 0) {
                 cart = data;
                 console.log('✅ Panier chargé:', cart);
             } else {
+                // Si les données sont vides, vider le panier local
                 cart = [];
-                console.log('📭 Panier vide');
+                console.log('📭 Panier vide détecté');
             }
             
             updateCartCount();
@@ -257,6 +283,11 @@ function loadCart() {
             }
         });
     }
+}
+
+// ============ CHARGER LE PANIER ============
+function loadCart() {
+    startCartListener();
 }
 
 // ============ METTRE À JOUR LE COMPTEUR ============
@@ -377,7 +408,7 @@ function removeFromCart(productId) {
     }
 }
 
-// ============ ENVOYER SUR WHATSAPP AVEC VIDAGE AUTOMATIQUE ============
+// ============ ENVOYER SUR WHATSAPP AVEC VIDAGE ============
 function sendToWhatsApp() {
     if (cart.length === 0) {
         showToast('❌ Votre panier est vide !', 'error');
@@ -390,11 +421,21 @@ function sendToWhatsApp() {
         sendBtn.innerHTML = '⏳ Envoi en cours...';
     }
     
+    // Construction du message
     let message = `🍽️ *NOUVELLE COMMANDE*\n`;
     message += `📌 Table: ${currentTable}\n`;
     message += `⏰ ${new Date().toLocaleString('fr-FR')}\n\n`;
     message += `*DÉTAILS DE LA COMMANDE:*\n`;
     let total = 0;
+    
+    // Sauvegarder les articles du panier pour la commande
+    const orderItems = cart.map(item => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        notes: item.notes || ''
+    }));
     
     cart.forEach(item => {
         message += `• ${item.name} x${item.quantity} = ${(item.price * item.quantity).toFixed(2)}€\n`;
@@ -410,13 +451,7 @@ function sendToWhatsApp() {
     // Sauvegarder la commande dans Firebase
     const orderData = {
         table: parseInt(currentTable),
-        items: cart.map(item => ({
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            notes: item.notes || ''
-        })),
+        items: orderItems,
         total: total,
         timestamp: Date.now(),
         status: 'en_attente',
@@ -424,29 +459,17 @@ function sendToWhatsApp() {
         customerPhone: ''
     };
     
-    // Sauvegarder la commande
+    // 1. Sauvegarder la commande
     ordersRef.child('commandes').push(orderData)
         .then(() => {
             console.log('✅ Commande sauvegardée dans Firebase');
+            showToast('✅ Commande envoyée avec succès !', 'success');
             
-            // ========== VIDER LE PANIER ==========
-            // Méthode 1: Vider le tableau local
-            cart = [];
-            
-            // Méthode 2: Supprimer dans Firebase
-            if (currentTable) {
-                return cartsRef.child(`table_${currentTable}`).remove();
-            }
-            return Promise.resolve();
+            // 2. VIDER LE PANIER
+            return clearCart();
         })
         .then(() => {
-            console.log('✅ Panier vidé avec succès');
-            
-            // Mettre à jour l'affichage
-            updateCartCount();
-            if (document.getElementById('cartItems')) {
-                displayCart();
-            }
+            console.log('✅ Panier vidé');
             
             // Fermer le modal
             const modal = document.getElementById('cartModal');
@@ -455,13 +478,16 @@ function sendToWhatsApp() {
                 document.body.style.overflow = '';
             }
             
-            showToast('✅ Commande envoyée ! Panier vidé.', 'success');
+            // Réactiver le bouton
+            if (sendBtn) {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '📱 Envoyer sur WhatsApp';
+            }
         })
         .catch(error => {
             console.error('❌ Erreur:', error);
             showToast('❌ Erreur: ' + error.message, 'error');
-        })
-        .finally(() => {
+            
             if (sendBtn) {
                 sendBtn.disabled = false;
                 sendBtn.innerHTML = '📱 Envoyer sur WhatsApp';
