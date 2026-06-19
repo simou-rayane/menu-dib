@@ -1,11 +1,10 @@
-// ============ SCRIPT.JS - SOLUTION RADICALE ============
+// ============ SCRIPT.JS - SOLUTION ULTIME AVEC RECHARGEMENT ============
 
 let products = [];
 let cart = [];
 let currentTable = null;
 let currentFilter = 'all';
 let cartListenerRef = null;
-let isClearingCart = false;
 
 // ============ CHARGER LA TABLE ============
 function loadTableInfo() {
@@ -188,7 +187,7 @@ function addToCart(productId) {
 
 // ============ SAUVEGARDER LE PANIER ============
 function saveCart() {
-    if (currentTable && !isClearingCart) {
+    if (currentTable) {
         console.log('💾 Sauvegarde du panier:', cart);
         return cartsRef.child(`table_${currentTable}`).set(cart)
             .then(() => {
@@ -200,97 +199,92 @@ function saveCart() {
     }
 }
 
-// ============ SOLUTION RADICALE - VIDAGE IMPÉRATIF ============
+// ============ SOLUTION ULTIME - VIDAGE AVEC RECHARGEMENT ============
 function clearCart() {
-    console.log('🔥🔥🔥 SOLUTION RADICALE - VIDAGE IMPÉRATIF 🔥🔥🔥');
+    console.log('🔥🔥🔥 SOLUTION ULTIME - VIDAGE AVEC RECHARGEMENT 🔥🔥🔥');
     
-    // Activer le flag
-    isClearingCart = true;
-    
-    // === ÉTAPE 1: Détruire l'écouteur ===
-    if (currentTable) {
-        console.log('⏹️ Détruction de l\'écouteur...');
-        cartsRef.child(`table_${currentTable}`).off('value');
-        cartListenerRef = null;
+    if (!currentTable) {
+        console.warn('⚠️ Pas de table actuelle');
+        return Promise.resolve();
     }
     
-    // === ÉTAPE 2: Vider TOUT ===
-    console.log('🗑️ Vidage complet...');
+    const cartPath = `table_${currentTable}`;
     
-    // Vider le tableau
+    // === ÉTAPE 1: Arrêter l'écouteur ===
+    console.log('⏹️ Arrêt de l\'écouteur...');
+    cartsRef.child(cartPath).off('value');
+    cartListenerRef = null;
+    
+    // === ÉTAPE 2: Vider le tableau local ===
     cart = [];
     console.log('✅ Tableau local vidé');
     
-    // Vider localStorage
-    localStorage.removeItem(`cart_${currentTable}`);
-    console.log('✅ localStorage vidé');
+    // === ÉTAPE 3: Supprimer de Firebase ===
+    console.log('🗑️ Suppression dans Firebase...');
     
-    // Vider sessionStorage
-    sessionStorage.removeItem(`cart_${currentTable}`);
-    console.log('✅ sessionStorage vidé');
-    
-    // === ÉTAPE 3: Nettoyer Firebase avec .remove() et .set([]) ===
-    if (currentTable) {
-        const cartPath = `table_${currentTable}`;
-        
-        // Supprimer avec .remove()
-        cartsRef.child(cartPath).remove()
-            .then(() => {
-                console.log('✅ Firebase .remove() réussi');
-                return cartsRef.child(cartPath).set([]);
-            })
-            .then(() => {
-                console.log('✅ Firebase .set([]) réussi');
-                return cartsRef.child(cartPath).once('value');
-            })
-            .then((snapshot) => {
-                console.log('🔍 Vérification finale:', snapshot.val());
-            })
-            .catch(error => {
-                console.error('❌ Erreur:', error);
-                // Dernière tentative: écraser avec null
-                cartsRef.child(cartPath).set(null);
-            });
-    }
-    
-    // === ÉTAPE 4: Mettre à jour l'affichage ===
-    updateCartCount();
-    if (document.getElementById('cartItems')) {
-        displayCart();
-    }
-    console.log('✅ Affichage mis à jour');
-    
-    // === ÉTAPE 5: Forcer un rechargement des données ===
-    setTimeout(() => {
-        console.log('🔄 Rechargement des données...');
-        isClearingCart = false;
-        // Recréer l'écouteur
-        setTimeout(() => {
-            startCartListener();
-            // Forcer une vérification
-            if (currentTable) {
-                cartsRef.child(`table_${currentTable}`).once('value')
-                    .then((snapshot) => {
-                        console.log('📥 État final du panier:', snapshot.val());
-                        if (snapshot.val() === null || snapshot.val().length === 0) {
-                            console.log('✅✅✅ PANIER BIEN VIDÉ !!! ✅✅✅');
-                            showToast('🗑️ Panier vidé avec succès', 'success');
-                        }
-                    });
+    return cartsRef.child(cartPath).remove()
+        .then(() => {
+            console.log('✅ .remove() réussi');
+            
+            // Vérifier que c'est bien supprimé
+            return cartsRef.child(cartPath).once('value');
+        })
+        .then((snapshot) => {
+            console.log('🔍 Vérification après .remove():', snapshot.val());
+            
+            // Forcer un set à vide pour être sûr
+            return cartsRef.child(cartPath).set([]);
+        })
+        .then(() => {
+            console.log('✅ .set([]) réussi');
+            
+            // Vider localStorage
+            localStorage.removeItem(`cart_${currentTable}`);
+            console.log('✅ localStorage vidé');
+            
+            // Mettre à jour l'affichage
+            updateCartCount();
+            if (document.getElementById('cartItems')) {
+                displayCart();
             }
-        }, 200);
-    }, 300);
-    
-    console.log('🔥🔥🔥 FIN SOLUTION RADICALE 🔥🔥🔥');
-}
-
-// ============ ARRÊTER L'ÉCOUTEUR ============
-function stopCartListener() {
-    if (currentTable) {
-        console.log('⏹️ Arrêt de l\'écouteur du panier');
-        cartsRef.child(`table_${currentTable}`).off('value');
-        cartListenerRef = null;
-    }
+            console.log('✅ Affichage mis à jour');
+            
+            // === ÉTAPE 4: RECHARGER LA PAGE ===
+            console.log('🔄 RECHARGEMENT DE LA PAGE DANS 1 SECONDE...');
+            showToast('✅ Commande envoyée ! La page va se recharger...', 'success');
+            
+            setTimeout(() => {
+                console.log('🔄 RECHARGEMENT !');
+                window.location.reload();
+            }, 1500);
+            
+            return Promise.resolve();
+        })
+        .catch(error => {
+            console.error('❌ Erreur:', error);
+            
+            // Tentative alternative
+            console.log('🔄 Tentative alternative...');
+            return cartsRef.child(cartPath).set([])
+                .then(() => {
+                    console.log('✅ .set([]) réussi (alternative)');
+                    localStorage.removeItem(`cart_${currentTable}`);
+                    updateCartCount();
+                    if (document.getElementById('cartItems')) {
+                        displayCart();
+                    }
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                })
+                .catch(err => {
+                    console.error('❌ Erreur alternative:', err);
+                    // Dernier recours: recharger quand même
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                });
+        });
 }
 
 // ============ DÉMARRER L'ÉCOUTEUR ============
@@ -298,25 +292,17 @@ function startCartListener() {
     if (currentTable) {
         console.log('▶️ Démarrage de l\'écouteur du panier');
         
-        stopCartListener();
-        
         const cartPath = `table_${currentTable}`;
         cartListenerRef = cartsRef.child(cartPath).on('value', (snapshot) => {
-            if (isClearingCart) {
-                console.log('⏸️ Écouteur ignoré (vidage en cours)');
-                return;
-            }
-            
             const data = snapshot.val();
             console.log('📥 Données du panier reçues:', data);
             
-            // Si les données sont nulles ou un tableau vide, vider le panier
-            if (!data || (Array.isArray(data) && data.length === 0)) {
-                cart = [];
-                console.log('📭 Panier vide détecté');
-            } else {
+            if (data && Array.isArray(data) && data.length > 0) {
                 cart = data;
                 console.log('✅ Panier chargé:', cart);
+            } else {
+                cart = [];
+                console.log('📭 Panier vide détecté');
             }
             
             updateCartCount();
@@ -511,8 +497,8 @@ function sendToWhatsApp() {
             console.log('✅ Commande sauvegardée avec ID:', ref.key);
             showToast('✅ Commande envoyée avec succès !', 'success');
             
-            // VIDER LE PANIER - SOLUTION RADICALE
-            console.log('🔄 Vidage radical du panier...');
+            // VIDER LE PANIER - SOLUTION ULTIME
+            console.log('🔄 Vidage ultime du panier...');
             return clearCart();
         })
         .then(() => {
@@ -539,7 +525,7 @@ function sendToWhatsApp() {
     
     // Ouvrir WhatsApp
     const encodedMessage = encodeURIComponent(message);
-    const phoneNumber = "1234567890";
+    const phoneNumber = "1234567890"; // Remplacez par votre numéro
     window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
 }
 
