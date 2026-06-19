@@ -353,11 +353,18 @@ function clearCart() {
     }
 }
 
-// ============ ENVOYER SUR WHATSAPP ============
+// ============ ENVOYER SUR WHATSAPP AVEC VIDAGE AUTOMATIQUE ============
 function sendToWhatsApp() {
     if (cart.length === 0) {
         showToast('❌ Votre panier est vide !', 'error');
         return;
+    }
+    
+    // Désactiver le bouton pour éviter les doubles envois
+    const sendBtn = document.getElementById('sendWhatsAppBtn');
+    if (sendBtn) {
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = '⏳ Envoi en cours...';
     }
     
     let message = `🍽️ *NOUVELLE COMMANDE*\n`;
@@ -397,11 +404,33 @@ function sendToWhatsApp() {
     ordersRef.child('commandes').push(orderData)
         .then(() => {
             console.log('✅ Commande sauvegardée dans Firebase');
-            showToast('✅ Commande envoyée !', 'success');
+            
+            // ========== VIDER LE PANIER AUTOMATIQUEMENT ==========
+            cart = [];
+            saveCart();
+            displayCart();
+            updateCartCount();
+            
+            // Fermer le modal
+            const modal = document.getElementById('cartModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+            
+            // Afficher un message de confirmation
+            showToast('✅ Commande envoyée avec succès ! Panier vidé.', 'success');
         })
         .catch(error => {
             console.error('❌ Erreur:', error);
             showToast('❌ Erreur: ' + error.message, 'error');
+        })
+        .finally(() => {
+            // Réactiver le bouton
+            if (sendBtn) {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '📱 Envoyer sur WhatsApp';
+            }
         });
     
     // Encoder le message pour WhatsApp
@@ -411,6 +440,7 @@ function sendToWhatsApp() {
     
     // Ouvrir WhatsApp
     window.open(url, '_blank');
+        }
     
     // Proposer de vider le panier
     setTimeout(() => {
