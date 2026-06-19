@@ -2,7 +2,6 @@
 
 let products = [];
 let isConnected = false;
-let currentEditId = null;
 
 // ============ ÉTAT DE CONNEXION ============
 function updateConnectionStatus(connected) {
@@ -239,12 +238,10 @@ function displayProducts() {
 
 // ============ AJOUTER UN PRODUIT ============
 function addProduct(productData) {
-    // Valider les données
     if (!validateProduct(productData)) {
         return Promise.reject(new Error('Validation échouée'));
     }
     
-    // Préparer le produit
     const newProduct = {
         name: productData.name.trim(),
         price: parseFloat(productData.price),
@@ -255,24 +252,17 @@ function addProduct(productData) {
         updatedAt: Date.now()
     };
     
-    // Ajouter à Firebase
     return productsRef.push().set(newProduct)
         .then((ref) => {
             console.log('✅ Produit ajouté à Firebase avec ID:', ref.key);
             showToast('✅ Produit ajouté avec succès !', 'success');
             
-            // Si une image est présente, l'uploader
             const fileInput = document.getElementById('productImage');
             if (fileInput && fileInput.files.length > 0) {
                 uploadProductImage(fileInput.files[0], ref.key)
-                    .then(() => {
-                        console.log('✅ Image uploadée avec succès');
-                    })
-                    .catch(error => {
-                        console.warn('⚠️ Erreur upload image:', error);
-                    });
+                    .then(() => console.log('✅ Image uploadée'))
+                    .catch(error => console.warn('⚠️ Erreur upload image:', error));
             }
-            
             return true;
         })
         .catch((error) => {
@@ -290,7 +280,6 @@ function editProduct(productId) {
         return;
     }
     
-    // Créer un formulaire de modification personnalisé
     const modal = document.createElement('div');
     modal.style.cssText = `
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -336,7 +325,6 @@ function editProduct(productId) {
     
     document.body.appendChild(modal);
     
-    // Gérer la soumission du formulaire
     document.getElementById('editForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -372,7 +360,6 @@ function deleteProduct(productId) {
         return;
     }
     
-    // Supprimer l'image si présente
     if (product.image) {
         deleteProductImage(productId).catch(error => {
             console.warn('⚠️ Erreur suppression image:', error);
@@ -412,10 +399,8 @@ function toggleVisibility(productId) {
     });
 }
 
-// ============ GESTION DES IMAGES (Firebase Storage) ============
+// ============ GESTION DES IMAGES ============
 function uploadProductImage(file, productId) {
-    // Note: Cette fonction nécessite Firebase Storage
-    // Si vous ne l'avez pas activée, elle renverra une erreur
     return new Promise((resolve, reject) => {
         try {
             const storage = firebase.storage();
@@ -423,18 +408,14 @@ function uploadProductImage(file, productId) {
             const imageRef = storageRef.child(`products/${productId}/${file.name}`);
             
             imageRef.put(file)
-                .then((snapshot) => {
-                    return snapshot.ref.getDownloadURL();
-                })
+                .then((snapshot) => snapshot.ref.getDownloadURL())
                 .then((downloadURL) => {
                     return productsRef.child(productId).update({
                         image: downloadURL,
                         updatedAt: Date.now()
                     });
                 })
-                .then(() => {
-                    resolve();
-                })
+                .then(resolve)
                 .catch(reject);
         } catch (error) {
             console.warn('⚠️ Firebase Storage non disponible:', error);
@@ -466,7 +447,7 @@ function deleteProductImage(productId) {
                 .catch(reject);
         } catch (error) {
             console.warn('⚠️ Firebase Storage non disponible:', error);
-            resolve(); // Continuer même si storage n'est pas disponible
+            resolve();
         }
     });
 }
@@ -478,51 +459,14 @@ function changeImage(productId) {
     input.onchange = function(e) {
         if (e.target.files.length > 0) {
             const file = e.target.files[0];
-            
-            // Compresser l'image avant upload
-            if (file.size > 1024 * 1024) { // > 1MB
-                if (!confirm('L\'image fait plus de 1MB. Voulez-vous la compresser ?')) {
-                    return;
-                }
-            }
-            
             showToast('⏳ Upload en cours...', 'info');
             
             uploadProductImage(file, productId)
-                .then(() => {
-                    showToast('✅ Image mise à jour avec succès !', 'success');
-                })
-                .catch(error => {
-                    console.error('❌ Erreur upload:', error);
-                    showToast('❌ Erreur: ' + error.message, 'error');
-                });
+                .then(() => showToast('✅ Image mise à jour !', 'success'))
+                .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
         }
     };
     input.click();
-}
-
-// ============ PRÉVISUALISATION D'IMAGE ============
-function previewImage(event) {
-    const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const preview = document.getElementById('imagePreview');
-            const img = document.getElementById('previewImg');
-            if (preview && img) {
-                img.src = e.target.result;
-                preview.style.display = 'flex';
-            }
-        };
-        reader.readAsDataURL(file);
-    }
-}
-
-function removeImage() {
-    const input = document.getElementById('productImage');
-    const preview = document.getElementById('imagePreview');
-    if (input) input.value = '';
-    if (preview) preview.style.display = 'none';
 }
 
 // ============ CATÉGORIE EN FRANÇAIS ============
@@ -556,7 +500,6 @@ function updateLastSyncTime() {
 
 // ============ TOAST NOTIFICATIONS ============
 function showToast(message, type = 'info') {
-    // Supprimer les toasts existants
     const existing = document.querySelector('.admin-toast');
     if (existing) existing.remove();
     
@@ -568,6 +511,12 @@ function showToast(message, type = 'info') {
         'warning': '#ff9800',
         'info': '#2196F3'
     };
+    const icons = {
+        'success': '✅',
+        'error': '❌',
+        'warning': '⚠️',
+        'info': 'ℹ️'
+    };
     
     toast.style.cssText = `
         position: fixed; top: 20px; right: 20px; padding: 15px 25px;
@@ -575,8 +524,9 @@ function showToast(message, type = 'info') {
         border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         z-index: 10000; animation: slideInRight 0.5s ease;
         max-width: 400px; font-weight: 500;
+        display: flex; align-items: center; gap: 10px;
     `;
-    toast.textContent = message;
+    toast.innerHTML = `<span>${icons[type] || '📢'}</span> ${message}`;
     document.body.appendChild(toast);
     
     setTimeout(() => {
@@ -585,7 +535,7 @@ function showToast(message, type = 'info') {
     }, 4000);
 }
 
-// ============ RECONNEXION MANUELLE ============
+// ============ RECONNEXION ============
 function reconnectFirebase() {
     showToast('🔄 Tentative de reconnexion...', 'info');
     database.ref('.info/connected').once('value')
@@ -594,96 +544,10 @@ function reconnectFirebase() {
                 showToast('✅ Reconnecté avec succès !', 'success');
                 listenToProducts();
             } else {
-                showToast('❌ Impossible de se connecter. Vérifiez vos clés Firebase.', 'error');
+                showToast('❌ Impossible de se connecter', 'error');
             }
         })
-        .catch(error => {
-            showToast('❌ Erreur: ' + error.message, 'error');
-        });
-}
-
-// ============ RÉINITIALISER LES PRODUITS ============
-function resetFirebaseProducts() {
-    if (!confirm('⚠️ Supprimer TOUS les produits et les réinitialiser ?\nCette action est irréversible.')) {
-        return;
-    }
-    
-    productsRef.set(null)
-        .then(() => {
-            createDefaultProducts();
-        })
-        .catch(error => {
-            console.error('❌ Erreur réinitialisation:', error);
-            showToast('❌ Erreur: ' + error.message, 'error');
-        });
-}
-
-// ============ EXPORTER LES PRODUITS (Backup) ============
-function exportProducts() {
-    if (products.length === 0) {
-        showToast('❌ Aucun produit à exporter', 'error');
-        return;
-    }
-    
-    const dataStr = JSON.stringify(products, null, 2);
-    const blob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `produits_backup_${new Date().toISOString().slice(0,10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast('✅ Export terminé !', 'success');
-}
-
-// ============ IMPORTER DES PRODUITS (Restore) ============
-function importProducts() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    input.onchange = function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            try {
-                const imported = JSON.parse(event.target.result);
-                if (!Array.isArray(imported)) {
-                    throw new Error('Format invalide');
-                }
-                
-                if (!confirm(`Importer ${imported.length} produits ?\nLes produits existants seront conservés.`)) {
-                    return;
-                }
-                
-                const promises = imported.map(product => {
-                    const newProduct = {
-                        name: product.name,
-                        price: product.price,
-                        category: product.category || 'plats',
-                        description: product.description || '',
-                        visible: product.visible !== undefined ? product.visible : true,
-                        createdAt: Date.now(),
-                        updatedAt: Date.now()
-                    };
-                    return productsRef.push().set(newProduct);
-                });
-                
-                Promise.all(promises)
-                    .then(() => {
-                        showToast(`✅ ${imported.length} produits importés avec succès !`, 'success');
-                    })
-                    .catch(error => {
-                        showToast('❌ Erreur: ' + error.message, 'error');
-                    });
-            } catch (error) {
-                showToast('❌ Fichier invalide: ' + error.message, 'error');
-            }
-        };
-        reader.readAsText(file);
-    };
-    input.click();
+        .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
 }
 
 // ============ FORMULAIRE D'AJOUT ============
@@ -698,8 +562,6 @@ document.getElementById('productForm')?.addEventListener('submit', function(e) {
         description: document.getElementById('productDesc').value
     };
     
-    console.log('Données du formulaire:', productData);
-    
     const btn = document.getElementById('addBtn');
     btn.disabled = true;
     btn.innerHTML = '⏳ Ajout en cours...';
@@ -707,11 +569,10 @@ document.getElementById('productForm')?.addEventListener('submit', function(e) {
     addProduct(productData)
         .then(() => {
             this.reset();
-            removeImage();
+            const preview = document.getElementById('imagePreview');
+            if (preview) preview.style.display = 'none';
         })
-        .catch(() => {
-            // Erreur déjà gérée dans addProduct
-        })
+        .catch(() => {})
         .finally(() => {
             btn.disabled = false;
             btn.innerHTML = '➕ Ajouter';
@@ -720,9 +581,6 @@ document.getElementById('productForm')?.addEventListener('submit', function(e) {
 
 // ============ INITIALISATION ============
 console.log('🚀 Démarrage de l\'administration Firebase...');
-console.log('📋 Firebase Database:', database.ref().toString());
-
-// Démarrer l'écoute des produits
 listenToProducts();
 
 // Exposer les fonctions globalement
@@ -730,14 +588,28 @@ window.toggleVisibility = toggleVisibility;
 window.editProduct = editProduct;
 window.deleteProduct = deleteProduct;
 window.changeImage = changeImage;
-window.previewImage = previewImage;
-window.removeImage = removeImage;
 window.reconnectFirebase = reconnectFirebase;
-window.resetFirebaseProducts = resetFirebaseProducts;
-window.exportProducts = exportProducts;
-window.importProducts = importProducts;
-
-console.log('✅ Administration initialisée');
+window.previewImage = function(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('imagePreview');
+            const img = document.getElementById('previewImg');
+            if (preview && img) {
+                img.src = e.target.result;
+                preview.style.display = 'flex';
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+};
+window.removeImage = function() {
+    const input = document.getElementById('productImage');
+    const preview = document.getElementById('imagePreview');
+    if (input) input.value = '';
+    if (preview) preview.style.display = 'none';
+};
 
 // Ajouter les animations CSS
 const style = document.createElement('style');
@@ -756,3 +628,5 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+console.log('✅ Administration initialisée');
