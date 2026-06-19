@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu Restaurant - Choisissez votre table</title>
+    <title>Restaurant - Choisissez votre table</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,23 +15,30 @@
         </div>
     </div>
     
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    
-  <script>  
-import { initializeApp } from "firebase/app";
-const firebaseConfig = {
-  apiKey: "AIzaSyAp9akZE9yGLmZAVkcZ7YB4pM1kUP8cJWM",
-  authDomain: "restaurant-menu-9179b.firebaseapp.com",
-  projectId: "restaurant-menu-9179b",
-  storageBucket: "restaurant-menu-9179b.firebasestorage.app",
-  messagingSenderId: "57456460201",
-  appId: "1:57456460201:web:8b40ceeffe81eea918c4b8"
-};
-const app = initializeApp(firebaseConfig);
-      const database = firebase.database();
+    <script>
+        // ============ AFFICHER LES TABLES ============
+        function displayTables() {
+            const grid = document.getElementById('tableGrid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            for (let i = 1; i <= 10; i++) {
+                const tableDiv = document.createElement('div');
+                tableDiv.className = 'table-card';
+                tableDiv.style.cssText = 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 10px; padding: 30px; text-align: center; cursor: pointer; font-size: 24px; font-weight: bold; transition: transform 0.3s;';
+                tableDiv.innerHTML = `🪑 Table ${i}`;
+                tableDiv.onmouseover = () => tableDiv.style.transform = 'scale(1.05)';
+                tableDiv.onmouseout = () => tableDiv.style.transform = 'scale(1)';
+                tableDiv.onclick = () => {
+                    localStorage.setItem('current_table', i);
+                    window.location.href = 'menu.html';
+                };
+                grid.appendChild(tableDiv);
+            }
+        }
+        
+        displayTables();
+        console.log('🚀 Accueil chargé');
     </script>
-    
-    <script src="script.js"></script>
 </body>
 </html>
