@@ -1,13 +1,13 @@
 // ============ CONFIGURATION FIREBASE ============
 // Remplacez par VOS vraies clés Firebase
 const firebaseConfig = {
-    apiKey: "VOTRE_API_KEY",
-    authDomain: "VOTRE_PROJECT.firebaseapp.com",
-    databaseURL: "https://VOTRE_PROJECT-default-rtdb.firebaseio.com",
-    projectId: "VOTRE_PROJECT",
-    storageBucket: "VOTRE_PROJECT.appspot.com",
-    messagingSenderId: "VOTRE_ID",
-    appId: "VOTRE_APP_ID"
+  apiKey: "AIzaSyAp9akZE9yGLmZAVkcZ7YB4pM1kUP8cJWM",
+  authDomain: "restaurant-menu-9179b.firebaseapp.com",
+  databaseURL: "https://restaurant-menu-9179b-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "restaurant-menu-9179b",
+  storageBucket: "restaurant-menu-9179b.firebasestorage.app",
+  messagingSenderId: "57456460201",
+  appId: "1:57456460201:web:8b40ceeffe81eea918c4b8"
 };
 
 // Initialiser Firebase
