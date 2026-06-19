@@ -1,10 +1,11 @@
-// ============ SCRIPT.JS - VERSION AVEC DÉBOGAGE COMPLET ============
+// ============ SCRIPT.JS - SOLUTION DE CONTOURNEMENT POUR VIDAGE FORCÉ ============
 
 let products = [];
 let cart = [];
 let currentTable = null;
 let currentFilter = 'all';
 let cartListenerRef = null;
+let isClearingCart = false; // Flag pour éviter les boucles
 
 // ============ CHARGER LA TABLE ============
 function loadTableInfo() {
@@ -187,7 +188,7 @@ function addToCart(productId) {
 
 // ============ SAUVEGARDER LE PANIER ============
 function saveCart() {
-    if (currentTable) {
+    if (currentTable && !isClearingCart) {
         console.log('💾 Sauvegarde du panier:', cart);
         return cartsRef.child(`table_${currentTable}`).set(cart)
             .then(() => {
@@ -199,81 +200,109 @@ function saveCart() {
     }
 }
 
-// ============ VIDER LE PANIER AVEC DÉBOGAGE ============
+// ============ SOLUTION DE CONTOURNEMENT - VIDAGE FORCÉ ============
 function clearCart() {
-    console.log('========== DÉBUT VIDAGE ==========');
-    console.log('🗑️ VIDAGE DU PANIER...');
-    console.log('🔍 Table actuelle:', currentTable);
-    console.log('🔍 Panier avant vidage:', JSON.stringify(cart));
+    console.log('========== SOLUTION DE CONTOURNEMENT - VIDAGE FORCÉ ==========');
+    console.log('🗑️ VIDAGE FORCÉ DU PANIER...');
     
-    // 1. Vider le tableau local
+    // Activer le flag pour éviter les sauvegardes pendant le vidage
+    isClearingCart = true;
+    
+    // === MÉTHODE 1: Vider le tableau local ===
     cart = [];
-    console.log('✅ Panier local vidé');
-    updateCartCount();
+    console.log('✅ Méthode 1: Panier local vidé');
     
+    // === MÉTHODE 2: Mettre à jour l'affichage ===
+    updateCartCount();
     if (document.getElementById('cartItems')) {
         displayCart();
     }
+    console.log('✅ Méthode 2: Affichage mis à jour');
     
-    // 2. Supprimer les données dans Firebase
+    // === MÉTHODE 3: Supprimer de Firebase avec .remove() ===
     if (currentTable) {
         const cartPath = `table_${currentTable}`;
-        console.log('🗑️ Suppression dans Firebase du chemin:', cartPath);
+        console.log('🗑️ Méthode 3: Suppression dans Firebase du chemin:', cartPath);
         
-        // ARRÊTER L'ÉCOUTEUR PENDANT LE VIDAGE
+        // Arrêter l'écouteur
         stopCartListener();
         console.log('⏹️ Écouteur arrêté');
         
-        // Supprimer les données avec .remove()
-        return cartsRef.child(cartPath).remove()
+        // Supprimer avec .remove()
+        cartsRef.child(cartPath).remove()
             .then(() => {
-                console.log('✅ SUCCÈS: Panier supprimé de Firebase avec .remove()');
-                
-                // Vérifier que c'est bien supprimé
+                console.log('✅ Méthode 3a: .remove() réussi');
+                // Vérifier
                 return cartsRef.child(cartPath).once('value');
             })
             .then((snapshot) => {
                 const data = snapshot.val();
-                console.log('🔍 Vérification après suppression:', data);
-                
-                if (data === null || (Array.isArray(data) && data.length === 0)) {
-                    console.log('✅ Panier bien vide dans Firebase');
-                } else {
-                    console.warn('⚠️ Des données persistent dans Firebase:', data);
-                }
-                
-                showToast('🗑️ Panier vidé avec succès', 'success');
-                
-                // Réactiver l'écouteur
-                console.log('▶️ Réactivation de l\'écouteur...');
-                setTimeout(() => {
-                    startCartListener();
-                }, 500);
-                
-                console.log('========== FIN VIDAGE ==========');
+                console.log('🔍 Vérification après .remove():', data);
+                return data;
             })
             .catch(error => {
-                console.error('❌ ERREUR lors du .remove():', error);
-                
-                // Tentative alternative: set à un tableau vide
-                console.log('🔄 Tentative alternative: .set([])');
+                console.error('❌ Erreur .remove():', error);
+                // Si .remove() échoue, essayer .set([])
                 return cartsRef.child(cartPath).set([])
                     .then(() => {
-                        console.log('✅ Panier vidé avec .set([])');
-                        showToast('🗑️ Panier vidé', 'success');
-                        setTimeout(() => {
-                            startCartListener();
-                        }, 500);
+                        console.log('✅ Méthode 3b: .set([]) réussi');
                     })
                     .catch(err => {
-                        console.error('❌ ERREUR alternative:', err);
-                        showToast('❌ Erreur vidage: ' + err.message, 'error');
+                        console.error('❌ Erreur .set([]):', err);
                     });
+            })
+            .then(() => {
+                // === MÉTHODE 4: Supprimer le localStorage ===
+                try {
+                    localStorage.removeItem(`cart_${currentTable}`);
+                    console.log('✅ Méthode 4: localStorage supprimé');
+                } catch (e) {
+                    console.warn('⚠️ Erreur suppression localStorage:', e);
+                }
+                
+                // === MÉTHODE 5: Forcer une nouvelle sauvegarde vide ===
+                setTimeout(() => {
+                    console.log('🔄 Méthode 5: Sauvegarde forcée d\'un panier vide...');
+                    cart = [];
+                    cartsRef.child(cartPath).set([])
+                        .then(() => {
+                            console.log('✅ Méthode 5: Panier vide sauvegardé');
+                        })
+                        .catch(err => {
+                            console.error('❌ Erreur méthode 5:', err);
+                        });
+                }, 100);
+                
+                // Réactiver l'écouteur après un délai
+                setTimeout(() => {
+                    console.log('▶️ Réactivation de l\'écouteur...');
+                    isClearingCart = false;
+                    startCartListener();
+                    
+                    // Forcer un rechargement du panier
+                    setTimeout(() => {
+                        cartsRef.child(cartPath).once('value')
+                            .then((snapshot) => {
+                                const data = snapshot.val();
+                                console.log('🔍 État final du panier:', data);
+                                if (data === null || (Array.isArray(data) && data.length === 0)) {
+                                    console.log('✅ PANIER BIEN VIDÉ !');
+                                    showToast('🗑️ Panier vidé avec succès', 'success');
+                                } else {
+                                    console.warn('⚠️ Des données persistent:', data);
+                                    // Dernière tentative: écraser avec .set([])
+                                    cartsRef.child(cartPath).set([]);
+                                }
+                            });
+                    }, 200);
+                }, 300);
             });
     } else {
-        console.warn('⚠️ Pas de table actuelle, impossible de vider Firebase');
-        return Promise.resolve();
+        console.warn('⚠️ Pas de table actuelle');
+        isClearingCart = false;
     }
+    
+    console.log('========== FIN VIDAGE FORCÉ ==========');
 }
 
 // ============ ARRÊTER L'ÉCOUTEUR ============
@@ -295,6 +324,12 @@ function startCartListener() {
         
         const cartPath = `table_${currentTable}`;
         cartListenerRef = cartsRef.child(cartPath).on('value', (snapshot) => {
+            // Ignorer les mises à jour pendant le vidage
+            if (isClearingCart) {
+                console.log('⏸️ Écouteur ignoré pendant vidage');
+                return;
+            }
+            
             const data = snapshot.val();
             console.log('📥 Données du panier reçues:', data);
             
@@ -437,7 +472,7 @@ function removeFromCart(productId) {
     }
 }
 
-// ============ ENVOYER SUR WHATSAPP AVEC DÉBOGAGE ============
+// ============ ENVOYER SUR WHATSAPP ============
 function sendToWhatsApp() {
     console.log('========== DÉBUT ENVOI COMMANDE ==========');
     
@@ -501,8 +536,8 @@ function sendToWhatsApp() {
             console.log('✅ Commande sauvegardée avec ID:', ref.key);
             showToast('✅ Commande envoyée avec succès !', 'success');
             
-            // 2. VIDER LE PANIER
-            console.log('🔄 Début du vidage après commande...');
+            // 2. VIDER LE PANIER AVEC LA SOLUTION DE CONTOURNEMENT
+            console.log('🔄 Début du vidage forcé après commande...');
             return clearCart();
         })
         .then(() => {
