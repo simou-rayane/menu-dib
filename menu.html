@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu - Commandez en ligne</title>
+    <title>Menu - Firebase</title>
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body>
     <div class="container">
@@ -27,7 +31,7 @@
             <button class="filter-btn" data-category="boissons">Boissons</button>
         </div>
 
-        <div class="menu-grid" id="menuGrid"></div>
+        <div id="menuGrid" class="menu-grid"></div>
 
         <!-- Modal Panier -->
         <div id="cartModal" class="modal">
@@ -42,24 +46,303 @@
             </div>
         </div>
     </div>
-
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
-  <script>  
-import { initializeApp } from "firebase/app";
-const firebaseConfig = {
-  apiKey: "AIzaSyAp9akZE9yGLmZAVkcZ7YB4pM1kUP8cJWM",
-  authDomain: "restaurant-menu-9179b.firebaseapp.com",
-  projectId: "restaurant-menu-9179b",
-  storageBucket: "restaurant-menu-9179b.firebasestorage.app",
-  messagingSenderId: "57456460201",
-  appId: "1:57456460201:web:8b40ceeffe81eea918c4b8"
-};
-const app = initializeApp(firebaseConfig);
-      const database = firebase.database();
+    <!-- Configuration Firebase -->
+    <script src="firebase-config.js"></script>
+    
+    <!-- Script principal -->
+    <script>
+        // ============ MENU AVEC FIREBASE ============
+        
+        let products = [];
+        let cart = [];
+        let currentTable = null;
+        let currentFilter = 'all';
+        
+        // ============ ÉCOUTER LES PRODUITS EN TEMPS RÉEL ============
+        function listenToProducts() {
+            productsRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                console.log('📦 Menu - Données Firebase:', data);
+                
+                if (data) {
+                    products = Object.keys(data).map(key => ({
+                        id: key,
+                        ...data[key]
+                    }));
+                    console.log('✅ Menu - Produits chargés:', products.length);
+                } else {
+                    products = [];
+                    console.log('ℹ️ Menu - Aucun produit');
+                }
+                
+                displayMenu();
+            }, (error) => {
+                console.error('❌ Menu - Erreur Firebase:', error);
+                document.getElementById('menuGrid').innerHTML = 
+                    '<p style="text-align: center; color: red;">❌ Erreur de connexion à Firebase</p>';
+            });
+        }
+        
+        // ============ AFFICHER LE MENU ============
+        function displayMenu() {
+            const grid = document.getElementById('menuGrid');
+            if (!grid) return;
+            
+            // Filtrer les produits
+            let filteredProducts = products.filter(p => p.visible !== false);
+            
+            if (currentFilter !== 'all') {
+                filteredProducts = filteredProducts.filter(p => p.category === currentFilter);
+            }
+            
+            if (filteredProducts.length === 0) {
+                grid.innerHTML = '<p style="text-align: center; grid-column: 1/-1; color: #999;">Aucun produit disponible</p>';
+                return;
+            }
+            
+            grid.innerHTML = '';
+            filteredProducts.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.style.cssText = 'background: white; border-radius: 10px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);';
+                card.innerHTML = `
+                    <h3>${product.name}</h3>
+                    <div style="color: #667eea; font-size: 20px; font-weight: bold; margin: 10px 0;">${product.price.toFixed(2)} €</div>
+                    <div style="color: #666; font-size: 14px; margin-bottom: 15px;">${product.description || ''}</div>
+                    <button onclick="addToCart('${product.id}')" style="background: #667eea; color: white; border: none; padding: 10px; width: 100%; border-radius: 5px; cursor: pointer; font-size: 16px;">
+                        🛒 Ajouter au panier
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+            
+            console.log(`✅ Menu - ${filteredProducts.length} produits affichés`);
+        }
+        
+        // ============ AJOUTER AU PANIER ============
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) {
+                alert('❌ Produit non trouvé');
+                return;
+            }
+            
+            const existingItem = cart.find(item => item.id === productId);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({ 
+                    id: product.id,
+                    name: product.name, 
+                    price: product.price, 
+                    quantity: 1 
+                });
+            }
+            
+            saveCart();
+            updateCartCount();
+            alert(`✅ ${product.name} ajouté au panier !`);
+        }
+        
+        // ============ SAUVEGARDER LE PANIER ============
+        function saveCart() {
+            if (currentTable) {
+                cartsRef.child(`table_${currentTable}`).set(cart)
+                    .then(() => {
+                        console.log('✅ Panier sauvegardé');
+                    })
+                    .catch(error => {
+                        console.error('❌ Erreur sauvegarde panier:', error);
+                    });
+            }
+        }
+        
+        // ============ CHARGER LE PANIER ============
+        function loadCart() {
+            if (currentTable) {
+                cartsRef.child(`table_${currentTable}`).on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        cart = data;
+                        console.log('✅ Panier chargé:', cart);
+                    } else {
+                        cart = [];
+                    }
+                    updateCartCount();
+                    if (document.getElementById('cartItems')) {
+                        displayCart();
+                    }
+                });
+            }
+        }
+        
+        // ============ METTRE À JOUR LE COMPTEUR ============
+        function updateCartCount() {
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            const cartCountSpan = document.getElementById('cartCount');
+            if (cartCountSpan) cartCountSpan.textContent = count;
+        }
+        
+        // ============ AFFICHER LE PANIER ============
+        function displayCart() {
+            const cartItemsDiv = document.getElementById('cartItems');
+            const cartTotalSpan = document.getElementById('cartTotal');
+            
+            if (!cartItemsDiv) return;
+            
+            if (cart.length === 0) {
+                cartItemsDiv.innerHTML = '<p style="text-align: center;">🛒 Votre panier est vide</p>';
+                cartTotalSpan.textContent = '0';
+                return;
+            }
+            
+            cartItemsDiv.innerHTML = '';
+            let total = 0;
+            
+            cart.forEach(item => {
+                total += item.price * item.quantity;
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'cart-item';
+                itemDiv.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;';
+                itemDiv.innerHTML = `
+                    <div>
+                        <strong>${item.name}</strong><br>
+                        ${item.price.toFixed(2)}€ x ${item.quantity} = ${(item.price * item.quantity).toFixed(2)}€
+                    </div>
+                    <div>
+                        <button onclick="removeFromCart('${item.id}')" style="background: #ff4444; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">
+                            🗑 Supprimer
+                        </button>
+                    </div>
+                `;
+                cartItemsDiv.appendChild(itemDiv);
+            });
+            
+            cartTotalSpan.textContent = total.toFixed(2);
+        }
+        
+        // ============ SUPPRIMER DU PANIER ============
+        function removeFromCart(productId) {
+            const index = cart.findIndex(item => item.id === productId);
+            if (index !== -1) {
+                cart.splice(index, 1);
+                saveCart();
+                displayCart();
+                updateCartCount();
+            }
+        }
+        
+        // ============ ENVOYER SUR WHATSAPP ============
+        function sendToWhatsApp() {
+            if (cart.length === 0) {
+                alert('Votre panier est vide !');
+                return;
+            }
+            
+            let message = `🍽️ *NOUVELLE COMMANDE*\n`;
+            message += `📌 Table: ${currentTable}\n`;
+            message += `⏰ Heure: ${new Date().toLocaleString()}\n\n`;
+            message += `*DÉTAILS:*\n`;
+            let total = 0;
+            
+            cart.forEach(item => {
+                message += `• ${item.name} x${item.quantity} = ${(item.price * item.quantity).toFixed(2)}€\n`;
+                total += item.price * item.quantity;
+            });
+            
+            message += `\n*Total: ${total.toFixed(2)}€*`;
+            
+            // Sauvegarder la commande dans Firebase
+            const orderData = {
+                table: parseInt(currentTable),
+                items: cart,
+                total: total,
+                timestamp: Date.now(),
+                status: 'en_attente'
+            };
+            
+            ordersRef.child('commandes').push(orderData)
+                .then(() => {
+                    console.log('✅ Commande sauvegardée dans Firebase');
+                })
+                .catch(error => {
+                    console.error('❌ Erreur:', error);
+                });
+            
+            const encodedMessage = encodeURIComponent(message);
+            const phoneNumber = "1234567890"; // Remplacez par votre numéro
+            const url = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+            
+            window.open(url, '_blank');
+            
+            // Vider le panier après envoi
+            if (confirm('Commande envoyée ! Vider le panier ?')) {
+                cart = [];
+                saveCart();
+                updateCartCount();
+                displayCart();
+                document.getElementById('cartModal').style.display = 'none';
+            }
+        }
+        
+        // ============ CONFIGURATION DU MODAL ============
+        function setupCartModal() {
+            const modal = document.getElementById('cartModal');
+            const cartIcon = document.getElementById('cartIcon');
+            const closeBtn = document.querySelector('.close');
+            const sendBtn = document.getElementById('sendWhatsAppBtn');
+            
+            if (cartIcon) {
+                cartIcon.onclick = () => {
+                    displayCart();
+                    modal.style.display = 'block';
+                };
+            }
+            
+            if (closeBtn) {
+                closeBtn.onclick = () => modal.style.display = 'none';
+            }
+            
+            window.onclick = (event) => {
+                if (event.target === modal) modal.style.display = 'none';
+            };
+            
+            if (sendBtn) {
+                sendBtn.onclick = sendToWhatsApp;
+            }
+        }
+        
+        // ============ FILTRES ============
+        function setupFilters() {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.dataset.category;
+                    displayMenu();
+                });
+            });
+        }
+        
+        // ============ INITIALISATION ============
+        currentTable = localStorage.getItem('current_table');
+        if (!currentTable) {
+            currentTable = 1;
+            localStorage.setItem('current_table', '1');
+        }
+        
+        const tableNumberSpan = document.getElementById('tableNumber');
+        if (tableNumberSpan) tableNumberSpan.textContent = currentTable;
+        
+        console.log('🚀 Menu initialisé - Table', currentTable);
+        
+        // Démarrer l'écoute
+        listenToProducts();
+        loadCart();
+        setupCartModal();
+        setupFilters();
+        
     </script>
-    
-    <script src="script.js"></script>
 </body>
 </html>
