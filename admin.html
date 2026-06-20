@@ -9,10 +9,8 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     
     <style>
-        /* Styles supplémentaires pour les images */
         .product-item .product-info-with-image {
             display: flex;
             align-items: center;
@@ -211,6 +209,50 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
+        
+        /* Nouveau style pour l'upload d'images avec URL GitHub */
+        .url-input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        
+        .url-input-group input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .url-input-group button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .url-input-group button:hover {
+            background: #764ba2;
+        }
+        
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .help-text a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .help-text a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -219,12 +261,6 @@
         
         <div id="connectionStatus" style="background: #f0f0f0; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
             🔄 Connexion à Firebase...
-        </div>
-        
-        <!-- Avertissement Storage -->
-        <div id="storageWarning" style="display: none; background: #fff3cd; padding: 10px 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
-            ⚠️ <strong>Firebase Storage n'est pas activé.</strong> Les photos ne pourront pas être uploadées. 
-            <br>Activez Firebase Storage dans la console Firebase pour utiliser cette fonctionnalité.
         </div>
         
         <div class="admin-section">
@@ -243,11 +279,30 @@
                 <!-- Upload d'image -->
                 <div class="image-upload-area">
                     <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #555;">📷 Photo (optionnel)</label>
+                    
+                    <!-- Option 1: Upload de fichier -->
                     <input type="file" id="productImage" accept="image/*" onchange="previewImage(event)">
+                    
+                    <!-- Option 2: URL GitHub -->
+                    <div style="margin-top: 10px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #555; font-size: 13px;">OU entrer l'URL GitHub de l'image :</label>
+                        <div class="url-input-group">
+                            <input type="text" id="productImageUrl" placeholder="https://raw.githubusercontent.com/votre-username/restaurant-menu/main/images/mon-image.jpg">
+                            <button type="button" onclick="testImageUrl()">🔍 Tester</button>
+                        </div>
+                        <div class="help-text">
+                            💡 Placez vos images dans le dossier <code>images/</code> de votre dépôt GitHub.
+                            <br>Exemple: <code>https://raw.githubusercontent.com/votre-username/restaurant-menu/main/images/pizza.jpg</code>
+                        </div>
+                    </div>
                 </div>
+                
                 <div id="imagePreview">
                     <img id="previewImg" src="" alt="Aperçu">
                     <button type="button" onclick="removeImage()">🗑 Supprimer</button>
+                </div>
+                <div id="urlPreview" style="display: none; margin: 10px 0; padding: 10px; background: #d4edda; border-radius: 8px; color: #155724;">
+                    ✅ Image valide !
                 </div>
                 
                 <button type="submit" class="btn-primary" id="addBtn">➕ Ajouter</button>
@@ -269,30 +324,11 @@
     
     <!-- Script principal -->
     <script>
-        // ============ ADMIN AVEC FIREBASE ET GESTION DES IMAGES ============
+        // ============ ADMIN AVEC FIREBASE ET IMAGES GITHUB ============
         
         let products = [];
         let isConnected = false;
-        let storageAvailable = false;
-        
-        // ============ VÉRIFICATION DE FIREBASE STORAGE ============
-        function checkStorageAvailability() {
-            try {
-                if (typeof firebase.storage === 'function') {
-                    storageAvailable = true;
-                    document.getElementById('storageWarning').style.display = 'none';
-                    console.log('✅ Firebase Storage disponible');
-                } else {
-                    storageAvailable = false;
-                    document.getElementById('storageWarning').style.display = 'block';
-                    console.warn('⚠️ Firebase Storage non disponible');
-                }
-            } catch (e) {
-                storageAvailable = false;
-                document.getElementById('storageWarning').style.display = 'block';
-                console.warn('⚠️ Firebase Storage non disponible:', e.message);
-            }
-        }
+        let selectedImageUrl = null;
         
         // ============ ÉTAT DE CONNEXION ============
         function updateConnectionStatus(connected) {
@@ -310,12 +346,11 @@
             }
         }
         
-        // Vérifier la connexion
         database.ref('.info/connected').on('value', (snapshot) => {
             updateConnectionStatus(snapshot.val());
         });
         
-        // ============ ÉCOUTER LES PRODUITS EN TEMPS RÉEL ============
+        // ============ ÉCOUTER LES PRODUITS ============
         function listenToProducts() {
             productsRef.on('value', (snapshot) => {
                 const data = snapshot.val();
@@ -465,129 +500,30 @@
             return true;
         }
         
-        // ============ UPLOAD D'IMAGE (CORRIGÉ) ============
-        function uploadProductImage(file, productId) {
-            return new Promise((resolve, reject) => {
-                // Vérifier que Firebase Storage est disponible
-                if (!storageAvailable) {
-                    reject(new Error('Firebase Storage non disponible. Activez-le dans la console Firebase.'));
-                    return;
-                }
-                
-                try {
-                    const storage = firebase.storage();
-                    const storageRef = storage.ref();
-                    const imageRef = storageRef.child(`products/${productId}/${file.name}`);
-                    
-                    // Upload de l'image
-                    imageRef.put(file)
-                        .then((snapshot) => {
-                            return snapshot.ref.getDownloadURL();
-                        })
-                        .then((downloadURL) => {
-                            // Sauvegarder l'URL dans la base de données
-                            return productsRef.child(productId).update({
-                                image: downloadURL,
-                                updatedAt: Date.now()
-                            });
-                        })
-                        .then(() => {
-                            console.log('✅ Image uploadée avec succès');
-                            showToast('✅ Image uploadée avec succès !', 'success');
-                            resolve();
-                        })
-                        .catch((error) => {
-                            console.error('❌ Erreur upload:', error);
-                            reject(error);
-                        });
-                } catch (error) {
-                    console.error('❌ Erreur:', error);
-                    reject(error);
-                }
-            });
-        }
-        
-        // ============ SUPPRIMER UNE IMAGE ============
-        function deleteProductImage(productId) {
-            return new Promise((resolve, reject) => {
-                if (!storageAvailable) {
-                    resolve(); // Si storage n'est pas disponible, on continue
-                    return;
-                }
-                
-                try {
-                    const storage = firebase.storage();
-                    
-                    // Récupérer l'URL de l'image
-                    productsRef.child(productId).once('value')
-                        .then((snapshot) => {
-                            const product = snapshot.val();
-                            if (product && product.image) {
-                                // Extraire le chemin de l'image depuis l'URL
-                                const imagePath = decodeURIComponent(product.image.split('/o/')[1].split('?')[0]);
-                                return storage.ref().child(imagePath).delete();
-                            }
-                            return Promise.resolve();
-                        })
-                        .then(() => {
-                            // Supprimer l'URL de la base de données
-                            return productsRef.child(productId).update({
-                                image: null,
-                                updatedAt: Date.now()
-                            });
-                        })
-                        .then(() => {
-                            console.log('✅ Image supprimée');
-                            resolve();
-                        })
-                        .catch((error) => {
-                            console.error('❌ Erreur suppression image:', error);
-                            reject(error);
-                        });
-                } catch (error) {
-                    console.error('❌ Erreur:', error);
-                    reject(error);
-                }
-            });
-        }
-        
-        // ============ CHANGER L'IMAGE D'UN PRODUIT ============
-        function changeImage(productId) {
-            const product = products.find(p => p.id === productId);
-            if (!product) return;
-            
-            if (!storageAvailable) {
-                showToast('❌ Firebase Storage non disponible. Activez-le dans la console Firebase.', 'error');
+        // ============ TESTER L'URL DE L'IMAGE ============
+        function testImageUrl() {
+            const url = document.getElementById('productImageUrl').value.trim();
+            if (!url) {
+                showToast('⚠️ Veuillez entrer une URL', 'warning');
                 return;
             }
             
-            // Créer un input file
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = function(e) {
-                if (e.target.files.length > 0) {
-                    const file = e.target.files[0];
-                    
-                    // Vérifier la taille du fichier (max 5MB)
-                    if (file.size > 5 * 1024 * 1024) {
-                        showToast('❌ L\'image est trop volumineuse (max 5MB)', 'error');
-                        return;
-                    }
-                    
-                    if (confirm(`Changer la photo de "${product.name}" ?`)) {
-                        showToast('⏳ Upload en cours...', 'info');
-                        uploadProductImage(file, productId)
-                            .then(() => {
-                                showToast('✅ Photo mise à jour avec succès !', 'success');
-                            })
-                            .catch((error) => {
-                                showToast('❌ Erreur: ' + error.message, 'error');
-                            });
-                    }
-                }
+            const img = new Image();
+            img.onload = function() {
+                document.getElementById('urlPreview').style.display = 'block';
+                document.getElementById('urlPreview').innerHTML = '✅ Image valide !';
+                selectedImageUrl = url;
+                showToast('✅ Image trouvée !', 'success');
             };
-            input.click();
+            img.onerror = function() {
+                document.getElementById('urlPreview').style.display = 'block';
+                document.getElementById('urlPreview').style.background = '#f8d7da';
+                document.getElementById('urlPreview').style.color = '#721c24';
+                document.getElementById('urlPreview').innerHTML = '❌ Image non trouvée. Vérifiez l\'URL.';
+                selectedImageUrl = null;
+                showToast('❌ Image non trouvée', 'error');
+            };
+            img.src = url;
         }
         
         // ============ PRÉVISUALISATION DE L'IMAGE ============
@@ -601,6 +537,9 @@
                     if (preview && img) {
                         img.src = e.target.result;
                         preview.style.display = 'flex';
+                        selectedImageUrl = null;
+                        document.getElementById('productImageUrl').value = '';
+                        document.getElementById('urlPreview').style.display = 'none';
                     }
                 };
                 reader.readAsDataURL(file);
@@ -610,8 +549,137 @@
         function removeImage() {
             const input = document.getElementById('productImage');
             const preview = document.getElementById('imagePreview');
+            const urlInput = document.getElementById('productImageUrl');
+            const urlPreview = document.getElementById('urlPreview');
             if (input) input.value = '';
             if (preview) preview.style.display = 'none';
+            if (urlInput) urlInput.value = '';
+            if (urlPreview) urlPreview.style.display = 'none';
+            selectedImageUrl = null;
+        }
+        
+        // ============ CHANGER L'IMAGE D'UN PRODUIT ============
+        function changeImage(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            // Créer un modal pour choisir entre fichier ou URL
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.innerHTML = `
+                <div class="modal-content">
+                    <h2>📷 Changer la photo</h2>
+                    <p style="color: #666; margin-bottom: 15px;">Choisissez une nouvelle photo pour "${product.name}"</p>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 5px;">Option 1: Uploader un fichier</label>
+                        <input type="file" id="changeImageFile" accept="image/*" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 5px;">Option 2: URL GitHub</label>
+                        <div class="url-input-group">
+                            <input type="text" id="changeImageUrl" placeholder="https://raw.githubusercontent.com/.../images/mon-image.jpg">
+                            <button type="button" onclick="testChangeImageUrl()">🔍 Tester</button>
+                        </div>
+                        <div id="changeUrlPreview" style="display: none; margin-top: 5px; padding: 5px 10px; border-radius: 5px;"></div>
+                    </div>
+                    
+                    <div class="modal-actions">
+                        <button type="button" class="btn-save" onclick="saveNewImage('${product.id}')">✅ Appliquer</button>
+                        <button type="button" class="btn-cancel" onclick="this.closest('.modal-overlay').remove()">❌ Annuler</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            
+            // Exposer la fonction de test pour le modal
+            window.testChangeImageUrl = function() {
+                const url = document.getElementById('changeImageUrl').value.trim();
+                const preview = document.getElementById('changeUrlPreview');
+                if (!url) {
+                    preview.style.display = 'block';
+                    preview.style.background = '#fff3cd';
+                    preview.style.color = '#856404';
+                    preview.innerHTML = '⚠️ Veuillez entrer une URL';
+                    return;
+                }
+                
+                const img = new Image();
+                img.onload = function() {
+                    preview.style.display = 'block';
+                    preview.style.background = '#d4edda';
+                    preview.style.color = '#155724';
+                    preview.innerHTML = '✅ Image valide !';
+                };
+                img.onerror = function() {
+                    preview.style.display = 'block';
+                    preview.style.background = '#f8d7da';
+                    preview.style.color = '#721c24';
+                    preview.innerHTML = '❌ Image non trouvée';
+                };
+                img.src = url;
+            };
+            
+            // Exposer la fonction de sauvegarde
+            window.saveNewImage = function(productId) {
+                const fileInput = document.getElementById('changeImageFile');
+                const urlInput = document.getElementById('changeImageUrl');
+                const urlPreview = document.getElementById('changeUrlPreview');
+                
+                let imageUrl = null;
+                
+                // Vérifier si un fichier a été sélectionné
+                if (fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    if (file.size > 5 * 1024 * 1024) {
+                        showToast('❌ L\'image est trop volumineuse (max 5MB)', 'error');
+                        return;
+                    }
+                    
+                    // Lire le fichier et le convertir en base64
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imageUrl = e.target.result;
+                        updateProductImage(productId, imageUrl);
+                        overlay.remove();
+                    };
+                    reader.readAsDataURL(file);
+                    return;
+                }
+                
+                // Vérifier si une URL a été entrée
+                if (urlInput.value.trim()) {
+                    const url = urlInput.value.trim();
+                    // Vérifier que l'image est valide
+                    const img = new Image();
+                    img.onload = function() {
+                        updateProductImage(productId, url);
+                        overlay.remove();
+                    };
+                    img.onerror = function() {
+                        showToast('❌ URL invalide ou image non accessible', 'error');
+                    };
+                    img.src = url;
+                    return;
+                }
+                
+                showToast('⚠️ Veuillez sélectionner un fichier ou entrer une URL', 'warning');
+            };
+        }
+        
+        // ============ METTRE À JOUR L'IMAGE D'UN PRODUIT ============
+        function updateProductImage(productId, imageUrl) {
+            productsRef.child(productId).update({
+                image: imageUrl,
+                updatedAt: Date.now()
+            })
+            .then(() => {
+                showToast('✅ Photo mise à jour avec succès !', 'success');
+            })
+            .catch(error => {
+                showToast('❌ Erreur: ' + error.message, 'error');
+            });
         }
         
         // ============ AJOUTER UN PRODUIT ============
@@ -620,39 +688,45 @@
                 return Promise.reject(new Error('Validation échouée'));
             }
             
+            // Déterminer l'URL de l'image
+            let imageUrl = null;
+            
+            // Vérifier si une image a été uploadée
+            const fileInput = document.getElementById('productImage');
+            if (fileInput && fileInput.files.length > 0) {
+                // Pour les fichiers uploadés, on les convertit en base64
+                // Note: pour une solution professionnelle, il est recommandé d'utiliser un service d'hébergement
+                const file = fileInput.files[0];
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast('❌ L\'image est trop volumineuse (max 5MB)', 'error');
+                    return Promise.reject(new Error('Image trop volumineuse'));
+                }
+                // On utilisera l'URL GitHub à la place
+                showToast('⚠️ Veuillez utiliser une URL GitHub pour les images', 'warning');
+                return Promise.reject(new Error('Utilisez une URL GitHub'));
+            }
+            
+            // Vérifier si une URL a été entrée
+            const urlInput = document.getElementById('productImageUrl');
+            if (urlInput && urlInput.value.trim()) {
+                imageUrl = urlInput.value.trim();
+            }
+            
             const newProduct = {
                 name: productData.name.trim(),
                 price: parseFloat(productData.price),
                 category: productData.category,
                 description: productData.description ? productData.description.trim() : '',
                 visible: true,
+                image: imageUrl,
                 createdAt: Date.now()
             };
             
-            // Ajouter à Firebase
             return productsRef.push().set(newProduct)
                 .then((ref) => {
-                    const productId = ref.key;
-                    console.log('✅ Produit ajouté à Firebase avec ID:', productId);
-                    
-                    // Upload de l'image si présente
-                    const fileInput = document.getElementById('productImage');
-                    if (fileInput && fileInput.files.length > 0 && storageAvailable) {
-                        return uploadProductImage(fileInput.files[0], productId)
-                            .then(() => {
-                                showToast('✅ Produit ajouté avec image !', 'success');
-                            })
-                            .catch((error) => {
-                                console.warn('⚠️ Erreur upload image:', error);
-                                showToast('✅ Produit ajouté (mais image non uploadée: ' + error.message + ')', 'warning');
-                            });
-                    } else if (fileInput && fileInput.files.length > 0 && !storageAvailable) {
-                        showToast('⚠️ Produit ajouté mais Storage non disponible pour l\'image', 'warning');
-                        return Promise.resolve();
-                    } else {
-                        showToast('✅ Produit ajouté avec succès !', 'success');
-                        return Promise.resolve();
-                    }
+                    console.log('✅ Produit ajouté à Firebase avec ID:', ref.key);
+                    showToast('✅ Produit ajouté avec succès !', 'success');
+                    return true;
                 })
                 .catch((error) => {
                     console.error('❌ Erreur Firebase:', error);
@@ -666,7 +740,6 @@
             const product = products.find(p => p.id === productId);
             if (!product) return;
             
-            // Créer un modal personnalisé pour l'édition
             const overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
             overlay.innerHTML = `
@@ -695,13 +768,10 @@
                             <textarea id="editDesc" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">${product.description || ''}</textarea>
                         </div>
                         <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">📷 Photo</label>
-                            <div class="current-photo">
-                                ${product.image ? `<img src="${product.image}" alt="Photo actuelle">` : '<span style="color: #999;">Aucune photo</span>'}
-                            </div>
-                            <input type="file" id="editImage" accept="image/*" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; margin-top: 5px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">📷 URL de l'image (GitHub)</label>
+                            <input type="text" id="editImageUrl" value="${product.image || ''}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" placeholder="https://raw.githubusercontent.com/.../images/mon-image.jpg">
                             <div style="font-size: 12px; color: #666; margin-top: 5px;">
-                                Laissez vide pour garder la photo actuelle.
+                                Laissez vide pour supprimer l'image.
                             </div>
                         </div>
                         <div class="modal-actions">
@@ -721,24 +791,13 @@
                     price: parseFloat(document.getElementById('editPrice').value),
                     category: document.getElementById('editCategory').value,
                     description: document.getElementById('editDesc').value.trim(),
+                    image: document.getElementById('editImageUrl').value.trim() || null,
                     updatedAt: Date.now()
                 };
                 
                 if (!validateProduct(updates)) return;
                 
-                // Vérifier si une nouvelle image a été sélectionnée
-                const fileInput = document.getElementById('editImage');
-                const hasNewImage = fileInput && fileInput.files.length > 0 && storageAvailable;
-                
-                // Mettre à jour les données du produit
                 productsRef.child(productId).update(updates)
-                    .then(() => {
-                        // Upload de la nouvelle image si présente
-                        if (hasNewImage) {
-                            return uploadProductImage(fileInput.files[0], productId);
-                        }
-                        return Promise.resolve();
-                    })
                     .then(() => {
                         showToast('✅ Produit modifié avec succès !', 'success');
                         overlay.remove();
@@ -755,13 +814,6 @@
             if (!product) return;
             
             if (confirm(`Supprimer "${product.name}" définitivement ?`)) {
-                // Supprimer l'image si présente
-                if (product.image) {
-                    deleteProductImage(productId).catch(error => {
-                        console.warn('⚠️ Erreur suppression image:', error);
-                    });
-                }
-                
                 productsRef.child(productId).remove()
                     .then(() => {
                         console.log('✅ Produit supprimé');
@@ -800,7 +852,7 @@
             }
         }
         
-        // ============ TOAST NOTIFICATIONS ============
+        // ============ TOAST ============
         function showToast(message, type = 'info') {
             const colors = {
                 'success': '#4caf50',
@@ -840,41 +892,4 @@
             btn.textContent = '⏳ Ajout en cours...';
             
             addProduct(productData)
-                .then(() => {
-                    this.reset();
-                    removeImage();
-                })
-                .catch(() => {
-                    // Erreur déjà gérée
-                })
-                .finally(() => {
-                    btn.disabled = false;
-                    btn.textContent = '➕ Ajouter';
-                });
-        });
-        
-        // ============ INITIALISATION ============
-        console.log('🚀 Démarrage de l\'administration Firebase...');
-        
-        // Vérifier la disponibilité de Firebase Storage
-        checkStorageAvailability();
-        
-        // Démarrer l'écoute des produits
-        listenToProducts();
-        
-        // Affichage des infos Firebase
-        console.log('🔍 Firebase Database URL:', database.ref().toString());
-        console.log('📁 Firebase Storage disponible:', storageAvailable);
-        
-        // Exposer les fonctions globalement
-        window.changeImage = changeImage;
-        window.toggleVisibility = toggleVisibility;
-        window.editProduct = editProduct;
-        window.deleteProduct = deleteProduct;
-        window.previewImage = previewImage;
-        window.removeImage = removeImage;
-        window.resetFirebaseProducts = resetFirebaseProducts;
-        
-    </script>
-</body>
-</html>
+               
