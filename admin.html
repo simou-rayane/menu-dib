@@ -307,8 +307,7 @@
             flex-wrap: wrap;
         }
         
-        .product-item .product-actions button,
-        .product-item .product-actions .status-btn {
+        .product-item .product-actions button {
             padding: 5px 12px;
             border: none;
             border-radius: 15px;
@@ -579,7 +578,7 @@
         
         <!-- Liste des produits -->
         <div class="admin-section">
-            <h2>📋 Gestion des produits</h2>
+            <h2>📋 Gestion des produits (<span id="productCountLabel">0</span>)</h2>
             <div id="productsList" class="products-list">
                 <div class="empty-state">
                     <div class="icon">📦</div>
@@ -685,6 +684,15 @@
             }, (error) => {
                 console.error('❌ Erreur Firebase:', error);
                 showToast('❌ Erreur: ' + error.message, 'error');
+                document.getElementById('productsList').innerHTML = `
+                    <div class="empty-state" style="color: #f44336;">
+                        <div class="icon">❌</div>
+                        <p>Erreur de connexion: ${error.message}</p>
+                        <button onclick="listenToProducts()" style="margin-top: 15px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                            🔄 Réessayer
+                        </button>
+                    </div>
+                `;
             });
         }
         
@@ -774,8 +782,9 @@
                 // Image
                 let imageHTML = '';
                 if (product.image) {
-                    imageHTML = `<img src="${product.image}" alt="${product.name}">`;
-                } else {
+                    imageHTML = `<img src="${product.image}" alt="${product.name}" onerror="this.style.display='none'">`;
+                }
+                if (!product.image || imageHTML === '') {
                     imageHTML = `<div class="placeholder-image">📷</div>`;
                 }
                 
@@ -790,13 +799,13 @@
                             <div>
                                 <span class="name">${product.name}</span>
                                 <span class="price">${product.price.toFixed(2)} €</span>
+                                <span class="category">(${getCategoryLabel(product.category)})</span>
                             </div>
-                            <div class="category">${getCategoryLabel(product.category)}</div>
                             <div class="description">${product.description || 'Pas de description'}</div>
                         </div>
                     </div>
                     <div class="product-actions">
-                        <button class="status-btn ${statusClass}" onclick="toggleVisibility('${product.id}')">
+                        <button class="${statusClass}" onclick="toggleVisibility('${product.id}')">
                             ${statusText}
                         </button>
                         <button class="btn-edit" onclick="editProduct('${product.id}')">✏️</button>
@@ -817,6 +826,23 @@
                 'boissons': '🥤 Boissons'
             };
             return labels[category] || category;
+        }
+        
+        // ============ STATISTIQUES ============
+        function updateStats() {
+            const total = products.length;
+            const visible = products.filter(p => p.visible !== false).length;
+            const hidden = total - visible;
+            
+            document.getElementById('productCount').textContent = total;
+            document.getElementById('visibleCount').textContent = visible;
+            document.getElementById('hiddenCount').textContent = hidden;
+            document.getElementById('productCountLabel').textContent = total;
+        }
+        
+        function updateLastSyncTime() {
+            const now = new Date();
+            document.getElementById('lastSync').textContent = `🔄 ${now.toLocaleTimeString()}`;
         }
         
         // ============ AJOUTER UN PRODUIT ============
@@ -945,12 +971,15 @@
             const product = products.find(p => p.id === productId);
             if (!product) return;
             
+            const newStatus = !product.visible;
+            const action = newStatus ? 'affiché' : 'masqué';
+            
             productsRef.child(productId).update({
-                visible: !product.visible,
+                visible: newStatus,
                 updatedAt: Date.now()
             })
             .then(() => {
-                showToast(`✅ Produit ${product.visible ? 'masqué' : 'affiché'}`, 'success');
+                showToast(`✅ Produit ${action}`, 'success');
             })
             .catch(error => {
                 showToast('❌ Erreur: ' + error.message, 'error');
@@ -1050,57 +1079,4 @@
                 if (!file) return;
                 
                 const reader = new FileReader();
-                reader.onload = function(event) {
-                    try {
-                        const imported = JSON.parse(event.target.result);
-                        if (!Array.isArray(imported)) {
-                            throw new Error('Format invalide');
-                        }
-                        
-                        if (!confirm(`Importer ${imported.length} produits ?`)) return;
-                        
-                        const promises = imported.map(product => {
-                            const newProduct = {
-                                name: product.name,
-                                price: product.price,
-                                category: product.category || 'plats',
-                                description: product.description || '',
-                                visible: product.visible !== undefined ? product.visible : true,
-                                createdAt: Date.now(),
-                                updatedAt: Date.now()
-                            };
-                            return productsRef.push().set(newProduct);
-                        });
-                        
-                        Promise.all(promises)
-                            .then(() => {
-                                showToast(`✅ ${imported.length} produits importés !`, 'success');
-                            })
-                            .catch(error => {
-                                showToast('❌ Erreur: ' + error.message, 'error');
-                            });
-                    } catch (error) {
-                        showToast('❌ Fichier invalide: ' + error.message, 'error');
-                    }
-                };
-                reader.readAsText(file);
-            };
-            input.click();
-        }
-        
-        // ============ VIDER TOUS LES PANIERS ============
-        function clearAllCarts() {
-            if (!confirm('⚠️ Supprimer tous les paniers (localStorage) ?')) return;
-            
-            let count = 0;
-            for (let key in localStorage) {
-                if (key.startsWith('cart_')) {
-                    localStorage.removeItem(key);
-                    count++;
-                }
-            }
-            showToast(`✅ ${count} paniers vidés !`, 'success');
-        }
-        
-        // ============ RÉINITIALISER ============
-        function reset
+                reader.on
