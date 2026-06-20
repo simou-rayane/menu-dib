@@ -1,4 +1,4 @@
-// ============ SCRIPT.JS - SYSTÈME DE COMMANDES COMPLET ============
+// ============ SCRIPT.JS - VERSION FINALE ============
 
 let products = [];
 let cart = [];
@@ -63,7 +63,7 @@ function displayMenu() {
             <h3>${product.name}</h3>
             <div style="color: #667eea; font-size: 20px; font-weight: bold; margin: 10px 0;">${product.price.toFixed(2)} €</div>
             <div style="color: #666; font-size: 14px; margin-bottom: 15px;">${product.description || ''}</div>
-            <button onclick="addToCart('${product.id}')" style="background: #667eea; color: white; border: none; padding: 10px; width: 100%; border-radius: 8px; cursor: pointer;">
+            <button onclick="addToCart('${product.id}')" style="background: #667eea; color: white; border: none; padding: 10px; width: 100%; border-radius: 8px; cursor: pointer; font-size: 16px;">
                 🛒 Ajouter au panier
             </button>
         `;
@@ -71,10 +71,59 @@ function displayMenu() {
     });
 }
 
-// ============ AJOUTER AU PANIER ============
+// ============ GESTION DU PANIER (localStorage uniquement) ============
+
+// Charger le panier depuis localStorage
+function loadCart() {
+    try {
+        const saved = localStorage.getItem(`cart_${currentTable}`);
+        if (saved) {
+            cart = JSON.parse(saved);
+            console.log('📦 Panier chargé depuis localStorage:', cart);
+        } else {
+            cart = [];
+            console.log('📭 Panier vide');
+        }
+    } catch (error) {
+        console.error('❌ Erreur chargement panier:', error);
+        cart = [];
+    }
+    updateCartCount();
+    if (document.getElementById('cartItems')) {
+        displayCart();
+    }
+}
+
+// Sauvegarder le panier dans localStorage
+function saveCart() {
+    try {
+        localStorage.setItem(`cart_${currentTable}`, JSON.stringify(cart));
+        console.log('💾 Panier sauvegardé dans localStorage:', cart);
+    } catch (error) {
+        console.error('❌ Erreur sauvegarde panier:', error);
+    }
+}
+
+// Vider le panier (localStorage uniquement)
+function clearCart() {
+    console.log('🗑️ VIDAGE DU PANIER...');
+    cart = [];
+    localStorage.removeItem(`cart_${currentTable}`);
+    console.log('✅ Panier vidé du localStorage');
+    updateCartCount();
+    if (document.getElementById('cartItems')) {
+        displayCart();
+    }
+    showToast('🗑️ Panier vidé', 'info');
+}
+
+// Ajouter au panier
 function addToCart(productId) {
     const product = products.find(p => p.id === productId);
-    if (!product) return;
+    if (!product) {
+        showToast('❌ Produit non trouvé', 'error');
+        return;
+    }
     
     const existingItem = cart.find(item => item.id === productId);
     if (existingItem) {
@@ -94,43 +143,52 @@ function addToCart(productId) {
     showToast(`✅ ${product.name} ajouté au panier !`, 'success');
 }
 
-// ============ SAUVEGARDER LE PANIER ============
-function saveCart() {
-    if (currentTable) {
-        database.ref(`carts/table_${currentTable}`).set(cart)
-            .then(() => console.log('✅ Panier sauvegardé'))
-            .catch(error => console.error('❌ Erreur:', error));
+// Supprimer du panier
+function removeFromCart(productId) {
+    const index = cart.findIndex(item => item.id === productId);
+    if (index !== -1) {
+        const item = cart[index];
+        cart.splice(index, 1);
+        saveCart();
+        displayCart();
+        updateCartCount();
+        showToast(`🗑 ${item.name} retiré`, 'info');
     }
 }
 
-// ============ CHARGER LE PANIER ============
-function loadCart() {
-    if (currentTable) {
-        database.ref(`carts/table_${currentTable}`).on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data && Array.isArray(data) && data.length > 0) {
-                cart = data;
-            } else {
-                cart = [];
-            }
-            updateCartCount();
-            if (document.getElementById('cartItems')) {
-                displayCart();
-            }
-        });
+// Mettre à jour la quantité
+function updateCartItem(productId, delta) {
+    const item = cart.find(i => i.id === productId);
+    if (!item) return;
+    
+    const newQuantity = item.quantity + delta;
+    if (newQuantity <= 0) {
+        removeFromCart(productId);
+        return;
     }
+    
+    item.quantity = newQuantity;
+    saveCart();
+    displayCart();
+    updateCartCount();
 }
 
-// ============ METTRE À JOUR LE COMPTEUR ============
+// Mettre à jour le compteur
 function updateCartCount() {
     const count = cart.reduce((sum, item) => sum + item.quantity, 0);
     const cartCountSpan = document.getElementById('cartCount');
     if (cartCountSpan) {
         cartCountSpan.textContent = count;
+        if (count > 0) {
+            cartCountSpan.style.animation = 'none';
+            setTimeout(() => {
+                cartCountSpan.style.animation = 'bounce 0.5s ease';
+            }, 10);
+        }
     }
 }
 
-// ============ AFFICHER LE PANIER ============
+// Afficher le panier
 function displayCart() {
     const cartItemsDiv = document.getElementById('cartItems');
     const cartTotalSpan = document.getElementById('cartTotal');
@@ -138,8 +196,14 @@ function displayCart() {
     if (!cartItemsDiv) return;
     
     if (cart.length === 0) {
-        cartItemsDiv.innerHTML = `<p style="text-align: center; padding: 40px 20px; color: #999;">🛒 Votre panier est vide</p>`;
-        cartTotalSpan.textContent = '0';
+        cartItemsDiv.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px;">
+                <div style="font-size: 64px; margin-bottom: 20px;">🛒</div>
+                <p style="color: #999; font-size: 16px;">Votre panier est vide</p>
+                <p style="color: #bbb; font-size: 14px;">Ajoutez des produits depuis le menu</p>
+            </div>
+        `;
+        if (cartTotalSpan) cartTotalSpan.textContent = '0';
         return;
     }
     
@@ -149,48 +213,37 @@ function displayCart() {
     cart.forEach((item) => {
         total += item.price * item.quantity;
         const itemDiv = document.createElement('div');
-        itemDiv.style.cssText = 'display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee;';
+        itemDiv.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee;';
         itemDiv.innerHTML = `
-            <div>
-                <strong>${item.name}</strong> × ${item.quantity}
-                <br>${(item.price * item.quantity).toFixed(2)} €
+            <div style="flex: 1;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-weight: 600; color: #333;">${item.name}</span>
+                    <span style="color: #999; font-size: 13px;">×${item.quantity}</span>
+                </div>
+                <div style="color: #667eea; font-weight: 600; margin-top: 5px;">
+                    ${(item.price * item.quantity).toFixed(2)} €
+                </div>
             </div>
-            <button onclick="removeFromCart('${item.id}')" style="background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">✕</button>
+            <div style="display: flex; gap: 5px; align-items: center;">
+                <button onclick="updateCartItem('${item.id}', -1)" 
+                        style="background: #f0f0f0; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; color: #666;">
+                    -
+                </button>
+                <span style="min-width: 25px; text-align: center; font-weight: 600;">${item.quantity}</span>
+                <button onclick="updateCartItem('${item.id}', 1)" 
+                        style="background: #667eea; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; color: white;">
+                    +
+                </button>
+                <button onclick="removeFromCart('${item.id}')" 
+                        style="background: #f44336; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; color: white; margin-left: 5px;">
+                    ✕
+                </button>
+            </div>
         `;
         cartItemsDiv.appendChild(itemDiv);
     });
     
-    cartTotalSpan.textContent = total.toFixed(2);
-}
-
-// ============ SUPPRIMER DU PANIER ============
-function removeFromCart(productId) {
-    const index = cart.findIndex(item => item.id === productId);
-    if (index !== -1) {
-        cart.splice(index, 1);
-        saveCart();
-        displayCart();
-        updateCartCount();
-    }
-}
-
-// ============ VIDER LE PANIER ============
-function clearCart() {
-    cart = [];
-    if (currentTable) {
-        database.ref(`carts/table_${currentTable}`).remove()
-            .then(() => {
-                console.log('✅ Panier vidé');
-                updateCartCount();
-                if (document.getElementById('cartItems')) {
-                    displayCart();
-                }
-            })
-            .catch(error => {
-                console.error('❌ Erreur:', error);
-                database.ref(`carts/table_${currentTable}`).set([]);
-            });
-    }
+    if (cartTotalSpan) cartTotalSpan.textContent = total.toFixed(2);
 }
 
 // ============ GÉNÉRER UN NUMÉRO DE COMMANDE ============
@@ -199,11 +252,13 @@ function generateOrderNumber() {
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
     const random = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
-    return `CMD-${year}${month}${day}-${random}`;
+    return `CMD-${year}${month}${day}-${hours}${minutes}-${random}`;
 }
 
-// ============ CRÉER UNE COMMANDE ============
+// ============ CRÉER UNE COMMANDE DANS FIREBASE ============
 function createOrder() {
     return new Promise((resolve, reject) => {
         if (cart.length === 0) {
@@ -323,20 +378,15 @@ function processOrder() {
     
     showToast('⏳ Création de la commande...', 'info');
     
-    // ÉTAPE 1: Créer la commande
+    // ÉTAPE 1: Créer la commande dans Firebase
     createOrder()
         .then((order) => {
             console.log('📦 Commande créée:', order);
-            showToast('✅ Commande créée ! Envoi WhatsApp...', 'success');
+            showToast('✅ Commande créée !', 'success');
             
-            // ÉTAPE 2: Vider le panier
-            return clearCartWithPromise()
-                .then(() => {
-                    console.log('🗑️ Panier vidé');
-                    return order;
-                });
-        })
-        .then((order) => {
+            // ÉTAPE 2: VIDER LE PANIER (localStorage uniquement)
+            clearCart();
+            
             // ÉTAPE 3: Envoyer sur WhatsApp
             console.log('📱 Envoi sur WhatsApp...');
             sendOrderToWhatsApp(order);
@@ -365,46 +415,8 @@ function processOrder() {
         });
 }
 
-// ============ VIDER LE PANIER AVEC PROMESSE ============
-function clearCartWithPromise() {
-    return new Promise((resolve, reject) => {
-        cart = [];
-        if (currentTable) {
-            database.ref(`carts/table_${currentTable}`).remove()
-                .then(() => {
-                    console.log('✅ Panier vidé');
-                    updateCartCount();
-                    if (document.getElementById('cartItems')) {
-                        displayCart();
-                    }
-                    resolve();
-                })
-                .catch(error => {
-                    console.error('❌ Erreur vidage:', error);
-                    // Tentative alternative
-                    database.ref(`carts/table_${currentTable}`).set([])
-                        .then(() => {
-                            console.log('✅ Panier vidé (alternative)');
-                            updateCartCount();
-                            if (document.getElementById('cartItems')) {
-                                displayCart();
-                            }
-                            resolve();
-                        })
-                        .catch(err => {
-                            console.error('❌ Erreur alternative:', err);
-                            reject(err);
-                        });
-                });
-        } else {
-            resolve();
-        }
-    });
-}
-
-// ============ ENVOYER SUR WHATSAPP (Version simplifiée) ============
+// ============ ENVOYER SUR WHATSAPP (Point d'entrée) ============
 function sendToWhatsApp() {
-    // Lancer le processus complet
     processOrder();
 }
 
@@ -472,8 +484,18 @@ function showToast(message, type = 'info') {
         'warning': '#ff9800',
         'info': '#2196F3'
     };
+    const icons = {
+        'success': '✅',
+        'error': '❌',
+        'warning': '⚠️',
+        'info': 'ℹ️'
+    };
+    
+    const existing = document.querySelector('.menu-toast');
+    if (existing) existing.remove();
     
     const toast = document.createElement('div');
+    toast.className = 'menu-toast';
     toast.style.cssText = `
         position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
         padding: 15px 30px; background: ${colors[type] || '#667eea'}; 
@@ -481,8 +503,9 @@ function showToast(message, type = 'info') {
         font-weight: 500; animation: slideUp 0.5s ease;
         max-width: 90%; text-align: center;
         box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        display: flex; align-items: center; gap: 10px;
     `;
-    toast.textContent = message;
+    toast.innerHTML = `<span>${icons[type] || '📢'}</span> ${message}`;
     document.body.appendChild(toast);
     
     setTimeout(() => {
@@ -503,17 +526,20 @@ setupFilters();
 // Exposer les fonctions
 window.addToCart = addToCart;
 window.removeFromCart = removeFromCart;
+window.updateCartItem = updateCartItem;
 window.clearCart = clearCart;
 window.sendToWhatsApp = sendToWhatsApp;
 window.processOrder = processOrder;
 
 console.log('✅ Menu initialisé - Table', currentTable);
+console.log('📦 Panier:', cart);
 
-// Styles
+// Styles d'animation
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideUp { from { transform: translateX(-50%) translateY(100px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
     @keyframes slideDown { from { transform: translateX(-50%) translateY(0); opacity: 1; } to { transform: translateX(-50%) translateY(100px); opacity: 0; } }
+    @keyframes bounce { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 70% { transform: scale(0.9); } 100% { transform: scale(1); } }
 `;
 document.head.appendChild(style);
 
