@@ -1,7 +1,7 @@
 // ============ CONFIGURATION FIREBASE ============
 // Remplacez par VOS vraies clés Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyAp9akZE9yGLmZAVkcZ7YB4pM1kUP8cJWM",
+  apiKey: "",
   authDomain: "restaurant-menu-9179b.firebaseapp.com",
   databaseURL: "https://restaurant-menu-9179b-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "restaurant-menu-9179b",
