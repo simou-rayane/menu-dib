@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Diagnostic du panier</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+</head>
+<body>
+    <h1>🔍 Diagnostic du panier</h1>
+    
+    <div id="log" style="font-family: monospace; white-space: pre-wrap; background: #f5f5f5; padding: 20px; border-radius: 10px; max-height: 600px; overflow: auto;"></div>
+    
+    <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+        <button onclick="testAdd()">➕ Ajouter au panier</button>
+        <button onclick="testRemove()">🗑️ Supprimer (remove)</button>
+        <button onclick="testSetEmpty()">📦 Set([])</button>
+        <button onclick="testSetNull()">📦 Set(null)</button>
+        <button onclick="testCheck()">🔍 Vérifier</button>
+        <button onclick="testManual()">✋ Test manuel</button>
+    </div>
+    
+    <script>
+        let tableNumber = 1;
+        
+        function log(msg) {
+            const div = document.getElementById('log');
+            div.innerHTML += new Date().toLocaleTimeString() + ' - ' + msg + '\n';
+            div.scrollTop = div.scrollHeight;
+        }
+        
+        function getCartRef() {
+            return database.ref(`carts/table_${tableNumber}`);
+        }
+        
+        async function testAdd() {
+            log('📝 Ajout au panier...');
+            try {
+                await getCartRef().set([
+                    { id: 'test1', name: 'Test Product', price: 10, quantity: 2 }
+                ]);
+                log('✅ Ajout réussi');
+                await testCheck();
+            } catch(e) {
+                log('❌ Erreur: ' + e.message);
+            }
+        }
+        
+        async function testRemove() {
+            log('🗑️ Test .remove()...');
+            try {
+                await getCartRef().remove();
+                log('✅ .remove() réussi');
+                await testCheck();
+            } catch(e) {
+                log('❌ Erreur: ' + e.message);
+            }
+        }
+        
+        async function testSetEmpty() {
+            log('📦 Test .set([])...');
+            try {
+                await getCartRef().set([]);
+                log('✅ .set([]) réussi');
+                await testCheck();
+            } catch(e) {
+                log('❌ Erreur: ' + e.message);
+            }
+        }
+        
+        async function testSetNull() {
+            log('📦 Test .set(null)...');
+            try {
+                await getCartRef().set(null);
+                log('✅ .set(null) réussi');
+                await testCheck();
+            } catch(e) {
+                log('❌ Erreur: ' + e.message);
+            }
+        }
+        
+        async function testCheck() {
+            log('🔍 Vérification...');
+            try {
+                const snapshot = await getCartRef().once('value');
+                const data = snapshot.val();
+                if (data === null) {
+                    log('📭 Panier = null (vide)');
+                } else if (Array.isArray(data) && data.length === 0) {
+                    log('📭 Panier = [] (vide)');
+                } else {
+                    log('📦 Panier = ' + JSON.stringify(data));
+                }
+            } catch(e) {
+                log('❌ Erreur: ' + e.message);
+            }
+        }
+        
+        async function testManual() {
+            log('✋ Test manuel - entrez une commande dans la console');
+            log('Exemple: database.ref("carts/table_1").set([])');
+            log('Exemple: database.ref("carts/table_1").remove()');
+        }
+        
+        // Test initial
+        log('🚀 Diagnostic démarré');
+        log('📋 Table: ' + tableNumber);
+        log('🔗 Chemin: carts/table_' + tableNumber);
+        testCheck();
+        
+        // Exposer les fonctions
+        window.testAdd = testAdd;
+        window.testRemove = testRemove;
+        window.testSetEmpty = testSetEmpty;
+        window.testSetNull = testSetNull;
+        window.testCheck = testCheck;
+        window.testManual = testManual;
+    </script>
+</body>
+</html>
