@@ -44,19 +44,97 @@
             margin: 10px 0;
         }
         
-        .image-upload-area input[type="file"] {
+        .image-upload-area label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .image-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            max-height: 300px;
+            overflow-y: auto;
             padding: 10px;
-            border: 2px dashed #ccc;
+            border: 1px solid #ddd;
             border-radius: 8px;
-            width: 100%;
-            cursor: pointer;
             background: #fafafa;
+        }
+        
+        .image-list .image-item {
+            cursor: pointer;
+            border: 3px solid transparent;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s;
+            text-align: center;
+            background: white;
+            padding: 5px;
+        }
+        
+        .image-list .image-item:hover {
+            transform: scale(1.05);
+            border-color: #667eea;
+        }
+        
+        .image-list .image-item.selected {
+            border-color: #4caf50;
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.3);
+        }
+        
+        .image-list .image-item img {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        
+        .image-list .image-item .image-name {
+            font-size: 10px;
+            color: #666;
+            margin-top: 3px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .image-list .image-item .select-badge {
+            display: none;
+            background: #4caf50;
+            color: white;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-top: 3px;
+        }
+        
+        .image-list .image-item.selected .select-badge {
+            display: inline-block;
+        }
+        
+        .image-list .empty-images {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 20px;
+            color: #999;
+        }
+        
+        .btn-refresh-images {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 10px;
             transition: all 0.3s;
         }
         
-        .image-upload-area input[type="file"]:hover {
-            border-color: #667eea;
-            background: #f8f9ff;
+        .btn-refresh-images:hover {
+            background: #764ba2;
         }
         
         #imagePreview {
@@ -126,7 +204,7 @@
             background: white;
             padding: 30px;
             border-radius: 12px;
-            max-width: 500px;
+            max-width: 600px;
             width: 90%;
             max-height: 90%;
             overflow-y: auto;
@@ -210,75 +288,6 @@
             to { opacity: 1; }
         }
         
-        .upload-progress {
-            display: none;
-            margin: 10px 0;
-            padding: 15px;
-            background: #e3f2fd;
-            border-radius: 8px;
-            border: 1px solid #2196F3;
-        }
-        
-        .upload-progress .progress-bar {
-            width: 100%;
-            height: 10px;
-            background: #f0f0f0;
-            border-radius: 5px;
-            overflow: hidden;
-            margin-top: 10px;
-        }
-        
-        .upload-progress .progress-bar .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            width: 0%;
-            transition: width 0.3s;
-            border-radius: 5px;
-        }
-        
-        .help-text {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-        }
-        
-        .help-text a {
-            color: #667eea;
-            text-decoration: none;
-        }
-        
-        .help-text a:hover {
-            text-decoration: underline;
-        }
-        
-        .url-input-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 5px;
-        }
-        
-        .url-input-group input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        
-        .url-input-group button {
-            padding: 10px 20px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        
-        .url-input-group button:hover {
-            background: #764ba2;
-        }
-        
         .github-config {
             background: #f8f9ff;
             padding: 15px;
@@ -299,6 +308,21 @@
             border-radius: 5px;
             margin-bottom: 8px;
         }
+        
+        .github-config .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .github-config .help-text a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .github-config .help-text a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -313,18 +337,16 @@
         <div class="admin-section">
             <h2>⚙️ Configuration GitHub</h2>
             <div class="github-config">
-                <h4>📁 Paramètres pour l'upload automatique des images</h4>
+                <h4>📁 Configuration du dépôt GitHub</h4>
                 <p style="font-size: 13px; color: #666; margin-bottom: 10px;">
-                    Configurez votre dépôt GitHub pour l'upload automatique des images.
+                    Configurez votre dépôt GitHub pour charger les images depuis le dossier <strong>images/</strong>
                 </p>
-                <input type="text" id="githubRepo" placeholder="Nom du dépôt (ex: restaurant-menu)" value="restaurant-menu">
                 <input type="text" id="githubUsername" placeholder="Nom d'utilisateur GitHub (ex: simou-rayane)">
+                <input type="text" id="githubRepo" placeholder="Nom du dépôt (ex: restaurant-menu)" value="restaurant-menu">
                 <input type="text" id="githubBranch" placeholder="Branche (ex: main)" value="main">
-                <input type="text" id="githubToken" placeholder="Token GitHub (optionnel)" style="background: #fff3cd;">
-                <div style="font-size: 12px; color: #666; margin-top: 5px;">
-                    💡 Pour l'upload automatique, vous devez créer un <a href="https://github.com/settings/tokens" target="_blank">token GitHub</a> 
-                    avec les droits "repo" et le coller ci-dessus.
-                    <br>Sans token, vous pouvez utiliser l'URL manuellement.
+                <div class="help-text">
+                    💡 Les images doivent être placées dans le dossier <code>images/</code> de votre dépôt GitHub.
+                    <br>Exemple: <code>https://raw.githubusercontent.com/votre-username/restaurant-menu/main/images/pizza.jpg</code>
                 </div>
             </div>
         </div>
@@ -342,31 +364,32 @@
                 </select>
                 <textarea id="productDesc" placeholder="Description"></textarea>
                 
-                <!-- Upload d'image -->
+                <!-- Sélection d'image depuis GitHub -->
                 <div class="image-upload-area">
-                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #555;">📷 Photo (optionnel)</label>
-                    <input type="file" id="productImage" accept="image/*" onchange="previewImage(event)">
-                    <div style="margin-top: 5px;">
-                        <label style="font-size: 13px; color: #666;">
-                            <input type="checkbox" id="autoUpload" checked> 
-                            Upload automatique vers GitHub
-                        </label>
+                    <label>📷 Choisir une image depuis le dossier GitHub</label>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <button type="button" class="btn-refresh-images" onclick="loadImagesFromGitHub()">🔄 Charger les images</button>
+                        <button type="button" onclick="clearImageSelection()" style="background: #f44336; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-weight: 600;">
+                            ✕ Désélectionner
+                        </button>
+                    </div>
+                    <div id="imageListContainer">
+                        <div class="image-list" id="imageList">
+                            <div class="empty-images">
+                                <p>📂 Aucune image chargée</p>
+                                <p style="font-size: 12px; color: #bbb;">Cliquez sur "Charger les images" pour afficher les images du dossier GitHub</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="selectedImageInfo" style="display: none; margin-top: 10px; padding: 10px; background: #d4edda; border-radius: 8px; color: #155724;">
+                        ✅ Image sélectionnée: <span id="selectedImageName"></span>
                     </div>
                 </div>
                 
                 <div id="imagePreview">
                     <img id="previewImg" src="" alt="Aperçu">
-                    <button type="button" onclick="removeImage()">🗑 Supprimer</button>
+                    <button type="button" onclick="clearImageSelection()">🗑 Supprimer</button>
                 </div>
-                
-                <div class="upload-progress" id="uploadProgress">
-                    <div style="font-weight: 600; color: #2196F3;">⏳ Upload vers GitHub en cours...</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progressFill"></div>
-                    </div>
-                </div>
-                
-                <div id="urlResult" style="display: none; margin: 10px 0; padding: 10px; border-radius: 8px;"></div>
                 
                 <button type="submit" class="btn-primary" id="addBtn">➕ Ajouter</button>
             </form>
@@ -387,12 +410,13 @@
     
     <!-- Script principal -->
     <script>
-        // ============ ADMIN AVEC FIREBASE ET UPLOAD GITHUB ============
+        // ============ ADMIN AVEC FIREBASE ET IMAGES GITHUB ============
         
         let products = [];
         let isConnected = false;
-        let selectedFile = null;
-        let uploadedImageUrl = null;
+        let selectedImageUrl = null;
+        let selectedImageName = null;
+        let githubImages = [];
         
         // ============ ÉTAT DE CONNEXION ============
         function updateConnectionStatus(connected) {
@@ -413,6 +437,139 @@
         database.ref('.info/connected').on('value', (snapshot) => {
             updateConnectionStatus(snapshot.val());
         });
+        
+        // ============ CHARGER LES IMAGES DEPUIS GITHUB ============
+        async function loadImagesFromGitHub() {
+            const username = document.getElementById('githubUsername').value.trim();
+            const repo = document.getElementById('githubRepo').value.trim();
+            const branch = document.getElementById('githubBranch').value.trim();
+            
+            if (!username || !repo) {
+                showToast('❌ Veuillez configurer votre nom d\'utilisateur et le nom du dépôt', 'error');
+                return;
+            }
+            
+            showToast('⏳ Chargement des images...', 'info');
+            
+            try {
+                const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/images?ref=${branch}`;
+                const response = await fetch(apiUrl);
+                
+                if (!response.ok) {
+                    throw new Error('Dossier "images" non trouvé ou inaccessible');
+                }
+                
+                const data = await response.json();
+                
+                // Filtrer uniquement les fichiers image
+                const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
+                githubImages = data.filter(item => 
+                    item.type === 'file' && 
+                    imageExtensions.some(ext => item.name.toLowerCase().endsWith(ext))
+                );
+                
+                if (githubImages.length === 0) {
+                    showToast('ℹ️ Aucune image trouvée dans le dossier images/', 'warning');
+                    document.getElementById('imageList').innerHTML = `
+                        <div class="empty-images">
+                            <p>📂 Aucune image trouvée</p>
+                            <p style="font-size: 12px; color: #bbb;">
+                                Ajoutez des images dans le dossier <code>images/</code> de votre dépôt GitHub
+                            </p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                displayImagesList();
+                showToast(`✅ ${githubImages.length} images chargées`, 'success');
+                
+            } catch (error) {
+                console.error('❌ Erreur chargement images:', error);
+                showToast('❌ Erreur: ' + error.message, 'error');
+                document.getElementById('imageList').innerHTML = `
+                    <div class="empty-images">
+                        <p>❌ Erreur: ${error.message}</p>
+                        <p style="font-size: 12px; color: #999;">
+                            Vérifiez que le dossier <code>images/</code> existe dans votre dépôt
+                        </p>
+                    </div>
+                `;
+            }
+        }
+        
+        // ============ AFFICHER LA LISTE DES IMAGES ============
+        function displayImagesList() {
+            const container = document.getElementById('imageList');
+            container.innerHTML = '';
+            
+            githubImages.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'image-item';
+                div.dataset.index = index;
+                
+                const imageUrl = item.download_url;
+                
+                div.innerHTML = `
+                    <img src="${imageUrl}" alt="${item.name}" 
+                         onerror="this.parentElement.style.display='none'">
+                    <div class="image-name">${item.name}</div>
+                    <div class="select-badge">✓ Sélectionné</div>
+                `;
+                
+                div.onclick = function() {
+                    selectImage(index);
+                };
+                
+                container.appendChild(div);
+            });
+        }
+        
+        // ============ SÉLECTIONNER UNE IMAGE ============
+        function selectImage(index) {
+            const item = githubImages[index];
+            if (!item) return;
+            
+            // Désélectionner toutes les images
+            document.querySelectorAll('.image-item').forEach(el => el.classList.remove('selected'));
+            
+            // Sélectionner l'image cliquée
+            const items = document.querySelectorAll('.image-item');
+            if (items[index]) {
+                items[index].classList.add('selected');
+            }
+            
+            selectedImageUrl = item.download_url;
+            selectedImageName = item.name;
+            
+            // Afficher l'aperçu
+            const preview = document.getElementById('imagePreview');
+            const img = document.getElementById('previewImg');
+            if (preview && img) {
+                img.src = item.download_url;
+                preview.style.display = 'flex';
+            }
+            
+            // Afficher les informations
+            document.getElementById('selectedImageInfo').style.display = 'block';
+            document.getElementById('selectedImageName').textContent = item.name;
+            
+            showToast(`✅ Image sélectionnée: ${item.name}`, 'success');
+        }
+        
+        // ============ DÉSÉLECTIONNER L'IMAGE ============
+        function clearImageSelection() {
+            selectedImageUrl = null;
+            selectedImageName = null;
+            
+            document.querySelectorAll('.image-item').forEach(el => el.classList.remove('selected'));
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('selectedImageInfo').style.display = 'none';
+            
+            // Réinitialiser le champ file pour permettre une nouvelle sélection
+            const fileInput = document.getElementById('productImage');
+            if (fileInput) fileInput.value = '';
+        }
         
         // ============ ÉCOUTER LES PRODUITS ============
         function listenToProducts() {
@@ -564,175 +721,131 @@
             return true;
         }
         
-        // ============ UPLOAD VERS GITHUB ============
-        async function uploadToGitHub(file, productName) {
-            return new Promise((resolve, reject) => {
-                const username = document.getElementById('githubUsername').value.trim();
-                const repo = document.getElementById('githubRepo').value.trim();
-                const branch = document.getElementById('githubBranch').value.trim();
-                const token = document.getElementById('githubToken').value.trim();
-                
-                if (!username || !repo) {
-                    reject(new Error('Veuillez configurer votre nom d\'utilisateur et le nom du dépôt GitHub'));
-                    return;
-                }
-                
-                // Générer un nom de fichier unique
-                const extension = file.name.split('.').pop();
-                const fileName = productName
-                    .toLowerCase()
-                    .replace(/[^a-z0-9]/g, '-')
-                    .replace(/-+/g, '-') + '-' + Date.now() + '.' + extension;
-                
-                const path = `images/${fileName}`;
-                const url = `https://api.github.com/repos/${username}/${repo}/contents/${path}`;
-                
-                // Lire le fichier en base64
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const content = e.target.result.split(',')[1];
-                    
-                    // Afficher la progression
-                    document.getElementById('uploadProgress').style.display = 'block';
-                    document.getElementById('progressFill').style.width = '50%';
-                    
-                    // Préparer la requête
-                    const data = {
-                        message: `Ajout de l'image ${fileName}`,
-                        content: content,
-                        branch: branch
-                    };
-                    
-                    const headers = {
-                        'Content-Type': 'application/json'
-                    };
-                    
-                    if (token) {
-                        headers['Authorization'] = `token ${token}`;
-                    }
-                    
-                    // Envoyer à GitHub
-                    fetch(url, {
-                        method: 'PUT',
-                        headers: headers,
-                        body: JSON.stringify(data)
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(err => {
-                                throw new Error(err.message || 'Erreur upload');
-                            });
-                        }
-                        return response.json();
-                    })
-                    .then(result => {
-                        document.getElementById('progressFill').style.width = '100%';
-                        
-                        // Construire l'URL de l'image
-                        const imageUrl = `https://raw.githubusercontent.com/${username}/${repo}/${branch}/${path}`;
-                        console.log('✅ Image uploadée:', imageUrl);
-                        
-                        setTimeout(() => {
-                            document.getElementById('uploadProgress').style.display = 'none';
-                            document.getElementById('progressFill').style.width = '0%';
-                        }, 1000);
-                        
-                        resolve(imageUrl);
-                    })
-                    .catch(error => {
-                        console.error('❌ Erreur upload:', error);
-                        document.getElementById('uploadProgress').style.display = 'none';
-                        reject(new Error('Erreur upload: ' + error.message));
-                    });
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-        
-        // ============ PRÉVISUALISATION ============
-        function previewImage(event) {
-            const file = event.target.files[0];
-            if (file) {
-                selectedFile = file;
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const preview = document.getElementById('imagePreview');
-                    const img = document.getElementById('previewImg');
-                    if (preview && img) {
-                        img.src = e.target.result;
-                        preview.style.display = 'flex';
-                    }
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-        
-        function removeImage() {
-            const input = document.getElementById('productImage');
-            const preview = document.getElementById('imagePreview');
-            if (input) input.value = '';
-            if (preview) preview.style.display = 'none';
-            selectedFile = null;
-            uploadedImageUrl = null;
-        }
-        
         // ============ CHANGER L'IMAGE D'UN PRODUIT ============
         function changeImage(productId) {
             const product = products.find(p => p.id === productId);
             if (!product) return;
             
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = async function(e) {
-                if (e.target.files.length > 0) {
-                    const file = e.target.files[0];
+            // Ouvrir le modal de sélection d'image
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.innerHTML = `
+                <div class="modal-content">
+                    <h2>📷 Changer la photo de "${product.name}"</h2>
                     
-                    if (file.size > 5 * 1024 * 1024) {
-                        showToast('❌ L\'image est trop volumineuse (max 5MB)', 'error');
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 10px;">Sélectionnez une image depuis GitHub</label>
+                        <button type="button" class="btn-refresh-images" onclick="loadImagesForModal()">🔄 Charger les images</button>
+                    </div>
+                    
+                    <div id="modalImageList" class="image-list" style="max-height: 300px;">
+                        <div class="empty-images">
+                            <p>📂 Cliquez sur "Charger les images"</p>
+                        </div>
+                    </div>
+                    
+                    <div id="modalSelectedInfo" style="display: none; margin-top: 10px; padding: 10px; background: #d4edda; border-radius: 8px; color: #155724;">
+                        ✅ Image sélectionnée: <span id="modalSelectedName"></span>
+                    </div>
+                    
+                    <div class="modal-actions">
+                        <button type="button" class="btn-save" onclick="saveProductImage('${productId}')">✅ Appliquer</button>
+                        <button type="button" class="btn-cancel" onclick="this.closest('.modal-overlay').remove()">❌ Annuler</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            
+            // Variable pour stocker l'image sélectionnée dans le modal
+            window.modalSelectedImage = null;
+            
+            // Fonction pour charger les images dans le modal
+            window.loadImagesForModal = async function() {
+                const username = document.getElementById('githubUsername').value.trim();
+                const repo = document.getElementById('githubRepo').value.trim();
+                const branch = document.getElementById('githubBranch').value.trim();
+                
+                if (!username || !repo) {
+                    showToast('❌ Veuillez configurer votre nom d\'utilisateur et le nom du dépôt', 'error');
+                    return;
+                }
+                
+                showToast('⏳ Chargement des images...', 'info');
+                
+                try {
+                    const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/images?ref=${branch}`;
+                    const response = await fetch(apiUrl);
+                    
+                    if (!response.ok) {
+                        throw new Error('Dossier "images" non trouvé');
+                    }
+                    
+                    const data = await response.json();
+                    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
+                    const images = data.filter(item => 
+                        item.type === 'file' && 
+                        imageExtensions.some(ext => item.name.toLowerCase().endsWith(ext))
+                    );
+                    
+                    const container = document.getElementById('modalImageList');
+                    container.innerHTML = '';
+                    
+                    if (images.length === 0) {
+                        container.innerHTML = `<div class="empty-images">📂 Aucune image trouvée</div>`;
                         return;
                     }
                     
-                    if (confirm(`Changer la photo de "${product.name}" ?`)) {
-                        try {
-                            showToast('⏳ Upload en cours...', 'info');
-                            const imageUrl = await uploadToGitHub(file, product.name);
-                            
-                            // Mettre à jour dans Firebase
-                            await productsRef.child(productId).update({
-                                image: imageUrl,
-                                updatedAt: Date.now()
-                            });
-                            
-                            showToast('✅ Photo mise à jour avec succès !', 'success');
-                        } catch (error) {
-                            showToast('❌ Erreur: ' + error.message, 'error');
-                        }
-                    }
+                    images.forEach((item, index) => {
+                        const div = document.createElement('div');
+                        div.className = 'image-item';
+                        div.innerHTML = `
+                            <img src="${item.download_url}" alt="${item.name}" 
+                                 onerror="this.parentElement.style.display='none'">
+                            <div class="image-name">${item.name}</div>
+                            <div class="select-badge">✓ Sélectionné</div>
+                        `;
+                        div.onclick = function() {
+                            document.querySelectorAll('#modalImageList .image-item').forEach(el => el.classList.remove('selected'));
+                            this.classList.add('selected');
+                            window.modalSelectedImage = item.download_url;
+                            document.getElementById('modalSelectedName').textContent = item.name;
+                            document.getElementById('modalSelectedInfo').style.display = 'block';
+                        };
+                        container.appendChild(div);
+                    });
+                    
+                    showToast(`✅ ${images.length} images chargées`, 'success');
+                    
+                } catch (error) {
+                    showToast('❌ Erreur: ' + error.message, 'error');
                 }
             };
-            input.click();
+            
+            // Fonction pour sauvegarder l'image
+            window.saveProductImage = function(productId) {
+                if (!window.modalSelectedImage) {
+                    showToast('⚠️ Veuillez sélectionner une image', 'warning');
+                    return;
+                }
+                
+                productsRef.child(productId).update({
+                    image: window.modalSelectedImage,
+                    updatedAt: Date.now()
+                })
+                .then(() => {
+                    showToast('✅ Photo mise à jour avec succès !', 'success');
+                    overlay.remove();
+                })
+                .catch(error => {
+                    showToast('❌ Erreur: ' + error.message, 'error');
+                });
+            };
         }
         
         // ============ AJOUTER UN PRODUIT ============
-        async function addProduct(productData) {
+        function addProduct(productData) {
             if (!validateProduct(productData)) {
                 return Promise.reject(new Error('Validation échouée'));
-            }
-            
-            let imageUrl = null;
-            const fileInput = document.getElementById('productImage');
-            const autoUpload = document.getElementById('autoUpload').checked;
-            
-            // Si un fichier est sélectionné et l'upload automatique est activé
-            if (fileInput && fileInput.files.length > 0 && autoUpload) {
-                try {
-                    showToast('⏳ Upload de l\'image vers GitHub...', 'info');
-                    imageUrl = await uploadToGitHub(fileInput.files[0], productData.name);
-                    showToast('✅ Image uploadée avec succès !', 'success');
-                } catch (error) {
-                    showToast('⚠️ Erreur upload: ' + error.message + ' (produit ajouté sans image)', 'warning');
-                }
             }
             
             const newProduct = {
@@ -741,7 +854,7 @@
                 category: productData.category,
                 description: productData.description ? productData.description.trim() : '',
                 visible: true,
-                image: imageUrl,
+                image: selectedImageUrl, // Utiliser l'image sélectionnée
                 createdAt: Date.now()
             };
             
@@ -749,6 +862,8 @@
                 .then((ref) => {
                     console.log('✅ Produit ajouté avec ID:', ref.key);
                     showToast('✅ Produit ajouté avec succès !', 'success');
+                    // Réinitialiser la sélection
+                    clearImageSelection();
                     return true;
                 })
                 .catch((error) => {
@@ -799,151 +914,4 @@
                         </div>
                         <div class="modal-actions">
                             <button type="submit" class="btn-save">✅ Sauvegarder</button>
-                            <button type="button" class="btn-cancel" onclick="this.closest('.modal-overlay').remove()">❌ Annuler</button>
-                        </div>
-                    </form>
-                </div>
-            `;
-            document.body.appendChild(overlay);
-            
-            document.getElementById('editForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const updates = {
-                    name: document.getElementById('editName').value.trim(),
-                    price: parseFloat(document.getElementById('editPrice').value),
-                    category: document.getElementById('editCategory').value,
-                    description: document.getElementById('editDesc').value.trim(),
-                    image: document.getElementById('editImageUrl').value.trim() || null,
-                    updatedAt: Date.now()
-                };
-                
-                if (!validateProduct(updates)) return;
-                
-                productsRef.child(productId).update(updates)
-                    .then(() => {
-                        showToast('✅ Produit modifié avec succès !', 'success');
-                        overlay.remove();
-                    })
-                    .catch((error) => {
-                        showToast('❌ Erreur: ' + error.message, 'error');
-                    });
-            });
-        }
-        
-        // ============ SUPPRIMER UN PRODUIT ============
-        function deleteProduct(productId) {
-            const product = products.find(p => p.id === productId);
-            if (!product) return;
-            
-            if (confirm(`Supprimer "${product.name}" définitivement ?`)) {
-                productsRef.child(productId).remove()
-                    .then(() => {
-                        console.log('✅ Produit supprimé');
-                        showToast('✅ Produit supprimé !', 'success');
-                    })
-                    .catch(error => {
-                        console.error('❌ Erreur:', error);
-                        showToast('❌ Erreur: ' + error.message, 'error');
-                    });
-            }
-        }
-        
-        // ============ MASQUER/AFFICHER ============
-        function toggleVisibility(productId) {
-            const product = products.find(p => p.id === productId);
-            if (product) {
-                productsRef.child(productId).update({
-                    visible: !product.visible,
-                    updatedAt: Date.now()
-                })
-                .then(() => {
-                    console.log('✅ Visibilité modifiée');
-                })
-                .catch(error => {
-                    console.error('❌ Erreur:', error);
-                    showToast('❌ Erreur: ' + error.message, 'error');
-                });
-            }
-        }
-        
-        // ============ RÉINITIALISER ============
-        function resetFirebaseProducts() {
-            if (confirm('⚠️ Supprimer tous les produits et les réinitialiser ?')) {
-                createDefaultProducts();
-                showToast('✅ Produits réinitialisés !', 'success');
-            }
-        }
-        
-        // ============ TOAST ============
-        function showToast(message, type = 'info') {
-            const colors = {
-                'success': '#4caf50',
-                'error': '#f44336',
-                'warning': '#ff9800',
-                'info': '#2196F3'
-            };
-            
-            const toast = document.createElement('div');
-            toast.className = 'toast ' + type;
-            toast.style.background = colors[type] || '#667eea';
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.style.animation = 'slideUp 0.5s ease reverse';
-                setTimeout(() => toast.remove(), 500);
-            }, 3000);
-        }
-        
-        // ============ FORMULAIRE ============
-        document.getElementById('productForm')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-            console.log('📝 Formulaire soumis');
-            
-            const productData = {
-                name: document.getElementById('productName').value,
-                price: document.getElementById('productPrice').value,
-                category: document.getElementById('productCategory').value,
-                description: document.getElementById('productDesc').value
-            };
-            
-            console.log('Données du formulaire:', productData);
-            
-            const btn = document.getElementById('addBtn');
-            btn.disabled = true;
-            btn.textContent = '⏳ Ajout en cours...';
-            
-            addProduct(productData)
-                .then(() => {
-                    this.reset();
-                    removeImage();
-                })
-                .catch(() => {
-                    // Erreur déjà gérée
-                })
-                .finally(() => {
-                    btn.disabled = false;
-                    btn.textContent = '➕ Ajouter';
-                });
-        });
-        
-        // ============ INITIALISATION ============
-        console.log('🚀 Démarrage de l\'administration Firebase...');
-        listenToProducts();
-        
-        console.log('🔍 Firebase Database URL:', database.ref().toString());
-        
-        // Exposer les fonctions globalement
-        window.toggleVisibility = toggleVisibility;
-        window.editProduct = editProduct;
-        window.deleteProduct = deleteProduct;
-        window.changeImage = changeImage;
-        window.previewImage = previewImage;
-        window.removeImage = removeImage;
-        window.resetFirebaseProducts = resetFirebaseProducts;
-        window.uploadToGitHub = uploadToGitHub;
-        
-    </script>
-</body>
-</html>
+                            <button type="button" class="btn-cancel
