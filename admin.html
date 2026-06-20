@@ -590,7 +590,7 @@
         <!-- Informations -->
         <div style="background: #f8f9ff; padding: 15px; border-radius: 10px; text-align: center; color: #666; font-size: 13px;">
             💡 Les produits sont synchronisés en temps réel sur tous les appareils via Firebase.
-            <br>Les paniers sont stockés localement (localStorage) et sont vidés après chaque commande.
+            <br>Les paniers sont stockés dans Firebase et sont vidés après chaque commande.
         </div>
     </div>
     
@@ -808,9 +808,9 @@
                         <button class="${statusClass}" onclick="toggleVisibility('${product.id}')">
                             ${statusText}
                         </button>
-                        <button class="btn-edit" onclick="editProduct('${product.id}')">✏️</button>
-                        <button class="btn-photo" onclick="changeImage('${product.id}')">📷</button>
-                        <button class="btn-delete" onclick="deleteProduct('${product.id}')">🗑</button>
+                        <button class="btn-edit" onclick="editProduct('${product.id}')">✏️ Modifier</button>
+                        <button class="btn-photo" onclick="changeImage('${product.id}')">📷 Photo</button>
+                        <button class="btn-delete" onclick="deleteProduct('${product.id}')">🗑 Supprimer</button>
                     </div>
                 `;
                 container.appendChild(item);
@@ -941,7 +941,7 @@
                 
                 productsRef.child(productId).update(updates)
                     .then(() => {
-                        showToast('✅ Produit modifié !', 'success');
+                        showToast('✅ Produit modifié avec succès !', 'success');
                         overlay.remove();
                     })
                     .catch(error => {
@@ -1051,32 +1051,37 @@
             input.click();
         }
         
-        // ============ EXPORTER ============
-        function exportProducts() {
-            if (products.length === 0) {
-                showToast('❌ Aucun produit à exporter', 'error');
-                return;
-            }
+        // ============ VIDER TOUS LES PANIERS (Firebase) ============
+        function clearAllCarts() {
+            if (!confirm('⚠️ Supprimer tous les paniers (Firebase) ?')) return;
             
-            const dataStr = JSON.stringify(products, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `produits_${new Date().toISOString().slice(0,10)}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast('✅ Export terminé !', 'success');
+            cartsRef.once('value')
+                .then((snapshot) => {
+                    const data = snapshot.val();
+                    if (!data) {
+                        showToast('ℹ️ Aucun panier trouvé', 'info');
+                        return;
+                    }
+                    
+                    const promises = [];
+                    let count = 0;
+                    for (let key in data) {
+                        if (key.startsWith('table_')) {
+                            promises.push(cartsRef.child(key).remove());
+                            count++;
+                        }
+                    }
+                    
+                    return Promise.all(promises)
+                        .then(() => {
+                            showToast(`✅ ${count} paniers vidés !`, 'success');
+                        });
+                })
+                .catch(error => {
+                    showToast('❌ Erreur: ' + error.message, 'error');
+                });
         }
         
-        // ============ IMPORTER ============
-        function importProducts() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json';
-            input.onchange = function(e) {
-                const file = e.target.files[0];
-                if (!file) return;
-                
-                const reader = new FileReader();
-                reader.on
+        // ============ EXPORTER ============
+        function exportProducts() {
+            if (products.length === 0
