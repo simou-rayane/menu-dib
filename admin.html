@@ -181,6 +181,32 @@
             border: 1px solid #ddd;
         }
         
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            animation: slideUp 0.5s ease;
+            max-width: 90%;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .toast.success { background: #4caf50; }
+        .toast.error { background: #f44336; }
+        .toast.info { background: #2196F3; }
+        .toast.warning { background: #ff9800; }
+        
+        @keyframes slideUp {
+            from { transform: translateX(-50%) translateY(100px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+        
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -193,6 +219,12 @@
         
         <div id="connectionStatus" style="background: #f0f0f0; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
             🔄 Connexion à Firebase...
+        </div>
+        
+        <!-- Avertissement Storage -->
+        <div id="storageWarning" style="display: none; background: #fff3cd; padding: 10px 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
+            ⚠️ <strong>Firebase Storage n'est pas activé.</strong> Les photos ne pourront pas être uploadées. 
+            <br>Activez Firebase Storage dans la console Firebase pour utiliser cette fonctionnalité.
         </div>
         
         <div class="admin-section">
@@ -208,7 +240,7 @@
                 </select>
                 <textarea id="productDesc" placeholder="Description"></textarea>
                 
-                <!-- NOUVEAU: Upload d'image -->
+                <!-- Upload d'image -->
                 <div class="image-upload-area">
                     <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #555;">📷 Photo (optionnel)</label>
                     <input type="file" id="productImage" accept="image/*" onchange="previewImage(event)">
@@ -241,6 +273,26 @@
         
         let products = [];
         let isConnected = false;
+        let storageAvailable = false;
+        
+        // ============ VÉRIFICATION DE FIREBASE STORAGE ============
+        function checkStorageAvailability() {
+            try {
+                if (typeof firebase.storage === 'function') {
+                    storageAvailable = true;
+                    document.getElementById('storageWarning').style.display = 'none';
+                    console.log('✅ Firebase Storage disponible');
+                } else {
+                    storageAvailable = false;
+                    document.getElementById('storageWarning').style.display = 'block';
+                    console.warn('⚠️ Firebase Storage non disponible');
+                }
+            } catch (e) {
+                storageAvailable = false;
+                document.getElementById('storageWarning').style.display = 'block';
+                console.warn('⚠️ Firebase Storage non disponible:', e.message);
+            }
+        }
         
         // ============ ÉTAT DE CONNEXION ============
         function updateConnectionStatus(connected) {
@@ -285,7 +337,7 @@
                 document.getElementById('productCount').textContent = products.length;
             }, (error) => {
                 console.error('❌ Erreur Firebase:', error);
-                alert('Erreur de connexion à Firebase: ' + error.message);
+                showToast('❌ Erreur de connexion: ' + error.message, 'error');
             });
         }
         
@@ -334,6 +386,7 @@
                 })
                 .catch(error => {
                     console.error('❌ Erreur création produits:', error);
+                    showToast('❌ Erreur: ' + error.message, 'error');
                 });
         }
         
@@ -406,22 +459,22 @@
             }
             
             if (errors.length > 0) {
-                alert('❌ ' + errors.join('\n'));
+                showToast('❌ ' + errors.join('\n'), 'error');
                 return false;
             }
             return true;
         }
         
-        // ============ UPLOAD D'IMAGE ============
+        // ============ UPLOAD D'IMAGE (CORRIGÉ) ============
         function uploadProductImage(file, productId) {
             return new Promise((resolve, reject) => {
+                // Vérifier que Firebase Storage est disponible
+                if (!storageAvailable) {
+                    reject(new Error('Firebase Storage non disponible. Activez-le dans la console Firebase.'));
+                    return;
+                }
+                
                 try {
-                    // Vérifier que Firebase Storage est disponible
-                    if (typeof firebase.storage === 'undefined') {
-                        reject(new Error('Firebase Storage non disponible. Activez-le dans la console Firebase.'));
-                        return;
-                    }
-                    
                     const storage = firebase.storage();
                     const storageRef = storage.ref();
                     const imageRef = storageRef.child(`products/${productId}/${file.name}`);
@@ -440,6 +493,7 @@
                         })
                         .then(() => {
                             console.log('✅ Image uploadée avec succès');
+                            showToast('✅ Image uploadée avec succès !', 'success');
                             resolve();
                         })
                         .catch((error) => {
@@ -456,6 +510,11 @@
         // ============ SUPPRIMER UNE IMAGE ============
         function deleteProductImage(productId) {
             return new Promise((resolve, reject) => {
+                if (!storageAvailable) {
+                    resolve(); // Si storage n'est pas disponible, on continue
+                    return;
+                }
+                
                 try {
                     const storage = firebase.storage();
                     
@@ -497,6 +556,11 @@
             const product = products.find(p => p.id === productId);
             if (!product) return;
             
+            if (!storageAvailable) {
+                showToast('❌ Firebase Storage non disponible. Activez-le dans la console Firebase.', 'error');
+                return;
+            }
+            
             // Créer un input file
             const input = document.createElement('input');
             input.type = 'file';
@@ -507,17 +571,18 @@
                     
                     // Vérifier la taille du fichier (max 5MB)
                     if (file.size > 5 * 1024 * 1024) {
-                        alert('❌ L\'image est trop volumineuse (max 5MB)');
+                        showToast('❌ L\'image est trop volumineuse (max 5MB)', 'error');
                         return;
                     }
                     
                     if (confirm(`Changer la photo de "${product.name}" ?`)) {
+                        showToast('⏳ Upload en cours...', 'info');
                         uploadProductImage(file, productId)
                             .then(() => {
-                                alert('✅ Photo mise à jour avec succès !');
+                                showToast('✅ Photo mise à jour avec succès !', 'success');
                             })
                             .catch((error) => {
-                                alert('❌ Erreur: ' + error.message);
+                                showToast('❌ Erreur: ' + error.message, 'error');
                             });
                     }
                 }
@@ -567,28 +632,31 @@
             // Ajouter à Firebase
             return productsRef.push().set(newProduct)
                 .then((ref) => {
-                    console.log('✅ Produit ajouté à Firebase avec ID:', ref.key);
+                    const productId = ref.key;
+                    console.log('✅ Produit ajouté à Firebase avec ID:', productId);
                     
                     // Upload de l'image si présente
                     const fileInput = document.getElementById('productImage');
-                    if (fileInput && fileInput.files.length > 0) {
-                        return uploadProductImage(fileInput.files[0], ref.key)
+                    if (fileInput && fileInput.files.length > 0 && storageAvailable) {
+                        return uploadProductImage(fileInput.files[0], productId)
                             .then(() => {
-                                console.log('✅ Image uploadée');
-                                alert('✅ Produit ajouté avec image !');
+                                showToast('✅ Produit ajouté avec image !', 'success');
                             })
                             .catch((error) => {
                                 console.warn('⚠️ Erreur upload image:', error);
-                                alert('✅ Produit ajouté (mais image non uploadée)');
+                                showToast('✅ Produit ajouté (mais image non uploadée: ' + error.message + ')', 'warning');
                             });
+                    } else if (fileInput && fileInput.files.length > 0 && !storageAvailable) {
+                        showToast('⚠️ Produit ajouté mais Storage non disponible pour l\'image', 'warning');
+                        return Promise.resolve();
                     } else {
-                        alert('✅ Produit ajouté avec succès !');
+                        showToast('✅ Produit ajouté avec succès !', 'success');
                         return Promise.resolve();
                     }
                 })
                 .catch((error) => {
                     console.error('❌ Erreur Firebase:', error);
-                    alert('❌ Erreur: ' + error.message);
+                    showToast('❌ Erreur: ' + error.message, 'error');
                     throw error;
                 });
         }
@@ -660,7 +728,7 @@
                 
                 // Vérifier si une nouvelle image a été sélectionnée
                 const fileInput = document.getElementById('editImage');
-                const hasNewImage = fileInput && fileInput.files.length > 0;
+                const hasNewImage = fileInput && fileInput.files.length > 0 && storageAvailable;
                 
                 // Mettre à jour les données du produit
                 productsRef.child(productId).update(updates)
@@ -672,11 +740,11 @@
                         return Promise.resolve();
                     })
                     .then(() => {
-                        alert('✅ Produit modifié avec succès !');
+                        showToast('✅ Produit modifié avec succès !', 'success');
                         overlay.remove();
                     })
                     .catch((error) => {
-                        alert('❌ Erreur: ' + error.message);
+                        showToast('❌ Erreur: ' + error.message, 'error');
                     });
             });
         }
@@ -697,11 +765,11 @@
                 productsRef.child(productId).remove()
                     .then(() => {
                         console.log('✅ Produit supprimé');
-                        alert('✅ Produit supprimé !');
+                        showToast('✅ Produit supprimé !', 'success');
                     })
                     .catch(error => {
                         console.error('❌ Erreur:', error);
-                        alert('❌ Erreur: ' + error.message);
+                        showToast('❌ Erreur: ' + error.message, 'error');
                     });
             }
         }
@@ -719,7 +787,7 @@
                 })
                 .catch(error => {
                     console.error('❌ Erreur:', error);
-                    alert('❌ Erreur: ' + error.message);
+                    showToast('❌ Erreur: ' + error.message, 'error');
                 });
             }
         }
@@ -728,8 +796,29 @@
         function resetFirebaseProducts() {
             if (confirm('⚠️ Supprimer tous les produits et les réinitialiser ?')) {
                 createDefaultProducts();
-                alert('✅ Produits réinitialisés !');
+                showToast('✅ Produits réinitialisés !', 'success');
             }
+        }
+        
+        // ============ TOAST NOTIFICATIONS ============
+        function showToast(message, type = 'info') {
+            const colors = {
+                'success': '#4caf50',
+                'error': '#f44336',
+                'warning': '#ff9800',
+                'info': '#2196F3'
+            };
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.style.background = colors[type] || '#667eea';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideUp 0.5s ease reverse';
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
         }
         
         // ============ FORMULAIRE ============
@@ -766,10 +855,16 @@
         
         // ============ INITIALISATION ============
         console.log('🚀 Démarrage de l\'administration Firebase...');
+        
+        // Vérifier la disponibilité de Firebase Storage
+        checkStorageAvailability();
+        
+        // Démarrer l'écoute des produits
         listenToProducts();
         
         // Affichage des infos Firebase
         console.log('🔍 Firebase Database URL:', database.ref().toString());
+        console.log('📁 Firebase Storage disponible:', storageAvailable);
         
         // Exposer les fonctions globalement
         window.changeImage = changeImage;
