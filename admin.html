@@ -9,6 +9,183 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    
+    <style>
+        /* Styles supplémentaires pour les images */
+        .product-item .product-info-with-image {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+        
+        .product-item .product-thumbnail {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid #eee;
+            background: #f8f9fa;
+        }
+        
+        .product-item .product-thumbnail-placeholder {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 24px;
+            border: 1px solid #eee;
+        }
+        
+        .image-upload-area {
+            margin: 10px 0;
+        }
+        
+        .image-upload-area input[type="file"] {
+            padding: 10px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            width: 100%;
+            cursor: pointer;
+            background: #fafafa;
+            transition: all 0.3s;
+        }
+        
+        .image-upload-area input[type="file"]:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        #imagePreview {
+            display: none;
+            margin: 10px 0;
+            padding: 15px;
+            background: #f8f9ff;
+            border-radius: 8px;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid #667eea;
+        }
+        
+        #imagePreview img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #667eea;
+        }
+        
+        #imagePreview button {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .photo-indicator {
+            color: #4caf50;
+            font-size: 11px;
+            margin-top: 3px;
+        }
+        
+        .btn-photo {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        
+        .btn-photo:hover {
+            opacity: 0.8;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-overlay .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+        }
+        
+        .modal-overlay .modal-content h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .modal-overlay .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .modal-overlay .modal-actions button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .modal-overlay .modal-actions .btn-save {
+            background: #667eea;
+            color: white;
+        }
+        
+        .modal-overlay .modal-actions .btn-cancel {
+            background: #f44336;
+            color: white;
+        }
+        
+        .modal-overlay .current-photo {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9ff;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .modal-overlay .current-photo img {
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -30,6 +207,17 @@
                     <option value="boissons">Boissons</option>
                 </select>
                 <textarea id="productDesc" placeholder="Description"></textarea>
+                
+                <!-- NOUVEAU: Upload d'image -->
+                <div class="image-upload-area">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #555;">📷 Photo (optionnel)</label>
+                    <input type="file" id="productImage" accept="image/*" onchange="previewImage(event)">
+                </div>
+                <div id="imagePreview">
+                    <img id="previewImg" src="" alt="Aperçu">
+                    <button type="button" onclick="removeImage()">🗑 Supprimer</button>
+                </div>
+                
                 <button type="submit" class="btn-primary" id="addBtn">➕ Ajouter</button>
             </form>
         </div>
@@ -49,7 +237,7 @@
     
     <!-- Script principal -->
     <script>
-        // ============ ADMIN AVEC FIREBASE ============
+        // ============ ADMIN AVEC FIREBASE ET GESTION DES IMAGES ============
         
         let products = [];
         let isConnected = false;
@@ -90,7 +278,6 @@
                 } else {
                     products = [];
                     console.log('ℹ️ Aucun produit dans Firebase');
-                    // Créer des produits par défaut si vide
                     createDefaultProducts();
                 }
                 
@@ -166,11 +353,23 @@
                 productDiv.className = 'product-item';
                 productDiv.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;';
                 
+                // Image ou placeholder
+                let imageHtml = '';
+                if (product.image) {
+                    imageHtml = `<img src="${product.image}" class="product-thumbnail" alt="${product.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'product-thumbnail-placeholder\\'>📷</div>'">`;
+                } else {
+                    imageHtml = `<div class="product-thumbnail-placeholder">📷</div>`;
+                }
+                
                 productDiv.innerHTML = `
-                    <div style="flex: 1;">
-                        <strong>${product.name}</strong> - ${product.price.toFixed(2)}€ 
-                        <span style="color: #666;">(${product.category})</span>
-                        <br><small>${product.description || 'Pas de description'}</small>
+                    <div class="product-info-with-image">
+                        ${imageHtml}
+                        <div style="flex: 1;">
+                            <strong>${product.name}</strong> - ${product.price.toFixed(2)}€ 
+                            <span style="color: #666;">(${product.category})</span>
+                            <br><small>${product.description || 'Pas de description'}</small>
+                            ${product.image ? '<div class="photo-indicator">📷 Photo présente</div>' : ''}
+                        </div>
                     </div>
                     <div>
                         <span class="status ${product.visible ? 'visible' : 'hidden'}" 
@@ -181,6 +380,7 @@
                             ${product.visible ? '✓ Visible' : '✗ Masqué'}
                         </span>
                         <button onclick="editProduct('${product.id}')" style="background: #2196F3; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin: 0 5px;">✏️</button>
+                        <button onclick="changeImage('${product.id}')" class="btn-photo">📷</button>
                         <button onclick="deleteProduct('${product.id}')" style="background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin: 0 5px;">🗑</button>
                     </div>
                 `;
@@ -212,6 +412,143 @@
             return true;
         }
         
+        // ============ UPLOAD D'IMAGE ============
+        function uploadProductImage(file, productId) {
+            return new Promise((resolve, reject) => {
+                try {
+                    // Vérifier que Firebase Storage est disponible
+                    if (typeof firebase.storage === 'undefined') {
+                        reject(new Error('Firebase Storage non disponible. Activez-le dans la console Firebase.'));
+                        return;
+                    }
+                    
+                    const storage = firebase.storage();
+                    const storageRef = storage.ref();
+                    const imageRef = storageRef.child(`products/${productId}/${file.name}`);
+                    
+                    // Upload de l'image
+                    imageRef.put(file)
+                        .then((snapshot) => {
+                            return snapshot.ref.getDownloadURL();
+                        })
+                        .then((downloadURL) => {
+                            // Sauvegarder l'URL dans la base de données
+                            return productsRef.child(productId).update({
+                                image: downloadURL,
+                                updatedAt: Date.now()
+                            });
+                        })
+                        .then(() => {
+                            console.log('✅ Image uploadée avec succès');
+                            resolve();
+                        })
+                        .catch((error) => {
+                            console.error('❌ Erreur upload:', error);
+                            reject(error);
+                        });
+                } catch (error) {
+                    console.error('❌ Erreur:', error);
+                    reject(error);
+                }
+            });
+        }
+        
+        // ============ SUPPRIMER UNE IMAGE ============
+        function deleteProductImage(productId) {
+            return new Promise((resolve, reject) => {
+                try {
+                    const storage = firebase.storage();
+                    
+                    // Récupérer l'URL de l'image
+                    productsRef.child(productId).once('value')
+                        .then((snapshot) => {
+                            const product = snapshot.val();
+                            if (product && product.image) {
+                                // Extraire le chemin de l'image depuis l'URL
+                                const imagePath = decodeURIComponent(product.image.split('/o/')[1].split('?')[0]);
+                                return storage.ref().child(imagePath).delete();
+                            }
+                            return Promise.resolve();
+                        })
+                        .then(() => {
+                            // Supprimer l'URL de la base de données
+                            return productsRef.child(productId).update({
+                                image: null,
+                                updatedAt: Date.now()
+                            });
+                        })
+                        .then(() => {
+                            console.log('✅ Image supprimée');
+                            resolve();
+                        })
+                        .catch((error) => {
+                            console.error('❌ Erreur suppression image:', error);
+                            reject(error);
+                        });
+                } catch (error) {
+                    console.error('❌ Erreur:', error);
+                    reject(error);
+                }
+            });
+        }
+        
+        // ============ CHANGER L'IMAGE D'UN PRODUIT ============
+        function changeImage(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            // Créer un input file
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = function(e) {
+                if (e.target.files.length > 0) {
+                    const file = e.target.files[0];
+                    
+                    // Vérifier la taille du fichier (max 5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('❌ L\'image est trop volumineuse (max 5MB)');
+                        return;
+                    }
+                    
+                    if (confirm(`Changer la photo de "${product.name}" ?`)) {
+                        uploadProductImage(file, productId)
+                            .then(() => {
+                                alert('✅ Photo mise à jour avec succès !');
+                            })
+                            .catch((error) => {
+                                alert('❌ Erreur: ' + error.message);
+                            });
+                    }
+                }
+            };
+            input.click();
+        }
+        
+        // ============ PRÉVISUALISATION DE L'IMAGE ============
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('imagePreview');
+                    const img = document.getElementById('previewImg');
+                    if (preview && img) {
+                        img.src = e.target.result;
+                        preview.style.display = 'flex';
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        function removeImage() {
+            const input = document.getElementById('productImage');
+            const preview = document.getElementById('imagePreview');
+            if (input) input.value = '';
+            if (preview) preview.style.display = 'none';
+        }
+        
         // ============ AJOUTER UN PRODUIT ============
         function addProduct(productData) {
             if (!validateProduct(productData)) {
@@ -229,10 +566,25 @@
             
             // Ajouter à Firebase
             return productsRef.push().set(newProduct)
-                .then(() => {
-                    console.log('✅ Produit ajouté à Firebase');
-                    alert('✅ Produit ajouté avec succès !');
-                    return true;
+                .then((ref) => {
+                    console.log('✅ Produit ajouté à Firebase avec ID:', ref.key);
+                    
+                    // Upload de l'image si présente
+                    const fileInput = document.getElementById('productImage');
+                    if (fileInput && fileInput.files.length > 0) {
+                        return uploadProductImage(fileInput.files[0], ref.key)
+                            .then(() => {
+                                console.log('✅ Image uploadée');
+                                alert('✅ Produit ajouté avec image !');
+                            })
+                            .catch((error) => {
+                                console.warn('⚠️ Erreur upload image:', error);
+                                alert('✅ Produit ajouté (mais image non uploadée)');
+                            });
+                    } else {
+                        alert('✅ Produit ajouté avec succès !');
+                        return Promise.resolve();
+                    }
                 })
                 .catch((error) => {
                     console.error('❌ Erreur Firebase:', error);
@@ -246,26 +598,87 @@
             const product = products.find(p => p.id === productId);
             if (!product) return;
             
-            const newName = prompt('Nouveau nom:', product.name);
-            const newPrice = prompt('Nouveau prix:', product.price);
-            const newDesc = prompt('Nouvelle description:', product.description);
+            // Créer un modal personnalisé pour l'édition
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.innerHTML = `
+                <div class="modal-content">
+                    <h2>✏️ Modifier le produit</h2>
+                    <form id="editForm">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Nom *</label>
+                            <input type="text" id="editName" value="${product.name}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" required>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Prix (€) *</label>
+                            <input type="number" id="editPrice" value="${product.price}" step="0.01" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" required>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Catégorie *</label>
+                            <select id="editCategory" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                                <option value="entrees" ${product.category === 'entrees' ? 'selected' : ''}>Entrées</option>
+                                <option value="plats" ${product.category === 'plats' ? 'selected' : ''}>Plats</option>
+                                <option value="desserts" ${product.category === 'desserts' ? 'selected' : ''}>Desserts</option>
+                                <option value="boissons" ${product.category === 'boissons' ? 'selected' : ''}>Boissons</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Description</label>
+                            <textarea id="editDesc" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">${product.description || ''}</textarea>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">📷 Photo</label>
+                            <div class="current-photo">
+                                ${product.image ? `<img src="${product.image}" alt="Photo actuelle">` : '<span style="color: #999;">Aucune photo</span>'}
+                            </div>
+                            <input type="file" id="editImage" accept="image/*" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; margin-top: 5px;">
+                            <div style="font-size: 12px; color: #666; margin-top: 5px;">
+                                Laissez vide pour garder la photo actuelle.
+                            </div>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="submit" class="btn-save">✅ Sauvegarder</button>
+                            <button type="button" class="btn-cancel" onclick="this.closest('.modal-overlay').remove()">❌ Annuler</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(overlay);
             
-            if (newName && newPrice) {
-                productsRef.child(productId).update({
-                    name: newName.trim(),
-                    price: parseFloat(newPrice),
-                    description: newDesc ? newDesc.trim() : '',
+            document.getElementById('editForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const updates = {
+                    name: document.getElementById('editName').value.trim(),
+                    price: parseFloat(document.getElementById('editPrice').value),
+                    category: document.getElementById('editCategory').value,
+                    description: document.getElementById('editDesc').value.trim(),
                     updatedAt: Date.now()
-                })
-                .then(() => {
-                    console.log('✅ Produit modifié');
-                    alert('✅ Produit modifié !');
-                })
-                .catch(error => {
-                    console.error('❌ Erreur:', error);
-                    alert('❌ Erreur: ' + error.message);
-                });
-            }
+                };
+                
+                if (!validateProduct(updates)) return;
+                
+                // Vérifier si une nouvelle image a été sélectionnée
+                const fileInput = document.getElementById('editImage');
+                const hasNewImage = fileInput && fileInput.files.length > 0;
+                
+                // Mettre à jour les données du produit
+                productsRef.child(productId).update(updates)
+                    .then(() => {
+                        // Upload de la nouvelle image si présente
+                        if (hasNewImage) {
+                            return uploadProductImage(fileInput.files[0], productId);
+                        }
+                        return Promise.resolve();
+                    })
+                    .then(() => {
+                        alert('✅ Produit modifié avec succès !');
+                        overlay.remove();
+                    })
+                    .catch((error) => {
+                        alert('❌ Erreur: ' + error.message);
+                    });
+            });
         }
         
         // ============ SUPPRIMER UN PRODUIT ============
@@ -274,6 +687,13 @@
             if (!product) return;
             
             if (confirm(`Supprimer "${product.name}" définitivement ?`)) {
+                // Supprimer l'image si présente
+                if (product.image) {
+                    deleteProductImage(productId).catch(error => {
+                        console.warn('⚠️ Erreur suppression image:', error);
+                    });
+                }
+                
                 productsRef.child(productId).remove()
                     .then(() => {
                         console.log('✅ Produit supprimé');
@@ -333,6 +753,7 @@
             addProduct(productData)
                 .then(() => {
                     this.reset();
+                    removeImage();
                 })
                 .catch(() => {
                     // Erreur déjà gérée
@@ -349,6 +770,15 @@
         
         // Affichage des infos Firebase
         console.log('🔍 Firebase Database URL:', database.ref().toString());
+        
+        // Exposer les fonctions globalement
+        window.changeImage = changeImage;
+        window.toggleVisibility = toggleVisibility;
+        window.editProduct = editProduct;
+        window.deleteProduct = deleteProduct;
+        window.previewImage = previewImage;
+        window.removeImage = removeImage;
+        window.resetFirebaseProducts = resetFirebaseProducts;
         
     </script>
 </body>
