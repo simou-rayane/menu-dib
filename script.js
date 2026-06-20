@@ -1,9 +1,10 @@
-// ============ SCRIPT.JS - VERSION ULTRA-SIMPLE AVEC VIDAGE DIRECT ============
+// ============ SCRIPT.JS - SYSTÈME DE COMMANDES COMPLET ============
 
 let products = [];
 let cart = [];
 let currentTable = null;
 let currentFilter = 'all';
+let currentOrderId = null;
 
 // ============ CHARGER LA TABLE ============
 function loadTableInfo() {
@@ -88,74 +89,36 @@ function addToCart(productId) {
         });
     }
     
-    // Sauvegarder directement dans Firebase
-    database.ref(`carts/table_${currentTable}`).set(cart)
-        .then(() => {
-            console.log('✅ Panier sauvegardé');
-            updateCartCount();
-            showToast(`✅ ${product.name} ajouté au panier !`, 'success');
-        })
-        .catch(error => {
-            console.error('❌ Erreur:', error);
-            showToast('❌ Erreur: ' + error.message, 'error');
-        });
+    saveCart();
+    updateCartCount();
+    showToast(`✅ ${product.name} ajouté au panier !`, 'success');
 }
 
-// ============ VIDER LE PANIER - DIRECT ============
-function clearCart() {
-    console.log('🔥 VIDAGE DIRECT DU PANIER...');
-    
-    // 1. Vider le tableau local
-    cart = [];
-    
-    // 2. Supprimer de Firebase DIRECTEMENT
-    database.ref(`carts/table_${currentTable}`).remove()
-        .then(() => {
-            console.log('✅ Panier supprimé de Firebase');
-            
-            // 3. Mettre à jour l'affichage
-            updateCartCount();
-            if (document.getElementById('cartItems')) {
-                displayCart();
-            }
-            
-            showToast('🗑️ Panier vidé', 'success');
-        })
-        .catch(error => {
-            console.error('❌ Erreur:', error);
-            
-            // Tentative alternative
-            database.ref(`carts/table_${currentTable}`).set([])
-                .then(() => {
-                    console.log('✅ Panier vidé avec set([])');
-                    updateCartCount();
-                    if (document.getElementById('cartItems')) {
-                        displayCart();
-                    }
-                    showToast('🗑️ Panier vidé', 'success');
-                })
-                .catch(err => {
-                    console.error('❌ Erreur alternative:', err);
-                    showToast('❌ Erreur: ' + err.message, 'error');
-                });
-        });
+// ============ SAUVEGARDER LE PANIER ============
+function saveCart() {
+    if (currentTable) {
+        database.ref(`carts/table_${currentTable}`).set(cart)
+            .then(() => console.log('✅ Panier sauvegardé'))
+            .catch(error => console.error('❌ Erreur:', error));
+    }
 }
 
 // ============ CHARGER LE PANIER ============
 function loadCart() {
-    database.ref(`carts/table_${currentTable}`).on('value', (snapshot) => {
-        const data = snapshot.val();
-        console.log('📥 Panier chargé:', data);
-        if (data && Array.isArray(data) && data.length > 0) {
-            cart = data;
-        } else {
-            cart = [];
-        }
-        updateCartCount();
-        if (document.getElementById('cartItems')) {
-            displayCart();
-        }
-    });
+    if (currentTable) {
+        database.ref(`carts/table_${currentTable}`).on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data && Array.isArray(data) && data.length > 0) {
+                cart = data;
+            } else {
+                cart = [];
+            }
+            updateCartCount();
+            if (document.getElementById('cartItems')) {
+                displayCart();
+            }
+        });
+    }
 }
 
 // ============ METTRE À JOUR LE COMPTEUR ============
@@ -205,55 +168,181 @@ function removeFromCart(productId) {
     const index = cart.findIndex(item => item.id === productId);
     if (index !== -1) {
         cart.splice(index, 1);
-        database.ref(`carts/table_${currentTable}`).set(cart);
+        saveCart();
         displayCart();
         updateCartCount();
     }
 }
 
-// ============ ENVOYER SUR WHATSAPP ============
-function sendToWhatsApp() {
+// ============ VIDER LE PANIER ============
+function clearCart() {
+    cart = [];
+    if (currentTable) {
+        database.ref(`carts/table_${currentTable}`).remove()
+            .then(() => {
+                console.log('✅ Panier vidé');
+                updateCartCount();
+                if (document.getElementById('cartItems')) {
+                    displayCart();
+                }
+            })
+            .catch(error => {
+                console.error('❌ Erreur:', error);
+                database.ref(`carts/table_${currentTable}`).set([]);
+            });
+    }
+}
+
+// ============ GÉNÉRER UN NUMÉRO DE COMMANDE ============
+function generateOrderNumber() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const random = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+    return `CMD-${year}${month}${day}-${random}`;
+}
+
+// ============ CRÉER UNE COMMANDE ============
+function createOrder() {
+    return new Promise((resolve, reject) => {
+        if (cart.length === 0) {
+            reject(new Error('Panier vide'));
+            return;
+        }
+        
+        // Calculer le total
+        let total = 0;
+        const orderItems = cart.map(item => {
+            const subtotal = item.price * item.quantity;
+            total += subtotal;
+            return {
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity,
+                subtotal: subtotal,
+                notes: item.notes || ''
+            };
+        });
+        
+        // Créer la commande
+        const orderNumber = generateOrderNumber();
+        const orderData = {
+            orderNumber: orderNumber,
+            table: parseInt(currentTable),
+            items: orderItems,
+            total: total,
+            subtotal: total,
+            tax: 0,
+            timestamp: Date.now(),
+            date: new Date().toISOString(),
+            status: 'en_attente',
+            paymentMethod: 'sur_place',
+            customerName: '',
+            customerPhone: '',
+            notes: ''
+        };
+        
+        console.log('📝 Création de la commande:', orderData);
+        
+        // Sauvegarder dans Firebase
+        ordersRef.child('commandes').push(orderData)
+            .then((ref) => {
+                currentOrderId = ref.key;
+                console.log('✅ Commande créée avec ID:', currentOrderId);
+                console.log('📋 Numéro de commande:', orderNumber);
+                resolve({
+                    id: currentOrderId,
+                    ...orderData
+                });
+            })
+            .catch(error => {
+                console.error('❌ Erreur création commande:', error);
+                reject(error);
+            });
+    });
+}
+
+// ============ ENVOYER LA COMMANDE SUR WHATSAPP ============
+function sendOrderToWhatsApp(order) {
+    if (!order) {
+        showToast('❌ Aucune commande à envoyer', 'error');
+        return;
+    }
+    
+    let message = `🍽️ *NOUVELLE COMMANDE*\n`;
+    message += `📋 Réf: ${order.orderNumber}\n`;
+    message += `📌 Table: ${order.table}\n`;
+    message += `⏰ ${new Date(order.timestamp).toLocaleString('fr-FR')}\n\n`;
+    message += `*DÉTAILS DE LA COMMANDE:*\n`;
+    
+    order.items.forEach(item => {
+        message += `• ${item.name} x${item.quantity} = ${item.subtotal.toFixed(2)}€\n`;
+        if (item.notes) {
+            message += `  📝 ${item.notes}\n`;
+        }
+    });
+    
+    message += `\n*Total: ${order.total.toFixed(2)}€*`;
+    message += `\n\nMerci de confirmer cette commande.`;
+    
+    // Encoder pour WhatsApp
+    const encodedMessage = encodeURIComponent(message);
+    const phoneNumber = "1234567890"; // Remplacez par votre numéro
+    const url = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+    
+    // Ouvrir WhatsApp
+    window.open(url, '_blank');
+    
+    // Mettre à jour le statut de la commande
+    ordersRef.child(`commandes/${order.id}`).update({
+        status: 'envoye_whatsapp',
+        whatsappSent: true,
+        whatsappSentAt: Date.now()
+    });
+    
+    return true;
+}
+
+// ============ PROCESSUS COMPLET D'ENVOI DE COMMANDE ============
+function processOrder() {
+    console.log('🔥🔥🔥 DÉBUT PROCESSUS COMMANDE 🔥🔥🔥');
+    
     if (cart.length === 0) {
         showToast('❌ Votre panier est vide !', 'error');
         return;
     }
     
-    let message = `🍽️ *NOUVELLE COMMANDE*\n`;
-    message += `📌 Table: ${currentTable}\n`;
-    message += `⏰ ${new Date().toLocaleString('fr-FR')}\n\n`;
-    message += `*DÉTAILS:*\n`;
-    let total = 0;
+    // Désactiver le bouton
+    const sendBtn = document.getElementById('sendWhatsAppBtn');
+    if (sendBtn) {
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = '⏳ Traitement...';
+    }
     
-    const orderItems = cart.map(item => ({
-        id: item.id,
-        name: item.name,
-        price: item.price,
-        quantity: item.quantity,
-        notes: item.notes || ''
-    }));
+    showToast('⏳ Création de la commande...', 'info');
     
-    cart.forEach(item => {
-        message += `• ${item.name} x${item.quantity} = ${(item.price * item.quantity).toFixed(2)}€\n`;
-        total += item.price * item.quantity;
-    });
-    
-    message += `\n*Total: ${total.toFixed(2)}€*`;
-    
-    const orderData = {
-        table: parseInt(currentTable),
-        items: orderItems,
-        total: total,
-        timestamp: Date.now(),
-        status: 'en_attente'
-    };
-    
-    // Sauvegarder la commande
-    ordersRef.child('commandes').push(orderData)
-        .then(() => {
-            showToast('✅ Commande envoyée !', 'success');
+    // ÉTAPE 1: Créer la commande
+    createOrder()
+        .then((order) => {
+            console.log('📦 Commande créée:', order);
+            showToast('✅ Commande créée ! Envoi WhatsApp...', 'success');
             
-            // VIDER LE PANIER DIRECTEMENT
-            clearCart();
+            // ÉTAPE 2: Vider le panier
+            return clearCartWithPromise()
+                .then(() => {
+                    console.log('🗑️ Panier vidé');
+                    return order;
+                });
+        })
+        .then((order) => {
+            // ÉTAPE 3: Envoyer sur WhatsApp
+            console.log('📱 Envoi sur WhatsApp...');
+            sendOrderToWhatsApp(order);
+            
+            // ÉTAPE 4: Afficher la confirmation
+            showToast(`✅ Commande ${order.orderNumber} envoyée !`, 'success');
             
             // Fermer le modal
             const modal = document.getElementById('cartModal');
@@ -261,15 +350,62 @@ function sendToWhatsApp() {
                 modal.style.display = 'none';
                 document.body.style.overflow = '';
             }
+            
+            console.log('🔥🔥🔥 FIN PROCESSUS COMMANDE 🔥🔥🔥');
         })
-        .catch(error => {
+        .catch((error) => {
+            console.error('❌ Erreur:', error);
             showToast('❌ Erreur: ' + error.message, 'error');
+        })
+        .finally(() => {
+            if (sendBtn) {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '📱 Commander';
+            }
         });
-    
-    // Ouvrir WhatsApp
-    const encodedMessage = encodeURIComponent(message);
-    const phoneNumber = "1234567890";
-    window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
+}
+
+// ============ VIDER LE PANIER AVEC PROMESSE ============
+function clearCartWithPromise() {
+    return new Promise((resolve, reject) => {
+        cart = [];
+        if (currentTable) {
+            database.ref(`carts/table_${currentTable}`).remove()
+                .then(() => {
+                    console.log('✅ Panier vidé');
+                    updateCartCount();
+                    if (document.getElementById('cartItems')) {
+                        displayCart();
+                    }
+                    resolve();
+                })
+                .catch(error => {
+                    console.error('❌ Erreur vidage:', error);
+                    // Tentative alternative
+                    database.ref(`carts/table_${currentTable}`).set([])
+                        .then(() => {
+                            console.log('✅ Panier vidé (alternative)');
+                            updateCartCount();
+                            if (document.getElementById('cartItems')) {
+                                displayCart();
+                            }
+                            resolve();
+                        })
+                        .catch(err => {
+                            console.error('❌ Erreur alternative:', err);
+                            reject(err);
+                        });
+                });
+        } else {
+            resolve();
+        }
+    });
+}
+
+// ============ ENVOYER SUR WHATSAPP (Version simplifiée) ============
+function sendToWhatsApp() {
+    // Lancer le processus complet
+    processOrder();
 }
 
 // ============ CONFIGURATION DU MODAL ============
@@ -297,6 +433,7 @@ function setupCartModal() {
     
     if (sendBtn) {
         sendBtn.onclick = sendToWhatsApp;
+        sendBtn.textContent = '📱 Commander';
     }
     
     if (clearBtn) {
@@ -343,6 +480,7 @@ function showToast(message, type = 'info') {
         color: white; border-radius: 12px; z-index: 10000;
         font-weight: 500; animation: slideUp 0.5s ease;
         max-width: 90%; text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     `;
     toast.textContent = message;
     document.body.appendChild(toast);
@@ -354,6 +492,8 @@ function showToast(message, type = 'info') {
 }
 
 // ============ INITIALISATION ============
+console.log('🚀 Démarrage du menu...');
+
 loadTableInfo();
 listenToProducts();
 loadCart();
@@ -365,6 +505,7 @@ window.addToCart = addToCart;
 window.removeFromCart = removeFromCart;
 window.clearCart = clearCart;
 window.sendToWhatsApp = sendToWhatsApp;
+window.processOrder = processOrder;
 
 console.log('✅ Menu initialisé - Table', currentTable);
 
@@ -375,3 +516,5 @@ style.textContent = `
     @keyframes slideDown { from { transform: translateX(-50%) translateY(0); opacity: 1; } to { transform: translateX(-50%) translateY(100px); opacity: 0; } }
 `;
 document.head.appendChild(style);
+
+console.log('✅ Script.js chargé avec succès');
