@@ -210,7 +210,47 @@
             to { opacity: 1; }
         }
         
-        /* Nouveau style pour l'upload d'images avec URL GitHub */
+        .upload-progress {
+            display: none;
+            margin: 10px 0;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            border: 1px solid #2196F3;
+        }
+        
+        .upload-progress .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .upload-progress .progress-bar .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s;
+            border-radius: 5px;
+        }
+        
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .help-text a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .help-text a:hover {
+            text-decoration: underline;
+        }
+        
         .url-input-group {
             display: flex;
             gap: 10px;
@@ -239,19 +279,25 @@
             background: #764ba2;
         }
         
-        .help-text {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
+        .github-config {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #e0e0e0;
         }
         
-        .help-text a {
-            color: #667eea;
-            text-decoration: none;
+        .github-config h4 {
+            margin-bottom: 10px;
+            color: #333;
         }
         
-        .help-text a:hover {
-            text-decoration: underline;
+        .github-config input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 8px;
         }
     </style>
 </head>
@@ -261,6 +307,26 @@
         
         <div id="connectionStatus" style="background: #f0f0f0; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
             🔄 Connexion à Firebase...
+        </div>
+        
+        <!-- Configuration GitHub -->
+        <div class="admin-section">
+            <h2>⚙️ Configuration GitHub</h2>
+            <div class="github-config">
+                <h4>📁 Paramètres pour l'upload automatique des images</h4>
+                <p style="font-size: 13px; color: #666; margin-bottom: 10px;">
+                    Configurez votre dépôt GitHub pour l'upload automatique des images.
+                </p>
+                <input type="text" id="githubRepo" placeholder="Nom du dépôt (ex: restaurant-menu)" value="restaurant-menu">
+                <input type="text" id="githubUsername" placeholder="Nom d'utilisateur GitHub (ex: simou-rayane)">
+                <input type="text" id="githubBranch" placeholder="Branche (ex: main)" value="main">
+                <input type="text" id="githubToken" placeholder="Token GitHub (optionnel)" style="background: #fff3cd;">
+                <div style="font-size: 12px; color: #666; margin-top: 5px;">
+                    💡 Pour l'upload automatique, vous devez créer un <a href="https://github.com/settings/tokens" target="_blank">token GitHub</a> 
+                    avec les droits "repo" et le coller ci-dessus.
+                    <br>Sans token, vous pouvez utiliser l'URL manuellement.
+                </div>
+            </div>
         </div>
         
         <div class="admin-section">
@@ -279,21 +345,12 @@
                 <!-- Upload d'image -->
                 <div class="image-upload-area">
                     <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #555;">📷 Photo (optionnel)</label>
-                    
-                    <!-- Option 1: Upload de fichier -->
                     <input type="file" id="productImage" accept="image/*" onchange="previewImage(event)">
-                    
-                    <!-- Option 2: URL GitHub -->
-                    <div style="margin-top: 10px;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #555; font-size: 13px;">OU entrer l'URL GitHub de l'image :</label>
-                        <div class="url-input-group">
-                            <input type="text" id="productImageUrl" placeholder="https://raw.githubusercontent.com/votre-username/restaurant-menu/main/images/mon-image.jpg">
-                            <button type="button" onclick="testImageUrl()">🔍 Tester</button>
-                        </div>
-                        <div class="help-text">
-                            💡 Placez vos images dans le dossier <code>images/</code> de votre dépôt GitHub.
-                            <br>Exemple: <code>https://raw.githubusercontent.com/votre-username/restaurant-menu/main/images/pizza.jpg</code>
-                        </div>
+                    <div style="margin-top: 5px;">
+                        <label style="font-size: 13px; color: #666;">
+                            <input type="checkbox" id="autoUpload" checked> 
+                            Upload automatique vers GitHub
+                        </label>
                     </div>
                 </div>
                 
@@ -301,9 +358,15 @@
                     <img id="previewImg" src="" alt="Aperçu">
                     <button type="button" onclick="removeImage()">🗑 Supprimer</button>
                 </div>
-                <div id="urlPreview" style="display: none; margin: 10px 0; padding: 10px; background: #d4edda; border-radius: 8px; color: #155724;">
-                    ✅ Image valide !
+                
+                <div class="upload-progress" id="uploadProgress">
+                    <div style="font-weight: 600; color: #2196F3;">⏳ Upload vers GitHub en cours...</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
                 </div>
+                
+                <div id="urlResult" style="display: none; margin: 10px 0; padding: 10px; border-radius: 8px;"></div>
                 
                 <button type="submit" class="btn-primary" id="addBtn">➕ Ajouter</button>
             </form>
@@ -324,11 +387,12 @@
     
     <!-- Script principal -->
     <script>
-        // ============ ADMIN AVEC FIREBASE ET IMAGES GITHUB ============
+        // ============ ADMIN AVEC FIREBASE ET UPLOAD GITHUB ============
         
         let products = [];
         let isConnected = false;
-        let selectedImageUrl = null;
+        let selectedFile = null;
+        let uploadedImageUrl = null;
         
         // ============ ÉTAT DE CONNEXION ============
         function updateConnectionStatus(connected) {
@@ -500,36 +564,96 @@
             return true;
         }
         
-        // ============ TESTER L'URL DE L'IMAGE ============
-        function testImageUrl() {
-            const url = document.getElementById('productImageUrl').value.trim();
-            if (!url) {
-                showToast('⚠️ Veuillez entrer une URL', 'warning');
-                return;
-            }
-            
-            const img = new Image();
-            img.onload = function() {
-                document.getElementById('urlPreview').style.display = 'block';
-                document.getElementById('urlPreview').innerHTML = '✅ Image valide !';
-                selectedImageUrl = url;
-                showToast('✅ Image trouvée !', 'success');
-            };
-            img.onerror = function() {
-                document.getElementById('urlPreview').style.display = 'block';
-                document.getElementById('urlPreview').style.background = '#f8d7da';
-                document.getElementById('urlPreview').style.color = '#721c24';
-                document.getElementById('urlPreview').innerHTML = '❌ Image non trouvée. Vérifiez l\'URL.';
-                selectedImageUrl = null;
-                showToast('❌ Image non trouvée', 'error');
-            };
-            img.src = url;
+        // ============ UPLOAD VERS GITHUB ============
+        async function uploadToGitHub(file, productName) {
+            return new Promise((resolve, reject) => {
+                const username = document.getElementById('githubUsername').value.trim();
+                const repo = document.getElementById('githubRepo').value.trim();
+                const branch = document.getElementById('githubBranch').value.trim();
+                const token = document.getElementById('githubToken').value.trim();
+                
+                if (!username || !repo) {
+                    reject(new Error('Veuillez configurer votre nom d\'utilisateur et le nom du dépôt GitHub'));
+                    return;
+                }
+                
+                // Générer un nom de fichier unique
+                const extension = file.name.split('.').pop();
+                const fileName = productName
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]/g, '-')
+                    .replace(/-+/g, '-') + '-' + Date.now() + '.' + extension;
+                
+                const path = `images/${fileName}`;
+                const url = `https://api.github.com/repos/${username}/${repo}/contents/${path}`;
+                
+                // Lire le fichier en base64
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const content = e.target.result.split(',')[1];
+                    
+                    // Afficher la progression
+                    document.getElementById('uploadProgress').style.display = 'block';
+                    document.getElementById('progressFill').style.width = '50%';
+                    
+                    // Préparer la requête
+                    const data = {
+                        message: `Ajout de l'image ${fileName}`,
+                        content: content,
+                        branch: branch
+                    };
+                    
+                    const headers = {
+                        'Content-Type': 'application/json'
+                    };
+                    
+                    if (token) {
+                        headers['Authorization'] = `token ${token}`;
+                    }
+                    
+                    // Envoyer à GitHub
+                    fetch(url, {
+                        method: 'PUT',
+                        headers: headers,
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => {
+                                throw new Error(err.message || 'Erreur upload');
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(result => {
+                        document.getElementById('progressFill').style.width = '100%';
+                        
+                        // Construire l'URL de l'image
+                        const imageUrl = `https://raw.githubusercontent.com/${username}/${repo}/${branch}/${path}`;
+                        console.log('✅ Image uploadée:', imageUrl);
+                        
+                        setTimeout(() => {
+                            document.getElementById('uploadProgress').style.display = 'none';
+                            document.getElementById('progressFill').style.width = '0%';
+                        }, 1000);
+                        
+                        resolve(imageUrl);
+                    })
+                    .catch(error => {
+                        console.error('❌ Erreur upload:', error);
+                        document.getElementById('uploadProgress').style.display = 'none';
+                        reject(new Error('Erreur upload: ' + error.message));
+                    });
+                };
+                reader.readAsDataURL(file);
+            });
         }
         
-        // ============ PRÉVISUALISATION DE L'IMAGE ============
+        // ============ PRÉVISUALISATION ============
         function previewImage(event) {
             const file = event.target.files[0];
             if (file) {
+                selectedFile = file;
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const preview = document.getElementById('imagePreview');
@@ -537,9 +661,6 @@
                     if (preview && img) {
                         img.src = e.target.result;
                         preview.style.display = 'flex';
-                        selectedImageUrl = null;
-                        document.getElementById('productImageUrl').value = '';
-                        document.getElementById('urlPreview').style.display = 'none';
                     }
                 };
                 reader.readAsDataURL(file);
@@ -549,13 +670,10 @@
         function removeImage() {
             const input = document.getElementById('productImage');
             const preview = document.getElementById('imagePreview');
-            const urlInput = document.getElementById('productImageUrl');
-            const urlPreview = document.getElementById('urlPreview');
             if (input) input.value = '';
             if (preview) preview.style.display = 'none';
-            if (urlInput) urlInput.value = '';
-            if (urlPreview) urlPreview.style.display = 'none';
-            selectedImageUrl = null;
+            selectedFile = null;
+            uploadedImageUrl = null;
         }
         
         // ============ CHANGER L'IMAGE D'UN PRODUIT ============
@@ -563,153 +681,58 @@
             const product = products.find(p => p.id === productId);
             if (!product) return;
             
-            // Créer un modal pour choisir entre fichier ou URL
-            const overlay = document.createElement('div');
-            overlay.className = 'modal-overlay';
-            overlay.innerHTML = `
-                <div class="modal-content">
-                    <h2>📷 Changer la photo</h2>
-                    <p style="color: #666; margin-bottom: 15px;">Choisissez une nouvelle photo pour "${product.name}"</p>
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = async function(e) {
+                if (e.target.files.length > 0) {
+                    const file = e.target.files[0];
                     
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; font-weight: 600; margin-bottom: 5px;">Option 1: Uploader un fichier</label>
-                        <input type="file" id="changeImageFile" accept="image/*" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-                    </div>
-                    
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; font-weight: 600; margin-bottom: 5px;">Option 2: URL GitHub</label>
-                        <div class="url-input-group">
-                            <input type="text" id="changeImageUrl" placeholder="https://raw.githubusercontent.com/.../images/mon-image.jpg">
-                            <button type="button" onclick="testChangeImageUrl()">🔍 Tester</button>
-                        </div>
-                        <div id="changeUrlPreview" style="display: none; margin-top: 5px; padding: 5px 10px; border-radius: 5px;"></div>
-                    </div>
-                    
-                    <div class="modal-actions">
-                        <button type="button" class="btn-save" onclick="saveNewImage('${product.id}')">✅ Appliquer</button>
-                        <button type="button" class="btn-cancel" onclick="this.closest('.modal-overlay').remove()">❌ Annuler</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(overlay);
-            
-            // Exposer la fonction de test pour le modal
-            window.testChangeImageUrl = function() {
-                const url = document.getElementById('changeImageUrl').value.trim();
-                const preview = document.getElementById('changeUrlPreview');
-                if (!url) {
-                    preview.style.display = 'block';
-                    preview.style.background = '#fff3cd';
-                    preview.style.color = '#856404';
-                    preview.innerHTML = '⚠️ Veuillez entrer une URL';
-                    return;
-                }
-                
-                const img = new Image();
-                img.onload = function() {
-                    preview.style.display = 'block';
-                    preview.style.background = '#d4edda';
-                    preview.style.color = '#155724';
-                    preview.innerHTML = '✅ Image valide !';
-                };
-                img.onerror = function() {
-                    preview.style.display = 'block';
-                    preview.style.background = '#f8d7da';
-                    preview.style.color = '#721c24';
-                    preview.innerHTML = '❌ Image non trouvée';
-                };
-                img.src = url;
-            };
-            
-            // Exposer la fonction de sauvegarde
-            window.saveNewImage = function(productId) {
-                const fileInput = document.getElementById('changeImageFile');
-                const urlInput = document.getElementById('changeImageUrl');
-                const urlPreview = document.getElementById('changeUrlPreview');
-                
-                let imageUrl = null;
-                
-                // Vérifier si un fichier a été sélectionné
-                if (fileInput.files.length > 0) {
-                    const file = fileInput.files[0];
                     if (file.size > 5 * 1024 * 1024) {
                         showToast('❌ L\'image est trop volumineuse (max 5MB)', 'error');
                         return;
                     }
                     
-                    // Lire le fichier et le convertir en base64
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        imageUrl = e.target.result;
-                        updateProductImage(productId, imageUrl);
-                        overlay.remove();
-                    };
-                    reader.readAsDataURL(file);
-                    return;
+                    if (confirm(`Changer la photo de "${product.name}" ?`)) {
+                        try {
+                            showToast('⏳ Upload en cours...', 'info');
+                            const imageUrl = await uploadToGitHub(file, product.name);
+                            
+                            // Mettre à jour dans Firebase
+                            await productsRef.child(productId).update({
+                                image: imageUrl,
+                                updatedAt: Date.now()
+                            });
+                            
+                            showToast('✅ Photo mise à jour avec succès !', 'success');
+                        } catch (error) {
+                            showToast('❌ Erreur: ' + error.message, 'error');
+                        }
+                    }
                 }
-                
-                // Vérifier si une URL a été entrée
-                if (urlInput.value.trim()) {
-                    const url = urlInput.value.trim();
-                    // Vérifier que l'image est valide
-                    const img = new Image();
-                    img.onload = function() {
-                        updateProductImage(productId, url);
-                        overlay.remove();
-                    };
-                    img.onerror = function() {
-                        showToast('❌ URL invalide ou image non accessible', 'error');
-                    };
-                    img.src = url;
-                    return;
-                }
-                
-                showToast('⚠️ Veuillez sélectionner un fichier ou entrer une URL', 'warning');
             };
-        }
-        
-        // ============ METTRE À JOUR L'IMAGE D'UN PRODUIT ============
-        function updateProductImage(productId, imageUrl) {
-            productsRef.child(productId).update({
-                image: imageUrl,
-                updatedAt: Date.now()
-            })
-            .then(() => {
-                showToast('✅ Photo mise à jour avec succès !', 'success');
-            })
-            .catch(error => {
-                showToast('❌ Erreur: ' + error.message, 'error');
-            });
+            input.click();
         }
         
         // ============ AJOUTER UN PRODUIT ============
-        function addProduct(productData) {
+        async function addProduct(productData) {
             if (!validateProduct(productData)) {
                 return Promise.reject(new Error('Validation échouée'));
             }
             
-            // Déterminer l'URL de l'image
             let imageUrl = null;
-            
-            // Vérifier si une image a été uploadée
             const fileInput = document.getElementById('productImage');
-            if (fileInput && fileInput.files.length > 0) {
-                // Pour les fichiers uploadés, on les convertit en base64
-                // Note: pour une solution professionnelle, il est recommandé d'utiliser un service d'hébergement
-                const file = fileInput.files[0];
-                if (file.size > 5 * 1024 * 1024) {
-                    showToast('❌ L\'image est trop volumineuse (max 5MB)', 'error');
-                    return Promise.reject(new Error('Image trop volumineuse'));
-                }
-                // On utilisera l'URL GitHub à la place
-                showToast('⚠️ Veuillez utiliser une URL GitHub pour les images', 'warning');
-                return Promise.reject(new Error('Utilisez une URL GitHub'));
-            }
+            const autoUpload = document.getElementById('autoUpload').checked;
             
-            // Vérifier si une URL a été entrée
-            const urlInput = document.getElementById('productImageUrl');
-            if (urlInput && urlInput.value.trim()) {
-                imageUrl = urlInput.value.trim();
+            // Si un fichier est sélectionné et l'upload automatique est activé
+            if (fileInput && fileInput.files.length > 0 && autoUpload) {
+                try {
+                    showToast('⏳ Upload de l\'image vers GitHub...', 'info');
+                    imageUrl = await uploadToGitHub(fileInput.files[0], productData.name);
+                    showToast('✅ Image uploadée avec succès !', 'success');
+                } catch (error) {
+                    showToast('⚠️ Erreur upload: ' + error.message + ' (produit ajouté sans image)', 'warning');
+                }
             }
             
             const newProduct = {
@@ -724,7 +747,7 @@
             
             return productsRef.push().set(newProduct)
                 .then((ref) => {
-                    console.log('✅ Produit ajouté à Firebase avec ID:', ref.key);
+                    console.log('✅ Produit ajouté avec ID:', ref.key);
                     showToast('✅ Produit ajouté avec succès !', 'success');
                     return true;
                 })
@@ -768,7 +791,7 @@
                             <textarea id="editDesc" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">${product.description || ''}</textarea>
                         </div>
                         <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">📷 URL de l'image (GitHub)</label>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">📷 URL de l'image</label>
                             <input type="text" id="editImageUrl" value="${product.image || ''}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" placeholder="https://raw.githubusercontent.com/.../images/mon-image.jpg">
                             <div style="font-size: 12px; color: #666; margin-top: 5px;">
                                 Laissez vide pour supprimer l'image.
@@ -892,4 +915,35 @@
             btn.textContent = '⏳ Ajout en cours...';
             
             addProduct(productData)
-               
+                .then(() => {
+                    this.reset();
+                    removeImage();
+                })
+                .catch(() => {
+                    // Erreur déjà gérée
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.textContent = '➕ Ajouter';
+                });
+        });
+        
+        // ============ INITIALISATION ============
+        console.log('🚀 Démarrage de l\'administration Firebase...');
+        listenToProducts();
+        
+        console.log('🔍 Firebase Database URL:', database.ref().toString());
+        
+        // Exposer les fonctions globalement
+        window.toggleVisibility = toggleVisibility;
+        window.editProduct = editProduct;
+        window.deleteProduct = deleteProduct;
+        window.changeImage = changeImage;
+        window.previewImage = previewImage;
+        window.removeImage = removeImage;
+        window.resetFirebaseProducts = resetFirebaseProducts;
+        window.uploadToGitHub = uploadToGitHub;
+        
+    </script>
+</body>
+</html>
