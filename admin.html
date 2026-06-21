@@ -11,6 +11,14 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
     <style>
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
         .product-item .product-info-with-image {
             display: flex;
             align-items: center;
@@ -38,6 +46,61 @@
             color: #999;
             font-size: 24px;
             border: 1px solid #eee;
+        }
+        
+        .product-item .status {
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: white;
+            margin: 0 5px;
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .product-item .status.visible {
+            background: #4caf50;
+        }
+        
+        .product-item .status.hidden {
+            background: #f44336;
+        }
+        
+        .product-item .btn-edit {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        
+        .product-item .btn-photo {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        
+        .product-item .btn-delete {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        
+        .product-item .btn-edit:hover,
+        .product-item .btn-photo:hover,
+        .product-item .btn-delete:hover {
+            opacity: 0.8;
         }
         
         .image-upload-area {
@@ -170,20 +233,6 @@
             color: #4caf50;
             font-size: 11px;
             margin-top: 3px;
-        }
-        
-        .btn-photo {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 3px;
-            cursor: pointer;
-            margin: 0 5px;
-        }
-        
-        .btn-photo:hover {
-            opacity: 0.8;
         }
         
         .modal-overlay {
@@ -323,15 +372,95 @@
         .github-config .help-text a:hover {
             text-decoration: underline;
         }
+        
+        .admin-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+        
+        .admin-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f2f5;
+        }
+        
+        .admin-section input,
+        .admin-section select,
+        .admin-section textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 10px;
+            transition: border-color 0.3s;
+        }
+        
+        .admin-section input:focus,
+        .admin-section select:focus,
+        .admin-section textarea:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        
+        .admin-section textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        #connectionStatus {
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        
+        #connectionStatus.connected {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        #connectionStatus.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🔧 Administration Firebase</h1>
         
-        <div id="connectionStatus" style="background: #f0f0f0; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
-            🔄 Connexion à Firebase...
-        </div>
+        <div id="connectionStatus" class="connected">✅ Connecté à Firebase</div>
         
         <!-- Configuration GitHub -->
         <div class="admin-section">
@@ -422,14 +551,12 @@
         function updateConnectionStatus(connected) {
             const statusEl = document.getElementById('connectionStatus');
             if (connected) {
+                statusEl.className = 'connected';
                 statusEl.innerHTML = '✅ Connecté à Firebase';
-                statusEl.style.background = '#d4edda';
-                statusEl.style.color = '#155724';
                 isConnected = true;
             } else {
+                statusEl.className = 'disconnected';
                 statusEl.innerHTML = '❌ Déconnecté de Firebase - Vérifiez votre configuration';
-                statusEl.style.background = '#f8d7da';
-                statusEl.style.color = '#721c24';
                 isConnected = false;
             }
         }
@@ -508,10 +635,8 @@
                 div.className = 'image-item';
                 div.dataset.index = index;
                 
-                const imageUrl = item.download_url;
-                
                 div.innerHTML = `
-                    <img src="${imageUrl}" alt="${item.name}" 
+                    <img src="${item.download_url}" alt="${item.name}" 
                          onerror="this.parentElement.style.display='none'">
                     <div class="image-name">${item.name}</div>
                     <div class="select-badge">✓ Sélectionné</div>
@@ -565,10 +690,6 @@
             document.querySelectorAll('.image-item').forEach(el => el.classList.remove('selected'));
             document.getElementById('imagePreview').style.display = 'none';
             document.getElementById('selectedImageInfo').style.display = 'none';
-            
-            // Réinitialiser le champ file pour permettre une nouvelle sélection
-            const fileInput = document.getElementById('productImage');
-            if (fileInput) fileInput.value = '';
         }
         
         // ============ ÉCOUTER LES PRODUITS ============
@@ -594,6 +715,9 @@
             }, (error) => {
                 console.error('❌ Erreur Firebase:', error);
                 showToast('❌ Erreur de connexion: ' + error.message, 'error');
+                document.getElementById('productsList').innerHTML = `
+                    <p style="text-align: center; color: #f44336;">❌ Erreur: ${error.message}</p>
+                `;
             });
         }
         
@@ -660,7 +784,6 @@
             products.forEach((product) => {
                 const productDiv = document.createElement('div');
                 productDiv.className = 'product-item';
-                productDiv.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;';
                 
                 // Image ou placeholder
                 let imageHtml = '';
@@ -673,7 +796,7 @@
                 productDiv.innerHTML = `
                     <div class="product-info-with-image">
                         ${imageHtml}
-                        <div style="flex: 1;">
+                        <div>
                             <strong>${product.name}</strong> - ${product.price.toFixed(2)}€ 
                             <span style="color: #666;">(${product.category})</span>
                             <br><small>${product.description || 'Pas de description'}</small>
@@ -682,15 +805,12 @@
                     </div>
                     <div>
                         <span class="status ${product.visible ? 'visible' : 'hidden'}" 
-                              onclick="toggleVisibility('${product.id}')" 
-                              style="cursor: pointer; padding: 5px 10px; border-radius: 5px; 
-                                     background: ${product.visible ? '#4caf50' : '#f44336'}; 
-                                     color: white; margin: 0 5px;">
+                              onclick="toggleVisibility('${product.id}')">
                             ${product.visible ? '✓ Visible' : '✗ Masqué'}
                         </span>
-                        <button onclick="editProduct('${product.id}')" style="background: #2196F3; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin: 0 5px;">✏️</button>
-                        <button onclick="changeImage('${product.id}')" class="btn-photo">📷</button>
-                        <button onclick="deleteProduct('${product.id}')" style="background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin: 0 5px;">🗑</button>
+                        <button class="btn-edit" onclick="editProduct('${product.id}')">✏️</button>
+                        <button class="btn-photo" onclick="changeImage('${product.id}')">📷</button>
+                        <button class="btn-delete" onclick="deleteProduct('${product.id}')">🗑</button>
                     </div>
                 `;
                 container.appendChild(productDiv);
@@ -735,7 +855,7 @@
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; font-weight: 600; margin-bottom: 10px;">Sélectionnez une image depuis GitHub</label>
-                        <button type="button" class="btn-refresh-images" onclick="loadImagesForModal()">🔄 Charger les images</button>
+                        <button type="button" class="btn-refresh-images" onclick="loadImagesForModal('${productId}')">🔄 Charger les images</button>
                     </div>
                     
                     <div id="modalImageList" class="image-list" style="max-height: 300px;">
@@ -749,7 +869,7 @@
                     </div>
                     
                     <div class="modal-actions">
-                        <button type="button" class="btn-save" onclick="saveProductImage('${productId}')">✅ Appliquer</button>
+                        <button type="button" class="btn-save" onclick="saveModalImage('${productId}')">✅ Appliquer</button>
                         <button type="button" class="btn-cancel" onclick="this.closest('.modal-overlay').remove()">❌ Annuler</button>
                     </div>
                 </div>
@@ -758,89 +878,91 @@
             
             // Variable pour stocker l'image sélectionnée dans le modal
             window.modalSelectedImage = null;
-            
-            // Fonction pour charger les images dans le modal
-            window.loadImagesForModal = async function() {
-                const username = document.getElementById('githubUsername').value.trim();
-                const repo = document.getElementById('githubRepo').value.trim();
-                const branch = document.getElementById('githubBranch').value.trim();
-                
-                if (!username || !repo) {
-                    showToast('❌ Veuillez configurer votre nom d\'utilisateur et le nom du dépôt', 'error');
-                    return;
-                }
-                
-                showToast('⏳ Chargement des images...', 'info');
-                
-                try {
-                    const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/images?ref=${branch}`;
-                    const response = await fetch(apiUrl);
-                    
-                    if (!response.ok) {
-                        throw new Error('Dossier "images" non trouvé');
-                    }
-                    
-                    const data = await response.json();
-                    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
-                    const images = data.filter(item => 
-                        item.type === 'file' && 
-                        imageExtensions.some(ext => item.name.toLowerCase().endsWith(ext))
-                    );
-                    
-                    const container = document.getElementById('modalImageList');
-                    container.innerHTML = '';
-                    
-                    if (images.length === 0) {
-                        container.innerHTML = `<div class="empty-images">📂 Aucune image trouvée</div>`;
-                        return;
-                    }
-                    
-                    images.forEach((item, index) => {
-                        const div = document.createElement('div');
-                        div.className = 'image-item';
-                        div.innerHTML = `
-                            <img src="${item.download_url}" alt="${item.name}" 
-                                 onerror="this.parentElement.style.display='none'">
-                            <div class="image-name">${item.name}</div>
-                            <div class="select-badge">✓ Sélectionné</div>
-                        `;
-                        div.onclick = function() {
-                            document.querySelectorAll('#modalImageList .image-item').forEach(el => el.classList.remove('selected'));
-                            this.classList.add('selected');
-                            window.modalSelectedImage = item.download_url;
-                            document.getElementById('modalSelectedName').textContent = item.name;
-                            document.getElementById('modalSelectedInfo').style.display = 'block';
-                        };
-                        container.appendChild(div);
-                    });
-                    
-                    showToast(`✅ ${images.length} images chargées`, 'success');
-                    
-                } catch (error) {
-                    showToast('❌ Erreur: ' + error.message, 'error');
-                }
-            };
-            
-            // Fonction pour sauvegarder l'image
-            window.saveProductImage = function(productId) {
-                if (!window.modalSelectedImage) {
-                    showToast('⚠️ Veuillez sélectionner une image', 'warning');
-                    return;
-                }
-                
-                productsRef.child(productId).update({
-                    image: window.modalSelectedImage,
-                    updatedAt: Date.now()
-                })
-                .then(() => {
-                    showToast('✅ Photo mise à jour avec succès !', 'success');
-                    overlay.remove();
-                })
-                .catch(error => {
-                    showToast('❌ Erreur: ' + error.message, 'error');
-                });
-            };
         }
+        
+        // Fonction pour charger les images dans le modal
+        window.loadImagesForModal = async function(productId) {
+            const username = document.getElementById('githubUsername').value.trim();
+            const repo = document.getElementById('githubRepo').value.trim();
+            const branch = document.getElementById('githubBranch').value.trim();
+            
+            if (!username || !repo) {
+                showToast('❌ Veuillez configurer votre nom d\'utilisateur et le nom du dépôt', 'error');
+                return;
+            }
+            
+            showToast('⏳ Chargement des images...', 'info');
+            
+            try {
+                const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/images?ref=${branch}`;
+                const response = await fetch(apiUrl);
+                
+                if (!response.ok) {
+                    throw new Error('Dossier "images" non trouvé');
+                }
+                
+                const data = await response.json();
+                const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
+                const images = data.filter(item => 
+                    item.type === 'file' && 
+                    imageExtensions.some(ext => item.name.toLowerCase().endsWith(ext))
+                );
+                
+                const container = document.getElementById('modalImageList');
+                container.innerHTML = '';
+                
+                if (images.length === 0) {
+                    container.innerHTML = `<div class="empty-images">📂 Aucune image trouvée</div>`;
+                    return;
+                }
+                
+                images.forEach((item, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'image-item';
+                    div.innerHTML = `
+                        <img src="${item.download_url}" alt="${item.name}" 
+                             onerror="this.parentElement.style.display='none'">
+                        <div class="image-name">${item.name}</div>
+                        <div class="select-badge">✓ Sélectionné</div>
+                    `;
+                    div.onclick = function() {
+                        document.querySelectorAll('#modalImageList .image-item').forEach(el => el.classList.remove('selected'));
+                        this.classList.add('selected');
+                        window.modalSelectedImage = item.download_url;
+                        document.getElementById('modalSelectedName').textContent = item.name;
+                        document.getElementById('modalSelectedInfo').style.display = 'block';
+                    };
+                    container.appendChild(div);
+                });
+                
+                showToast(`✅ ${images.length} images chargées`, 'success');
+                
+            } catch (error) {
+                showToast('❌ Erreur: ' + error.message, 'error');
+            }
+        };
+        
+        // Fonction pour sauvegarder l'image du modal
+        window.saveModalImage = function(productId) {
+            if (!window.modalSelectedImage) {
+                showToast('⚠️ Veuillez sélectionner une image', 'warning');
+                return;
+            }
+            
+            productsRef.child(productId).update({
+                image: window.modalSelectedImage,
+                updatedAt: Date.now()
+            })
+            .then(() => {
+                showToast('✅ Photo mise à jour avec succès !', 'success');
+                // Fermer le modal
+                const overlay = document.querySelector('.modal-overlay');
+                if (overlay) overlay.remove();
+            })
+            .catch(error => {
+                showToast('❌ Erreur: ' + error.message, 'error');
+            });
+        };
         
         // ============ AJOUTER UN PRODUIT ============
         function addProduct(productData) {
@@ -854,7 +976,7 @@
                 category: productData.category,
                 description: productData.description ? productData.description.trim() : '',
                 visible: true,
-                image: selectedImageUrl, // Utiliser l'image sélectionnée
+                image: selectedImageUrl,
                 createdAt: Date.now()
             };
             
@@ -862,7 +984,6 @@
                 .then((ref) => {
                     console.log('✅ Produit ajouté avec ID:', ref.key);
                     showToast('✅ Produit ajouté avec succès !', 'success');
-                    // Réinitialiser la sélection
                     clearImageSelection();
                     return true;
                 })
@@ -906,7 +1027,7 @@
                             <textarea id="editDesc" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">${product.description || ''}</textarea>
                         </div>
                         <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">📷 URL de l'image</label>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">📷 URL de l'image (GitHub)</label>
                             <input type="text" id="editImageUrl" value="${product.image || ''}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" placeholder="https://raw.githubusercontent.com/.../images/mon-image.jpg">
                             <div style="font-size: 12px; color: #666; margin-top: 5px;">
                                 Laissez vide pour supprimer l'image.
@@ -914,4 +1035,150 @@
                         </div>
                         <div class="modal-actions">
                             <button type="submit" class="btn-save">✅ Sauvegarder</button>
-                            <button type="button" class="btn-cancel
+                            <button type="button" class="btn-cancel" onclick="this.closest('.modal-overlay').remove()">❌ Annuler</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            
+            document.getElementById('editForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const updates = {
+                    name: document.getElementById('editName').value.trim(),
+                    price: parseFloat(document.getElementById('editPrice').value),
+                    category: document.getElementById('editCategory').value,
+                    description: document.getElementById('editDesc').value.trim(),
+                    image: document.getElementById('editImageUrl').value.trim() || null,
+                    updatedAt: Date.now()
+                };
+                
+                if (!validateProduct(updates)) return;
+                
+                productsRef.child(productId).update(updates)
+                    .then(() => {
+                        showToast('✅ Produit modifié avec succès !', 'success');
+                        overlay.remove();
+                    })
+                    .catch((error) => {
+                        showToast('❌ Erreur: ' + error.message, 'error');
+                    });
+            });
+        }
+        
+        // ============ SUPPRIMER UN PRODUIT ============
+        function deleteProduct(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            if (confirm(`Supprimer "${product.name}" définitivement ?`)) {
+                productsRef.child(productId).remove()
+                    .then(() => {
+                        console.log('✅ Produit supprimé');
+                        showToast('✅ Produit supprimé !', 'success');
+                    })
+                    .catch(error => {
+                        console.error('❌ Erreur:', error);
+                        showToast('❌ Erreur: ' + error.message, 'error');
+                    });
+            }
+        }
+        
+        // ============ MASQUER/AFFICHER ============
+        function toggleVisibility(productId) {
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                productsRef.child(productId).update({
+                    visible: !product.visible,
+                    updatedAt: Date.now()
+                })
+                .then(() => {
+                    console.log('✅ Visibilité modifiée');
+                })
+                .catch(error => {
+                    console.error('❌ Erreur:', error);
+                    showToast('❌ Erreur: ' + error.message, 'error');
+                });
+            }
+        }
+        
+        // ============ RÉINITIALISER ============
+        function resetFirebaseProducts() {
+            if (confirm('⚠️ Supprimer tous les produits et les réinitialiser ?')) {
+                createDefaultProducts();
+                showToast('✅ Produits réinitialisés !', 'success');
+            }
+        }
+        
+        // ============ TOAST ============
+        function showToast(message, type = 'info') {
+            const colors = {
+                'success': '#4caf50',
+                'error': '#f44336',
+                'warning': '#ff9800',
+                'info': '#2196F3'
+            };
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.style.background = colors[type] || '#667eea';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideUp 0.5s ease reverse';
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+        
+        // ============ FORMULAIRE ============
+        document.getElementById('productForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('📝 Formulaire soumis');
+            
+            const productData = {
+                name: document.getElementById('productName').value,
+                price: document.getElementById('productPrice').value,
+                category: document.getElementById('productCategory').value,
+                description: document.getElementById('productDesc').value
+            };
+            
+            console.log('Données du formulaire:', productData);
+            
+            const btn = document.getElementById('addBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Ajout en cours...';
+            
+            addProduct(productData)
+                .then(() => {
+                    document.getElementById('productForm').reset();
+                    clearImageSelection();
+                })
+                .catch(() => {})
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.textContent = '➕ Ajouter';
+                });
+        });
+        
+        // ============ INITIALISATION ============
+        console.log('🚀 Démarrage de l\'administration Firebase...');
+        listenToProducts();
+        
+        // Exposer les fonctions globalement
+        window.toggleVisibility = toggleVisibility;
+        window.editProduct = editProduct;
+        window.deleteProduct = deleteProduct;
+        window.changeImage = changeImage;
+        window.loadImagesFromGitHub = loadImagesFromGitHub;
+        window.clearImageSelection = clearImageSelection;
+        window.resetFirebaseProducts = resetFirebaseProducts;
+        window.loadImagesForModal = loadImagesForModal;
+        window.saveModalImage = saveModalImage;
+        
+        console.log('✅ Admin initialisé');
+        
+    </script>
+</body>
+</html>
