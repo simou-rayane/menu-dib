@@ -507,12 +507,11 @@
                 <p style="font-size: 13px; color: #666; margin-bottom: 10px;">
                     Configurez votre dépôt PicX pour charger les images.
                 </p>
-                <input type="text" id="githubUsername" placeholder="Nom d'utilisateur GitHub (ex: simou-rayane)" value="simou-rayane">
-                <input type="text" id="githubRepo" placeholder="Dépôt PicX (ex: picx-images-hosting)" value="picx-images-hosting">
-                <input type="text" id="githubBranch" placeholder="Branche (ex: main ou master)" value="master">
+                <input type="text" id="githubUsername" placeholder="Nom d'utilisateur GitHub" value="simou-rayane">
+                <input type="text" id="githubRepo" placeholder="Dépôt PicX" value="picx-images-hosting">
+                <input type="text" id="githubBranch" placeholder="Branche" value="master">
                 <div class="help-text">
                     💡 Utilisez PicX pour uploader vos images dans ce dépôt.
-                    <br>Les images seront disponibles via: <code>https://raw.githubusercontent.com/votre-username/picx-images-hosting/main/votre-image.jpg</code>
                 </div>
             </div>
         </div>
@@ -536,7 +535,7 @@
                     <label style="display: block; font-weight: 600; color: #555; margin-bottom: 10px;">📷 Choisir une image depuis PicX</label>
                     
                     <div class="toolbar">
-                        <button type="button" class="btn-refresh" id="refreshBtn" onclick="loadImagesFromPicX()">🔄 Charger les images</button>
+                        <button type="button" class="btn-refresh" onclick="loadImagesFromPicX()">🔄 Charger les images</button>
                         <button type="button" class="btn-clear-selection" onclick="clearImageSelection()">✕ Désélectionner</button>
                     </div>
                     
@@ -550,7 +549,6 @@
                             <div class="empty-images">
                                 <div class="icon">📂</div>
                                 <p>Aucune image chargée</p>
-                                <p style="font-size: 12px; color: #bbb;">Configurez votre dépôt PicX et cliquez sur "Charger les images"</p>
                             </div>
                         </div>
                     </div>
@@ -619,42 +617,37 @@
             const branch = document.getElementById('githubBranch').value.trim();
             
             if (!username || !repo) {
-                showToast('❌ Veuillez configurer votre nom d\'utilisateur et le nom du dépôt', 'error');
+                showToast('❌ Veuillez configurer votre dépôt', 'error');
                 return;
             }
             
             document.getElementById('loadingSpinner').style.display = 'block';
             document.getElementById('refreshBtn').disabled = true;
             
-            showToast('⏳ Chargement des images...', 'info');
-            
             try {
                 const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents?ref=${branch}`;
                 const response = await fetch(apiUrl);
                 
                 if (!response.ok) {
-                    throw new Error(`Dépôt "${repo}" non trouvé ou inaccessible (${response.status})`);
+                    throw new Error(`Dépôt "${repo}" non trouvé (${response.status})`);
                 }
                 
                 const data = await response.json();
                 
-                const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico'];
+                const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
                 picxImages = data.filter(item => 
                     item.type === 'file' && 
                     imageExtensions.some(ext => item.name.toLowerCase().endsWith(ext))
                 );
                 
                 if (picxImages.length === 0) {
-                    showToast('ℹ️ Aucune image trouvée dans le dépôt PicX', 'warning');
                     document.getElementById('imageList').innerHTML = `
                         <div class="empty-images">
                             <div class="icon">📂</div>
                             <p>Aucune image trouvée</p>
-                            <p style="font-size: 12px; color: #bbb;">
-                                Ajoutez des images via PicX dans le dépôt <code>${repo}</code>
-                            </p>
                         </div>
                     `;
+                    showToast('ℹ️ Aucune image trouvée', 'warning');
                     return;
                 }
                 
@@ -662,15 +655,11 @@
                 showToast(`✅ ${picxImages.length} images chargées`, 'success');
                 
             } catch (error) {
-                console.error('❌ Erreur chargement images:', error);
                 showToast('❌ Erreur: ' + error.message, 'error');
                 document.getElementById('imageList').innerHTML = `
                     <div class="empty-images">
                         <div class="icon">❌</div>
-                        <p>Erreur: ${error.message}</p>
-                        <p style="font-size: 12px; color: #999;">
-                            Vérifiez que le dépôt <code>${repo}</code> existe et contient des images
-                        </p>
+                        <p>${error.message}</p>
                     </div>
                 `;
             } finally {
@@ -689,11 +678,9 @@
                 div.className = 'image-item';
                 div.dataset.index = index;
                 
-                const imageUrl = item.download_url;
-                
                 div.innerHTML = `
-                    <img src="${imageUrl}" alt="${item.name}" 
-                         onerror="this.parentElement.style.opacity='0.5'; this.parentElement.title='Image inaccessible'">
+                    <img src="${item.download_url}" alt="${item.name}" 
+                         onerror="this.parentElement.style.opacity='0.5'">
                     <div class="image-name">${item.name}</div>
                     <div class="select-badge">✓ Sélectionné</div>
                 `;
@@ -743,38 +730,32 @@
         function listenToProducts() {
             productsRef.on('value', (snapshot) => {
                 const data = snapshot.val();
-                console.log('📦 Données reçues de Firebase:', data);
                 
                 if (data) {
                     products = Object.keys(data).map(key => ({
                         id: key,
                         ...data[key]
                     }));
-                    console.log('✅ Produits chargés:', products.length);
                 } else {
                     products = [];
-                    console.log('ℹ️ Aucun produit dans Firebase');
                     createDefaultProducts();
                 }
                 
                 displayProducts();
                 document.getElementById('productCount').textContent = products.length;
             }, (error) => {
-                console.error('❌ Erreur Firebase:', error);
-                showToast('❌ Erreur de connexion: ' + error.message, 'error');
+                showToast('❌ Erreur: ' + error.message, 'error');
             });
         }
         
         // ============ CRÉER DES PRODUITS PAR DÉFAUT ============
         function createDefaultProducts() {
-            console.log('🔄 Création des produits par défaut...');
-            
             const defaultProducts = {
                 'prod1': {
                     name: "Salade César",
                     price: 12,
                     category: "entrees",
-                    description: "Salade, poulet, parmesan, sauce césar",
+                    description: "Salade, poulet, parmesan",
                     visible: true,
                     createdAt: Date.now()
                 },
@@ -782,7 +763,7 @@
                     name: "Steak Frites",
                     price: 18,
                     category: "plats",
-                    description: "Steak grillé 200g, frites maison",
+                    description: "Steak grillé, frites maison",
                     visible: true,
                     createdAt: Date.now()
                 },
@@ -790,7 +771,7 @@
                     name: "Tiramisu",
                     price: 7,
                     category: "desserts",
-                    description: "Café, mascarpone, cacao",
+                    description: "Café, mascarpone",
                     visible: true,
                     createdAt: Date.now()
                 },
@@ -804,14 +785,7 @@
                 }
             };
             
-            productsRef.set(defaultProducts)
-                .then(() => {
-                    console.log('✅ Produits par défaut créés dans Firebase');
-                })
-                .catch(error => {
-                    console.error('❌ Erreur création produits:', error);
-                    showToast('❌ Erreur: ' + error.message, 'error');
-                });
+            productsRef.set(defaultProducts);
         }
         
         // ============ AFFICHER LES PRODUITS ============
@@ -820,7 +794,7 @@
             if (!container) return;
             
             if (products.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #999;">Aucun produit. Ajoutez-en un !</p>';
+                container.innerHTML = '<p style="text-align: center; color: #999;">Aucun produit</p>';
                 return;
             }
             
@@ -845,8 +819,7 @@
                                 <span class="price">${product.price.toFixed(2)} €</span>
                                 <span class="category">(${product.category})</span>
                             </div>
-                            <div class="description">${product.description || 'Pas de description'}</div>
-                            ${product.image ? '<div style="color: #4caf50; font-size: 11px; margin-top: 3px;">📷 Photo présente</div>' : ''}
+                            <div class="description">${product.description || ''}</div>
                         </div>
                     </div>
                     <div class="product-actions">
@@ -886,40 +859,41 @@
             return true;
         }
         
-        // ============ AJOUTER UN PRODUIT ============
+        // ============ AJOUTER UN PRODUIT (CORRIGÉ) ============
         function addProduct(productData) {
-            if (!validateProduct(productData)) {
-                return Promise.reject(new Error('Validation échouée'));
-            }
-            
-            // Vérifier que selectedImageUrl est bien défini
-            console.log('📷 Image sélectionnée:', selectedImageUrl);
-            
-            const newProduct = {
-                name: productData.name.trim(),
-                price: parseFloat(productData.price),
-                category: productData.category,
-                description: productData.description ? productData.description.trim() : '',
-                visible: true,
-                image: selectedImageUrl || null,  // ← S'assurer que c'est null si pas d'image
-                createdAt: Date.now()
-            };
-            
-            console.log('📝 Nouveau produit:', newProduct);
-            
-            return productsRef.push().set(newProduct)
-                .then((ref) => {
-                    console.log('✅ Produit ajouté avec ID:', ref.key);
-                    showToast('✅ Produit ajouté avec succès !', 'success');
-                    clearImageSelection();
-                    document.getElementById('productForm').reset();
-                    return true;
-                })
-                .catch((error) => {
-                    console.error('❌ Erreur Firebase:', error);
-                    showToast('❌ Erreur: ' + error.message, 'error');
-                    throw error;
-                });
+            return new Promise((resolve, reject) => {
+                if (!validateProduct(productData)) {
+                    reject(new Error('Validation échouée'));
+                    return;
+                }
+                
+                const newProduct = {
+                    name: productData.name.trim(),
+                    price: parseFloat(productData.price),
+                    category: productData.category,
+                    description: productData.description ? productData.description.trim() : '',
+                    visible: true,
+                    image: selectedImageUrl || null,
+                    createdAt: Date.now()
+                };
+                
+                // Utiliser push() et récupérer la référence
+                const newRef = productsRef.push();
+                
+                newRef.set(newProduct)
+                    .then(() => {
+                        console.log('✅ Produit ajouté avec ID:', newRef.key);
+                        showToast('✅ Produit ajouté avec succès !', 'success');
+                        clearImageSelection();
+                        document.getElementById('productForm').reset();
+                        resolve(true);
+                    })
+                    .catch((error) => {
+                        console.error('❌ Erreur Firebase:', error);
+                        showToast('❌ Erreur: ' + error.message, 'error');
+                        reject(error);
+                    });
+            });
         }
         
         // ============ CHANGER L'IMAGE D'UN PRODUIT ============
@@ -988,7 +962,7 @@
                         return;
                     }
                     
-                    images.forEach((item, index) => {
+                    images.forEach((item) => {
                         const div = document.createElement('div');
                         div.className = 'image-item';
                         div.innerHTML = `
@@ -1067,8 +1041,8 @@
                             <textarea id="editDesc" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">${product.description || ''}</textarea>
                         </div>
                         <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">📷 URL de l'image (PicX)</label>
-                            <input type="text" id="editImageUrl" value="${product.image || ''}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" placeholder="https://raw.githubusercontent.com/.../picx-images-hosting/master/image.jpg">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">📷 URL de l'image</label>
+                            <input type="text" id="editImageUrl" value="${product.image || ''}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" placeholder="https://raw.githubusercontent.com/.../image.jpg">
                             <div style="font-size: 12px; color: #666; margin-top: 5px;">
                                 Laissez vide pour supprimer l'image.
                             </div>
@@ -1180,9 +1154,6 @@
                 description: document.getElementById('productDesc').value
             };
             
-            console.log('📝 Formulaire soumis:', productData);
-            console.log('📷 Image sélectionnée:', selectedImageUrl);
-            
             const btn = document.getElementById('addBtn');
             btn.disabled = true;
             btn.textContent = '⏳ Ajout en cours...';
@@ -1199,10 +1170,9 @@
         });
         
         // ============ INITIALISATION ============
-        console.log('🚀 Démarrage de l\'administration Firebase...');
+        console.log('🚀 Démarrage de l\'administration...');
         listenToProducts();
         
-        // Exposer les fonctions globalement
         window.loadImagesFromPicX = loadImagesFromPicX;
         window.clearImageSelection = clearImageSelection;
         window.toggleVisibility = toggleVisibility;
