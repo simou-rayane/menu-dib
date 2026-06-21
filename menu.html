@@ -11,106 +11,18 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
     <style>
-        /* Styles pour le menu avec images */
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 25px;
-            margin-top: 20px;
-        }
+        /* ============ STYLES MENU AVEC IMAGES EN ENTIER ============ */
         
-        .product-card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            transition: transform 0.3s, box-shadow 0.3s;
-            cursor: default;
-        }
-        
-        .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 25px rgba(0,0,0,0.15);
-        }
-        
-        .product-card .product-image {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            background: #f5f7fa;
-        }
-        
-        .product-card .product-image-placeholder {
-            width: 100%;
-            height: 200px;
-            background: #f5f7fa;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #ddd;
-            font-size: 64px;
-        }
-        
-        .product-card .product-body {
-            padding: 20px;
-        }
-        
-        .product-card .product-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 10px;
-        }
-        
-        .product-card .product-name {
+        * {
             margin: 0;
-            font-size: 18px;
-            color: #333;
+            padding: 0;
+            box-sizing: border-box;
         }
         
-        .product-card .product-category-badge {
-            background: #f0f4ff;
-            color: #667eea;
-            padding: 2px 12px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-        
-        .product-card .product-price {
-            color: #667eea;
-            font-size: 22px;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-        
-        .product-card .product-description {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 15px;
-            min-height: 40px;
-        }
-        
-        .product-card .btn-add {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px;
-            width: 100%;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: transform 0.2s;
-        }
-        
-        .product-card .btn-add:hover {
-            transform: scale(1.02);
-        }
-        
-        .product-card .btn-add:active {
-            transform: scale(0.98);
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
         }
         
         .container {
@@ -119,19 +31,23 @@
             padding: 20px;
         }
         
+        /* ============ HEADER ============ */
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
+            padding: 20px 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
         }
         
         header h1 {
             color: #333;
+            font-size: 24px;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -141,6 +57,14 @@
             cursor: pointer;
             font-size: 24px;
             position: relative;
+            padding: 8px 12px;
+            background: #f8f9ff;
+            border-radius: 30px;
+            transition: background 0.3s;
+        }
+        
+        .cart-icon:hover {
+            background: #e8ecff;
         }
         
         #cartCount {
@@ -148,50 +72,60 @@
             color: white;
             border-radius: 50%;
             padding: 2px 8px;
-            font-size: 14px;
+            font-size: 13px;
+            font-weight: 600;
             position: absolute;
-            top: -10px;
-            right: -10px;
-            min-width: 20px;
+            top: -8px;
+            right: -8px;
+            min-width: 22px;
             text-align: center;
         }
         
+        /* ============ TABLE INFO ============ */
         .table-info {
             background: white;
-            padding: 10px 20px;
-            border-radius: 5px;
+            padding: 12px 20px;
+            border-radius: 10px;
             margin-bottom: 20px;
             text-align: center;
             font-size: 18px;
-            font-weight: bold;
+            font-weight: 600;
+            color: #333;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         
+        .table-info span {
+            color: #667eea;
+        }
+        
+        /* ============ FILTRES ============ */
         .menu-filters {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             flex-wrap: wrap;
             background: white;
-            padding: 15px;
+            padding: 15px 20px;
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         
         .filter-btn {
-            padding: 8px 20px;
+            padding: 8px 22px;
             border: 2px solid #667eea;
             background: white;
             color: #667eea;
-            border-radius: 20px;
+            border-radius: 25px;
             cursor: pointer;
             font-weight: 600;
+            font-size: 14px;
             transition: all 0.3s;
         }
         
         .filter-btn:hover {
             background: #667eea;
             color: white;
+            transform: scale(1.02);
         }
         
         .filter-btn.active {
@@ -199,6 +133,163 @@
             color: white;
         }
         
+        /* ============ GRILLE DES PRODUITS ============ */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 5px;
+        }
+        
+        /* ============ CARTE PRODUIT ============ */
+        .product-card {
+            background: white;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+        
+        /* ============ IMAGE DU PRODUIT (EN ENTIER) ============ */
+        .product-card .product-image-wrapper {
+            width: 100%;
+            height: 220px;
+            background: #f5f7fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .product-card .product-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            /* ← Clé: l'image est entièrement visible */
+            object-position: center;
+            background: #f5f7fa;
+            transition: transform 0.4s;
+        }
+        
+        .product-card:hover .product-image-wrapper img {
+            transform: scale(1.03);
+        }
+        
+        .product-card .product-image-wrapper .placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 72px;
+            color: #ddd;
+            background: #f5f7fa;
+        }
+        
+        /* ============ CORPS DE LA CARTE ============ */
+        .product-card .product-body {
+            padding: 18px 20px 20px;
+        }
+        
+        .product-card .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        
+        .product-card .product-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+            line-height: 1.3;
+        }
+        
+        .product-card .product-category-badge {
+            background: #f0f4ff;
+            color: #667eea;
+            padding: 3px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        
+        .product-card .product-price {
+            color: #667eea;
+            font-size: 22px;
+            font-weight: 700;
+            margin: 8px 0 10px;
+        }
+        
+        .product-card .product-description {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            min-height: 40px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .product-card .btn-add {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            width: 100%;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .product-card .btn-add:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .product-card .btn-add:active {
+            transform: scale(0.98);
+        }
+        
+        /* ============ EMPTY STATE ============ */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 12px;
+        }
+        
+        .empty-state .icon {
+            font-size: 64px;
+            margin-bottom: 15px;
+        }
+        
+        .empty-state h3 {
+            color: #999;
+            font-size: 20px;
+        }
+        
+        .empty-state p {
+            color: #bbb;
+            margin-top: 8px;
+        }
+        
+        /* ============ MODAL PANIER ============ */
         .modal {
             display: none;
             position: fixed;
@@ -208,36 +299,62 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s ease;
         }
         
         .modal-content {
             background-color: white;
             margin: 5% auto;
             padding: 30px;
-            border-radius: 10px;
+            border-radius: 14px;
             width: 90%;
             max-width: 500px;
-            max-height: 80%;
+            max-height: 80vh;
             overflow-y: auto;
+            animation: slideUpModal 0.3s ease;
         }
         
-        .close {
+        @keyframes slideUpModal {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal .close {
             float: right;
             font-size: 28px;
             font-weight: bold;
             cursor: pointer;
+            transition: color 0.3s;
+            line-height: 1;
         }
         
-        .close:hover {
+        .modal .close:hover {
             color: #f44336;
         }
         
+        .modal h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f2f5;
+        }
+        
+        /* ============ ARTICLES DU PANIER ============ */
         .cart-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid #eee;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .cart-item:last-child {
+            border-bottom: none;
         }
         
         .cart-item .item-info {
@@ -247,11 +364,14 @@
         .cart-item .item-name {
             font-weight: 600;
             color: #333;
+            font-size: 15px;
         }
         
         .cart-item .item-price {
             color: #667eea;
             font-weight: 600;
+            font-size: 14px;
+            margin-top: 2px;
         }
         
         .cart-item .item-controls {
@@ -261,13 +381,17 @@
         }
         
         .cart-item .item-controls button {
-            width: 30px;
-            height: 30px;
+            width: 32px;
+            height: 32px;
             border: none;
             border-radius: 50%;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 700;
+            font-size: 16px;
             transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .cart-item .item-controls .btn-minus {
@@ -289,25 +413,31 @@
         }
         
         .cart-item .item-controls .btn-remove {
-            background: #f44336;
+            background: #ff6b6b;
             color: white;
+            font-size: 14px;
         }
         
         .cart-item .item-controls .btn-remove:hover {
-            background: #c62828;
+            background: #e53935;
         }
         
         .cart-item .item-quantity {
-            min-width: 25px;
+            min-width: 28px;
             text-align: center;
             font-weight: 600;
+            font-size: 15px;
+            color: #333;
         }
         
+        /* ============ TOTAL PANIER ============ */
         .cart-total {
-            margin: 20px 0;
+            margin: 20px 0 15px;
+            padding-top: 15px;
+            border-top: 2px solid #f0f2f5;
             font-size: 20px;
+            font-weight: 700;
             text-align: right;
-            font-weight: bold;
             color: #333;
         }
         
@@ -315,6 +445,7 @@
             color: #667eea;
         }
         
+        /* ============ BOUTONS PANIER ============ */
         .cart-actions {
             display: flex;
             gap: 10px;
@@ -323,13 +454,17 @@
         
         .cart-actions button {
             flex: 1;
-            padding: 12px;
+            padding: 14px;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             font-weight: 600;
             font-size: 16px;
             transition: all 0.3s;
+        }
+        
+        .cart-actions button:active {
+            transform: scale(0.97);
         }
         
         .cart-actions .btn-whatsapp {
@@ -341,6 +476,11 @@
             background: #128C7E;
         }
         
+        .cart-actions .btn-whatsapp:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
         .cart-actions .btn-clear {
             background: #f44336;
             color: white;
@@ -350,36 +490,15 @@
             background: #c62828;
         }
         
-        .empty-state {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 60px 20px;
-            background: white;
-            border-radius: 10px;
-        }
-        
-        .empty-state .icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-        }
-        
-        .empty-state h3 {
-            color: #999;
-        }
-        
-        .empty-state p {
-            color: #bbb;
-            margin-top: 10px;
-        }
-        
+        /* ============ PANIER VIDE ============ */
         .cart-empty {
             text-align: center;
-            padding: 40px 20px;
+            padding: 30px 20px;
         }
         
         .cart-empty .icon {
-            font-size: 64px;
-            margin-bottom: 20px;
+            font-size: 56px;
+            margin-bottom: 15px;
         }
         
         .cart-empty p {
@@ -390,26 +509,28 @@
         .cart-empty .sub {
             color: #bbb;
             font-size: 14px;
+            margin-top: 5px;
         }
         
-        /* Toast notifications */
+        /* ============ TOAST ============ */
         .menu-toast {
             position: fixed;
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            padding: 15px 30px;
+            padding: 14px 28px;
             border-radius: 12px;
             color: white;
             font-weight: 500;
             z-index: 10000;
-            animation: slideUp 0.5s ease;
+            animation: slideUpToast 0.4s ease;
             max-width: 90%;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
             display: flex;
             align-items: center;
             gap: 10px;
+            font-size: 15px;
         }
         
         .menu-toast.success { background: #4caf50; }
@@ -417,12 +538,12 @@
         .menu-toast.info { background: #2196F3; }
         .menu-toast.warning { background: #ff9800; }
         
-        @keyframes slideUp {
+        @keyframes slideUpToast {
             from { transform: translateX(-50%) translateY(100px); opacity: 0; }
             to { transform: translateX(-50%) translateY(0); opacity: 1; }
         }
         
-        @keyframes slideDown {
+        @keyframes slideDownToast {
             from { transform: translateX(-50%) translateY(0); opacity: 1; }
             to { transform: translateX(-50%) translateY(100px); opacity: 0; }
         }
@@ -434,18 +555,23 @@
             100% { transform: scale(1); }
         }
         
+        /* ============ RESPONSIVE ============ */
         @media (max-width: 768px) {
-            .menu-grid {
-                grid-template-columns: 1fr 1fr;
-                gap: 15px;
+            .container {
+                padding: 12px;
             }
             
-            .product-card .product-image {
-                height: 150px;
+            .menu-grid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+                gap: 18px;
+            }
+            
+            .product-card .product-image-wrapper {
+                height: 180px;
             }
             
             .product-card .product-body {
-                padding: 15px;
+                padding: 14px 16px 16px;
             }
             
             .product-card .product-name {
@@ -453,27 +579,57 @@
             }
             
             .product-card .product-price {
-                font-size: 18px;
+                font-size: 19px;
+            }
+            
+            .product-card .btn-add {
+                font-size: 14px;
+                padding: 10px;
             }
             
             header {
                 flex-direction: column;
-                gap: 10px;
                 text-align: center;
+                padding: 15px 20px;
             }
             
             .menu-filters {
                 justify-content: center;
+                padding: 12px 15px;
+            }
+            
+            .filter-btn {
+                padding: 6px 16px;
+                font-size: 13px;
             }
             
             .cart-actions {
                 flex-direction: column;
+            }
+            
+            .modal-content {
+                margin: 10% auto;
+                padding: 20px;
+                max-height: 85vh;
             }
         }
         
         @media (max-width: 480px) {
             .menu-grid {
                 grid-template-columns: 1fr;
+            }
+            
+            .product-card .product-image-wrapper {
+                height: 200px;
+            }
+            
+            .product-card .product-body {
+                padding: 12px 14px 14px;
+            }
+            
+            .table-info {
+                font-size: 16px;
+                padding: 10px;
             }
         }
     </style>
@@ -488,7 +644,7 @@
         </header>
         
         <div class="table-info">
-            Table n°<span id="tableNumber"></span>
+            🪑 Table n°<span id="tableNumber"></span>
         </div>
 
         <div class="menu-filters">
@@ -531,7 +687,7 @@
     
     <!-- Script principal -->
     <script>
-        // ============ SCRIPT.JS - MENU AVEC IMAGES ============
+        // ============ SCRIPT.JS - MENU AVEC IMAGES EN ENTIER ============
         
         let products = [];
         let cart = [];
@@ -574,7 +730,6 @@
                 }
                 
                 displayMenu();
-                updateMenuStatus();
             }, (error) => {
                 console.error('❌ Erreur produits:', error);
                 document.getElementById('menuGrid').innerHTML = `
@@ -590,7 +745,7 @@
             });
         }
         
-        // ============ AFFICHER LE MENU AVEC IMAGES ============
+        // ============ AFFICHER LE MENU AVEC IMAGES EN ENTIER ============
         function displayMenu() {
             const grid = document.getElementById('menuGrid');
             if (!grid) return;
@@ -625,13 +780,22 @@
                 };
                 const categoryLabel = categoryLabels[product.category] || product.category;
                 
-                // Image du produit
+                // ===== IMAGE AVEC object-fit: contain =====
                 let imageHTML = '';
                 if (product.image) {
-                    imageHTML = `<img src="${product.image}" class="product-image" alt="${product.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`;
-                    imageHTML += `<div class="product-image-placeholder" style="display: none;">🍽️</div>`;
+                    imageHTML = `
+                        <div class="product-image-wrapper">
+                            <img src="${product.image}" alt="${product.name}" 
+                                 onerror="this.style.display='none'; this.parentElement.querySelector('.placeholder').style.display='flex';">
+                            <div class="placeholder" style="display: none;">🍽️</div>
+                        </div>
+                    `;
                 } else {
-                    imageHTML = `<div class="product-image-placeholder">🍽️</div>`;
+                    imageHTML = `
+                        <div class="product-image-wrapper">
+                            <div class="placeholder">🍽️</div>
+                        </div>
+                    `;
                 }
                 
                 card.innerHTML = `
@@ -654,12 +818,10 @@
             console.log(`✅ ${filteredProducts.length} produits affichés`);
         }
         
-        // ============ GESTION DU PANIER (Firebase) ============
-        
+        // ============ GESTION DU PANIER ============
         function loadCart() {
             if (currentTable) {
                 const cartPath = `table_${currentTable}`;
-                console.log('📥 Chargement du panier depuis Firebase:', cartPath);
                 
                 if (cartListenerRef) {
                     cartsRef.child(cartPath).off('value');
@@ -668,14 +830,11 @@
                 
                 cartListenerRef = cartsRef.child(cartPath).on('value', (snapshot) => {
                     const data = snapshot.val();
-                    console.log('📥 Données du panier reçues:', data);
                     
                     if (data && Array.isArray(data) && data.length > 0) {
                         cart = data;
-                        console.log('✅ Panier chargé:', cart);
                     } else {
                         cart = [];
-                        console.log('📭 Panier vide');
                     }
                     
                     updateCartCount();
@@ -691,28 +850,16 @@
         function saveCart() {
             if (currentTable) {
                 const cartPath = `table_${currentTable}`;
-                console.log('💾 Sauvegarde du panier dans Firebase:', cart);
-                
                 return cartsRef.child(cartPath).set(cart)
-                    .then(() => {
-                        console.log('✅ Panier sauvegardé');
-                    })
-                    .catch(error => {
-                        console.error('❌ Erreur sauvegarde panier:', error);
-                        showToast('❌ Erreur sauvegarde: ' + error.message, 'error');
-                    });
+                    .then(() => console.log('✅ Panier sauvegardé'))
+                    .catch(error => console.error('❌ Erreur sauvegarde panier:', error));
             }
         }
         
         function clearCart() {
-            console.log('🗑️ VIDAGE DU PANIER (Firebase)...');
-            
             cart = [];
-            
             if (currentTable) {
                 const cartPath = `table_${currentTable}`;
-                console.log('🗑️ Suppression dans Firebase:', cartPath);
-                
                 if (cartListenerRef) {
                     cartsRef.child(cartPath).off('value');
                     cartListenerRef = null;
@@ -720,37 +867,25 @@
                 
                 return cartsRef.child(cartPath).remove()
                     .then(() => {
-                        console.log('✅ Panier supprimé de Firebase');
                         updateCartCount();
                         if (document.getElementById('cartItems')) {
                             displayCart();
                         }
                         showToast('🗑️ Panier vidé', 'info');
-                        setTimeout(() => {
-                            loadCart();
-                        }, 300);
+                        setTimeout(() => loadCart(), 300);
                     })
                     .catch(error => {
-                        console.error('❌ Erreur vidage:', error);
                         return cartsRef.child(cartPath).set([])
                             .then(() => {
-                                console.log('✅ Panier vidé avec set([])');
                                 updateCartCount();
                                 if (document.getElementById('cartItems')) {
                                     displayCart();
                                 }
                                 showToast('🗑️ Panier vidé', 'info');
-                                setTimeout(() => {
-                                    loadCart();
-                                }, 300);
-                            })
-                            .catch(err => {
-                                console.error('❌ Erreur alternative:', err);
-                                showToast('❌ Erreur vidage: ' + err.message, 'error');
+                                setTimeout(() => loadCart(), 300);
                             });
                     });
             }
-            
             return Promise.resolve();
         }
         
@@ -865,7 +1000,6 @@
         }
         
         // ============ COMMANDES ============
-        
         function generateOrderNumber() {
             const now = new Date();
             const year = now.getFullYear();
@@ -913,29 +1047,21 @@
                     notes: ''
                 };
                 
-                console.log('📝 Création de la commande:', orderData);
-                
                 ordersRef.child('commandes').push(orderData)
                     .then((ref) => {
-                        console.log('✅ Commande créée avec ID:', ref.key);
-                        console.log('📋 Numéro de commande:', orderNumber);
                         resolve({
                             id: ref.key,
                             ...orderData
                         });
                     })
                     .catch(error => {
-                        console.error('❌ Erreur création commande:', error);
                         reject(error);
                     });
             });
         }
         
         function sendOrderToWhatsApp(order) {
-            if (!order) {
-                showToast('❌ Aucune commande à envoyer', 'error');
-                return;
-            }
+            if (!order) return;
             
             let message = `🍽️ *NOUVELLE COMMANDE*\n`;
             message += `📋 Réf: ${order.orderNumber}\n`;
@@ -951,26 +1077,19 @@
             });
             
             message += `\n*Total: ${order.total.toFixed(2)}€*`;
-            message += `\n\nMerci de confirmer cette commande.`;
             
             const encodedMessage = encodeURIComponent(message);
-            const phoneNumber = "1234567890"; // Remplacez par votre numéro
-            const url = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
-            
-            window.open(url, '_blank');
+            const phoneNumber = "1234567890";
+            window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
             
             ordersRef.child(`commandes/${order.id}`).update({
                 status: 'envoye_whatsapp',
                 whatsappSent: true,
                 whatsappSentAt: Date.now()
             });
-            
-            return true;
         }
         
         function processOrder() {
-            console.log('🔥🔥🔥 DÉBUT PROCESSUS COMMANDE 🔥🔥🔥');
-            
             if (cart.length === 0) {
                 showToast('❌ Votre panier est vide !', 'error');
                 return;
@@ -986,12 +1105,10 @@
             
             createOrder()
                 .then((order) => {
-                    console.log('📦 Commande créée:', order);
                     showToast('✅ Commande créée !', 'success');
                     return clearCart().then(() => order);
                 })
                 .then((order) => {
-                    console.log('📱 Envoi sur WhatsApp...');
                     sendOrderToWhatsApp(order);
                     showToast(`✅ Commande ${order.orderNumber} envoyée !`, 'success');
                     
@@ -1000,11 +1117,8 @@
                         modal.style.display = 'none';
                         document.body.style.overflow = '';
                     }
-                    
-                    console.log('🔥🔥🔥 FIN PROCESSUS COMMANDE 🔥🔥🔥');
                 })
                 .catch((error) => {
-                    console.error('❌ Erreur:', error);
                     showToast('❌ Erreur: ' + error.message, 'error');
                 })
                 .finally(() => {
@@ -1078,13 +1192,6 @@
                     this.classList.add('active');
                     currentFilter = this.dataset.category;
                     displayMenu();
-                    
-                    const grid = document.getElementById('menuGrid');
-                    grid.style.opacity = '0';
-                    setTimeout(() => {
-                        grid.style.transition = 'opacity 0.3s ease';
-                        grid.style.opacity = '1';
-                    }, 50);
                 });
             });
         }
@@ -1113,24 +1220,9 @@
             document.body.appendChild(toast);
             
             setTimeout(() => {
-                toast.style.animation = 'slideDown 0.5s ease';
-                setTimeout(() => toast.remove(), 500);
+                toast.style.animation = 'slideDownToast 0.4s ease';
+                setTimeout(() => toast.remove(), 400);
             }, 3000);
-        }
-        
-        // ============ METTRE À JOUR LE STATUT ============
-        function updateMenuStatus() {
-            const statusEl = document.getElementById('menuStatus');
-            if (!statusEl) return;
-            
-            const visibleCount = products.filter(p => p.visible).length;
-            if (visibleCount === 0) {
-                statusEl.textContent = '📭 Menu vide';
-                statusEl.style.color = '#ff9800';
-            } else {
-                statusEl.textContent = `📋 ${visibleCount} plats disponibles`;
-                statusEl.style.color = '#4caf50';
-            }
         }
         
         // ============ RECONNEXION ============
@@ -1139,7 +1231,7 @@
             database.ref('.info/connected').once('value')
                 .then((snapshot) => {
                     if (snapshot.val()) {
-                        showToast('✅ Reconnecté avec succès !', 'success');
+                        showToast('✅ Reconnecté !', 'success');
                         listenToProducts();
                         loadCart();
                     } else {
@@ -1153,7 +1245,6 @@
         
         // ============ INITIALISATION ============
         console.log('🚀 Démarrage du menu...');
-        console.log('📋 Firebase Database:', database.ref().toString());
         
         loadTableInfo();
         listenToProducts();
@@ -1166,7 +1257,6 @@
         window.updateCartItem = updateCartItem;
         window.clearCart = clearCart;
         window.sendToWhatsApp = sendToWhatsApp;
-        window.processOrder = processOrder;
         window.reconnectMenu = reconnectMenu;
         
         console.log('✅ Menu initialisé - Table', currentTable);
