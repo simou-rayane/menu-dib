@@ -11,366 +11,22 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
     <style>
-        .product-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #eee;
+        /* ============ STYLES ============ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
-        .product-item .product-info-with-image {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            flex: 1;
-        }
-        
-        .product-item .product-thumbnail {
-            width: 50px;
-            height: 50px;
-            border-radius: 8px;
-            object-fit: cover;
-            border: 1px solid #eee;
-            background: #f8f9fa;
-        }
-        
-        .product-item .product-thumbnail-placeholder {
-            width: 50px;
-            height: 50px;
-            border-radius: 8px;
-            background: #f0f0f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #999;
-            font-size: 24px;
-            border: 1px solid #eee;
-        }
-        
-        .product-item .status {
-            cursor: pointer;
-            padding: 5px 10px;
-            border-radius: 5px;
-            color: white;
-            margin: 0 5px;
-            display: inline-block;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        
-        .product-item .status.visible {
-            background: #4caf50;
-        }
-        
-        .product-item .status.hidden {
-            background: #f44336;
-        }
-        
-        .product-item .btn-edit {
-            background: #2196F3;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 3px;
-            cursor: pointer;
-            margin: 0 5px;
-        }
-        
-        .product-item .btn-photo {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 3px;
-            cursor: pointer;
-            margin: 0 5px;
-        }
-        
-        .product-item .btn-delete {
-            background: #f44336;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 3px;
-            cursor: pointer;
-            margin: 0 5px;
-        }
-        
-        .product-item .btn-edit:hover,
-        .product-item .btn-photo:hover,
-        .product-item .btn-delete:hover {
-            opacity: 0.8;
-        }
-        
-        .image-upload-area {
-            margin: 10px 0;
-        }
-        
-        .image-upload-area label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #555;
-        }
-        
-        .image-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 10px;
-            max-height: 300px;
-            overflow-y: auto;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background: #fafafa;
-        }
-        
-        .image-list .image-item {
-            cursor: pointer;
-            border: 3px solid transparent;
-            border-radius: 8px;
-            overflow: hidden;
-            transition: all 0.3s;
-            text-align: center;
-            background: white;
-            padding: 5px;
-        }
-        
-        .image-list .image-item:hover {
-            transform: scale(1.05);
-            border-color: #667eea;
-        }
-        
-        .image-list .image-item.selected {
-            border-color: #4caf50;
-            box-shadow: 0 0 15px rgba(76, 175, 80, 0.3);
-        }
-        
-        .image-list .image-item img {
-            width: 100%;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 4px;
-        }
-        
-        .image-list .image-item .image-name {
-            font-size: 10px;
-            color: #666;
-            margin-top: 3px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        
-        .image-list .image-item .select-badge {
-            display: none;
-            background: #4caf50;
-            color: white;
-            font-size: 10px;
-            padding: 2px 8px;
-            border-radius: 10px;
-            margin-top: 3px;
-        }
-        
-        .image-list .image-item.selected .select-badge {
-            display: inline-block;
-        }
-        
-        .image-list .empty-images {
-            grid-column: 1 / -1;
-            text-align: center;
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
             padding: 20px;
-            color: #999;
         }
         
-        .btn-refresh-images {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-            margin-bottom: 10px;
-            transition: all 0.3s;
-        }
-        
-        .btn-refresh-images:hover {
-            background: #764ba2;
-        }
-        
-        #imagePreview {
-            display: none;
-            margin: 10px 0;
-            padding: 15px;
-            background: #f8f9ff;
-            border-radius: 8px;
-            align-items: center;
-            gap: 15px;
-            border: 1px solid #667eea;
-        }
-        
-        #imagePreview img {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 8px;
-            border: 2px solid #667eea;
-        }
-        
-        #imagePreview button {
-            background: #f44336;
-            color: white;
-            border: none;
-            padding: 5px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-        
-        .photo-indicator {
-            color: #4caf50;
-            font-size: 11px;
-            margin-top: 3px;
-        }
-        
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .modal-overlay .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 90%;
-            overflow-y: auto;
-        }
-        
-        .modal-overlay .modal-content h2 {
-            margin-bottom: 20px;
-            color: #333;
-        }
-        
-        .modal-overlay .modal-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
-        .modal-overlay .modal-actions button {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-        
-        .modal-overlay .modal-actions .btn-save {
-            background: #667eea;
-            color: white;
-        }
-        
-        .modal-overlay .modal-actions .btn-cancel {
-            background: #f44336;
-            color: white;
-        }
-        
-        .modal-overlay .current-photo {
-            margin: 10px 0;
-            padding: 10px;
-            background: #f8f9ff;
-            border-radius: 5px;
-            text-align: center;
-        }
-        
-        .modal-overlay .current-photo img {
-            max-width: 150px;
-            max-height: 150px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-        }
-        
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 15px 30px;
-            border-radius: 12px;
-            color: white;
-            font-weight: 500;
-            z-index: 10000;
-            animation: slideUp 0.5s ease;
-            max-width: 90%;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        
-        .toast.success { background: #4caf50; }
-        .toast.error { background: #f44336; }
-        .toast.info { background: #2196F3; }
-        .toast.warning { background: #ff9800; }
-        
-        @keyframes slideUp {
-            from { transform: translateX(-50%) translateY(100px); opacity: 0; }
-            to { transform: translateX(-50%) translateY(0); opacity: 1; }
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .github-config {
-            background: #f8f9ff;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border: 1px solid #e0e0e0;
-        }
-        
-        .github-config h4 {
-            margin-bottom: 10px;
-            color: #333;
-        }
-        
-        .github-config input {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-bottom: 8px;
-        }
-        
-        .github-config .help-text {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-        }
-        
-        .github-config .help-text a {
-            color: #667eea;
-            text-decoration: none;
-        }
-        
-        .github-config .help-text a:hover {
-            text-decoration: underline;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
         }
         
         .admin-section {
@@ -454,6 +110,363 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
+        
+        /* ============ IMAGE LIST ============ */
+        .image-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fafafa;
+            min-height: 150px;
+        }
+        
+        .image-list .image-item {
+            cursor: pointer;
+            border: 3px solid transparent;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s;
+            text-align: center;
+            background: white;
+            padding: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .image-list .image-item:hover {
+            transform: scale(1.05);
+            border-color: #667eea;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .image-list .image-item.selected {
+            border-color: #4caf50;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+        }
+        
+        .image-list .image-item img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 6px;
+            background: #f5f7fa;
+        }
+        
+        .image-list .image-item .image-name {
+            font-size: 10px;
+            color: #666;
+            margin-top: 5px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .image-list .image-item .select-badge {
+            display: none;
+            background: #4caf50;
+            color: white;
+            font-size: 10px;
+            padding: 2px 10px;
+            border-radius: 12px;
+            margin-top: 4px;
+        }
+        
+        .image-list .image-item.selected .select-badge {
+            display: inline-block;
+        }
+        
+        .image-list .empty-images {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 30px;
+            color: #999;
+        }
+        
+        .image-list .empty-images .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        .btn-refresh {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-bottom: 12px;
+        }
+        
+        .btn-refresh:hover {
+            background: #764ba2;
+            transform: scale(1.02);
+        }
+        
+        .btn-refresh:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .btn-clear-selection {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-bottom: 12px;
+            margin-left: 10px;
+        }
+        
+        .btn-clear-selection:hover {
+            background: #c62828;
+        }
+        
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+        
+        .selected-info {
+            display: none;
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: #d4edda;
+            border-radius: 8px;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .selected-info .preview {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .selected-info .preview img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 2px solid #4caf50;
+        }
+        
+        .selected-info .preview .details {
+            flex: 1;
+        }
+        
+        .selected-info .preview .details .name {
+            font-weight: 600;
+        }
+        
+        .selected-info .preview .details .url {
+            font-size: 12px;
+            color: #155724;
+            word-break: break-all;
+        }
+        
+        /* ============ PRODUCT LIST ============ */
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            transition: background 0.3s;
+        }
+        
+        .product-item:hover {
+            background: #f8f9ff;
+        }
+        
+        .product-item .product-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+        
+        .product-item .product-thumbnail {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            background: #f8f9fa;
+        }
+        
+        .product-item .product-thumbnail-placeholder {
+            width: 50px;
+            height: 50px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 24px;
+            border: 1px solid #eee;
+        }
+        
+        .product-item .product-details {
+            flex: 1;
+        }
+        
+        .product-item .product-details .name {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .product-item .product-details .price {
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .product-item .product-details .category {
+            color: #666;
+            font-size: 13px;
+        }
+        
+        .product-item .product-details .description {
+            color: #999;
+            font-size: 13px;
+        }
+        
+        .product-item .product-actions {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .product-item .product-actions button {
+            padding: 5px 12px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .product-item .product-actions button:hover {
+            transform: scale(1.05);
+        }
+        
+        .status-visible {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .status-hidden {
+            background: #f44336;
+            color: white;
+        }
+        
+        .btn-edit {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .btn-photo {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-delete {
+            background: #f44336;
+            color: white;
+        }
+        
+        /* ============ TOAST ============ */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            animation: slideUp 0.5s ease;
+            max-width: 90%;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .toast.success { background: #4caf50; }
+        .toast.error { background: #f44336; }
+        .toast.info { background: #2196F3; }
+        .toast.warning { background: #ff9800; }
+        
+        @keyframes slideUp {
+            from { transform: translateX(-50%) translateY(100px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+        
+        .github-config {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .github-config h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .github-config input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 8px;
+        }
+        
+        .github-config .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .github-config .help-text a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading-spinner .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -462,26 +475,27 @@
         
         <div id="connectionStatus" class="connected">✅ Connecté à Firebase</div>
         
-        <!-- Configuration GitHub -->
+        <!-- Configuration GitHub / PicX -->
         <div class="admin-section">
-            <h2>⚙️ Configuration GitHub</h2>
+            <h2>⚙️ Configuration PicX</h2>
             <div class="github-config">
-                <h4>📁 Configuration du dépôt GitHub</h4>
+                <h4>📁 Configuration du dépôt PicX</h4>
                 <p style="font-size: 13px; color: #666; margin-bottom: 10px;">
-                    Configurez votre dépôt GitHub pour charger les images depuis le dossier <strong>images/</strong>
+                    Configurez votre dépôt PicX pour charger les images.
                 </p>
                 <input type="text" id="githubUsername" placeholder="Nom d'utilisateur GitHub (ex: simou-rayane)">
-                <input type="text" id="githubRepo" placeholder="Nom du dépôt (ex: restaurant-menu)" value="restaurant-menu">
-                <input type="text" id="githubBranch" placeholder="Branche (ex: main)" value="main">
+                <input type="text" id="githubRepo" placeholder="Dépôt PicX (ex: picx-images-hosting)" value="picx-images-hosting">
+                <input type="text" id="githubBranch" placeholder="Branche (ex: main ou master)" value="main">
                 <div class="help-text">
-                    💡 Les images doivent être placées dans le dossier <code>images/</code> de votre dépôt GitHub.
-                    <br>Exemple: <code>https://raw.githubusercontent.com/votre-username/restaurant-menu/main/images/pizza.jpg</code>
+                    💡 Utilisez PicX pour uploader vos images dans ce dépôt.
+                    <br>Les images seront disponibles via: <code>https://raw.githubusercontent.com/votre-username/picx-images-hosting/main/votre-image.jpg</code>
                 </div>
             </div>
         </div>
         
+        <!-- Ajout de produit -->
         <div class="admin-section">
-            <h2>Ajouter un produit</h2>
+            <h2>➕ Ajouter un produit</h2>
             <form id="productForm">
                 <input type="text" id="productName" placeholder="Nom du produit" required>
                 <input type="number" id="productPrice" placeholder="Prix (€)" step="0.01" required>
@@ -493,39 +507,48 @@
                 </select>
                 <textarea id="productDesc" placeholder="Description"></textarea>
                 
-                <!-- Sélection d'image depuis GitHub -->
-                <div class="image-upload-area">
-                    <label>📷 Choisir une image depuis le dossier GitHub</label>
-                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                        <button type="button" class="btn-refresh-images" onclick="loadImagesFromGitHub()">🔄 Charger les images</button>
-                        <button type="button" onclick="clearImageSelection()" style="background: #f44336; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-weight: 600;">
-                            ✕ Désélectionner
-                        </button>
+                <!-- Sélection d'image depuis PicX -->
+                <div style="margin: 15px 0;">
+                    <label style="display: block; font-weight: 600; color: #555; margin-bottom: 10px;">📷 Choisir une image depuis PicX</label>
+                    
+                    <div class="toolbar">
+                        <button type="button" class="btn-refresh" id="refreshBtn" onclick="loadImagesFromPicX()">🔄 Charger les images</button>
+                        <button type="button" class="btn-clear-selection" onclick="clearImageSelection()">✕ Désélectionner</button>
                     </div>
+                    
+                    <div id="loadingSpinner" class="loading-spinner">
+                        <div class="spinner"></div>
+                        <span>Chargement des images...</span>
+                    </div>
+                    
                     <div id="imageListContainer">
                         <div class="image-list" id="imageList">
                             <div class="empty-images">
-                                <p>📂 Aucune image chargée</p>
-                                <p style="font-size: 12px; color: #bbb;">Cliquez sur "Charger les images" pour afficher les images du dossier GitHub</p>
+                                <div class="icon">📂</div>
+                                <p>Aucune image chargée</p>
+                                <p style="font-size: 12px; color: #bbb;">Configurez votre dépôt PicX et cliquez sur "Charger les images"</p>
                             </div>
                         </div>
                     </div>
-                    <div id="selectedImageInfo" style="display: none; margin-top: 10px; padding: 10px; background: #d4edda; border-radius: 8px; color: #155724;">
-                        ✅ Image sélectionnée: <span id="selectedImageName"></span>
+                    
+                    <div id="selectedInfo" class="selected-info">
+                        <div class="preview">
+                            <img id="selectedPreview" src="" alt="Aperçu">
+                            <div class="details">
+                                <div class="name" id="selectedName">-</div>
+                                <div class="url" id="selectedUrl">-</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
-                <div id="imagePreview">
-                    <img id="previewImg" src="" alt="Aperçu">
-                    <button type="button" onclick="clearImageSelection()">🗑 Supprimer</button>
-                </div>
-                
-                <button type="submit" class="btn-primary" id="addBtn">➕ Ajouter</button>
+                <button type="submit" class="btn-primary" id="addBtn">➕ Ajouter le produit</button>
             </form>
         </div>
-
+        
+        <!-- Liste des produits -->
         <div class="admin-section">
-            <h2>Gestion des produits (<span id="productCount">0</span>)</h2>
+            <h2>📋 Gestion des produits (<span id="productCount">0</span>)</h2>
             <div id="productsList" class="products-list"></div>
         </div>
         
@@ -539,13 +562,13 @@
     
     <!-- Script principal -->
     <script>
-        // ============ ADMIN AVEC FIREBASE ET IMAGES GITHUB ============
+        // ============ ADMIN AVEC INTÉGRATION PICX ============
         
         let products = [];
         let isConnected = false;
         let selectedImageUrl = null;
         let selectedImageName = null;
-        let githubImages = [];
+        let picxImages = [];
         
         // ============ ÉTAT DE CONNEXION ============
         function updateConnectionStatus(connected) {
@@ -556,7 +579,7 @@
                 isConnected = true;
             } else {
                 statusEl.className = 'disconnected';
-                statusEl.innerHTML = '❌ Déconnecté de Firebase - Vérifiez votre configuration';
+                statusEl.innerHTML = '❌ Déconnecté de Firebase';
                 isConnected = false;
             }
         }
@@ -565,8 +588,8 @@
             updateConnectionStatus(snapshot.val());
         });
         
-        // ============ CHARGER LES IMAGES DEPUIS GITHUB ============
-        async function loadImagesFromGitHub() {
+        // ============ CHARGER LES IMAGES DEPUIS PICX ============
+        async function loadImagesFromPicX() {
             const username = document.getElementById('githubUsername').value.trim();
             const repo = document.getElementById('githubRepo').value.trim();
             const branch = document.getElementById('githubBranch').value.trim();
@@ -576,32 +599,37 @@
                 return;
             }
             
+            // Afficher le spinner
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('refreshBtn').disabled = true;
+            
             showToast('⏳ Chargement des images...', 'info');
             
             try {
-                const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/images?ref=${branch}`;
+                const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents?ref=${branch}`;
                 const response = await fetch(apiUrl);
                 
                 if (!response.ok) {
-                    throw new Error('Dossier "images" non trouvé ou inaccessible');
+                    throw new Error(`Dépôt "${repo}" non trouvé ou inaccessible (${response.status})`);
                 }
                 
                 const data = await response.json();
                 
                 // Filtrer uniquement les fichiers image
-                const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
-                githubImages = data.filter(item => 
+                const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico'];
+                picxImages = data.filter(item => 
                     item.type === 'file' && 
                     imageExtensions.some(ext => item.name.toLowerCase().endsWith(ext))
                 );
                 
-                if (githubImages.length === 0) {
-                    showToast('ℹ️ Aucune image trouvée dans le dossier images/', 'warning');
+                if (picxImages.length === 0) {
+                    showToast('ℹ️ Aucune image trouvée dans le dépôt PicX', 'warning');
                     document.getElementById('imageList').innerHTML = `
                         <div class="empty-images">
-                            <p>📂 Aucune image trouvée</p>
+                            <div class="icon">📂</div>
+                            <p>Aucune image trouvée</p>
                             <p style="font-size: 12px; color: #bbb;">
-                                Ajoutez des images dans le dossier <code>images/</code> de votre dépôt GitHub
+                                Ajoutez des images via PicX dans le dépôt <code>${repo}</code>
                             </p>
                         </div>
                     `;
@@ -609,19 +637,23 @@
                 }
                 
                 displayImagesList();
-                showToast(`✅ ${githubImages.length} images chargées`, 'success');
+                showToast(`✅ ${picxImages.length} images chargées`, 'success');
                 
             } catch (error) {
                 console.error('❌ Erreur chargement images:', error);
                 showToast('❌ Erreur: ' + error.message, 'error');
                 document.getElementById('imageList').innerHTML = `
                     <div class="empty-images">
-                        <p>❌ Erreur: ${error.message}</p>
+                        <div class="icon">❌</div>
+                        <p>Erreur: ${error.message}</p>
                         <p style="font-size: 12px; color: #999;">
-                            Vérifiez que le dossier <code>images/</code> existe dans votre dépôt
+                            Vérifiez que le dépôt <code>${repo}</code> existe et contient des images
                         </p>
                     </div>
                 `;
+            } finally {
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('refreshBtn').disabled = false;
             }
         }
         
@@ -630,14 +662,17 @@
             const container = document.getElementById('imageList');
             container.innerHTML = '';
             
-            githubImages.forEach((item, index) => {
+            picxImages.forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = 'image-item';
                 div.dataset.index = index;
                 
+                // Vérifier si l'URL de l'image est accessible
+                const imageUrl = item.download_url;
+                
                 div.innerHTML = `
-                    <img src="${item.download_url}" alt="${item.name}" 
-                         onerror="this.parentElement.style.display='none'">
+                    <img src="${imageUrl}" alt="${item.name}" 
+                         onerror="this.parentElement.style.opacity='0.5'; this.parentElement.title='Image inaccessible'">
                     <div class="image-name">${item.name}</div>
                     <div class="select-badge">✓ Sélectionné</div>
                 `;
@@ -652,7 +687,7 @@
         
         // ============ SÉLECTIONNER UNE IMAGE ============
         function selectImage(index) {
-            const item = githubImages[index];
+            const item = picxImages[index];
             if (!item) return;
             
             // Désélectionner toutes les images
@@ -667,17 +702,12 @@
             selectedImageUrl = item.download_url;
             selectedImageName = item.name;
             
-            // Afficher l'aperçu
-            const preview = document.getElementById('imagePreview');
-            const img = document.getElementById('previewImg');
-            if (preview && img) {
-                img.src = item.download_url;
-                preview.style.display = 'flex';
-            }
-            
             // Afficher les informations
-            document.getElementById('selectedImageInfo').style.display = 'block';
-            document.getElementById('selectedImageName').textContent = item.name;
+            const info = document.getElementById('selectedInfo');
+            info.style.display = 'block';
+            document.getElementById('selectedPreview').src = item.download_url;
+            document.getElementById('selectedName').textContent = item.name;
+            document.getElementById('selectedUrl').textContent = item.download_url;
             
             showToast(`✅ Image sélectionnée: ${item.name}`, 'success');
         }
@@ -688,8 +718,7 @@
             selectedImageName = null;
             
             document.querySelectorAll('.image-item').forEach(el => el.classList.remove('selected'));
-            document.getElementById('imagePreview').style.display = 'none';
-            document.getElementById('selectedImageInfo').style.display = 'none';
+            document.getElementById('selectedInfo').style.display = 'none';
         }
         
         // ============ ÉCOUTER LES PRODUITS ============
@@ -715,9 +744,6 @@
             }, (error) => {
                 console.error('❌ Erreur Firebase:', error);
                 showToast('❌ Erreur de connexion: ' + error.message, 'error');
-                document.getElementById('productsList').innerHTML = `
-                    <p style="text-align: center; color: #f44336;">❌ Erreur: ${error.message}</p>
-                `;
             });
         }
         
@@ -794,20 +820,22 @@
                 }
                 
                 productDiv.innerHTML = `
-                    <div class="product-info-with-image">
+                    <div class="product-info">
                         ${imageHtml}
-                        <div>
-                            <strong>${product.name}</strong> - ${product.price.toFixed(2)}€ 
-                            <span style="color: #666;">(${product.category})</span>
-                            <br><small>${product.description || 'Pas de description'}</small>
-                            ${product.image ? '<div class="photo-indicator">📷 Photo présente</div>' : ''}
+                        <div class="product-details">
+                            <div>
+                                <span class="name">${product.name}</span>
+                                <span class="price">${product.price.toFixed(2)} €</span>
+                                <span class="category">(${product.category})</span>
+                            </div>
+                            <div class="description">${product.description || 'Pas de description'}</div>
+                            ${product.image ? '<div style="color: #4caf50; font-size: 11px; margin-top: 3px;">📷 Photo présente</div>' : ''}
                         </div>
                     </div>
-                    <div>
-                        <span class="status ${product.visible ? 'visible' : 'hidden'}" 
-                              onclick="toggleVisibility('${product.id}')">
+                    <div class="product-actions">
+                        <button class="${product.visible ? 'status-visible' : 'status-hidden'}" onclick="toggleVisibility('${product.id}')">
                             ${product.visible ? '✓ Visible' : '✗ Masqué'}
-                        </span>
+                        </button>
                         <button class="btn-edit" onclick="editProduct('${product.id}')">✏️</button>
                         <button class="btn-photo" onclick="changeImage('${product.id}')">📷</button>
                         <button class="btn-delete" onclick="deleteProduct('${product.id}')">🗑</button>
@@ -841,129 +869,6 @@
             return true;
         }
         
-        // ============ CHANGER L'IMAGE D'UN PRODUIT ============
-        function changeImage(productId) {
-            const product = products.find(p => p.id === productId);
-            if (!product) return;
-            
-            // Ouvrir le modal de sélection d'image
-            const overlay = document.createElement('div');
-            overlay.className = 'modal-overlay';
-            overlay.innerHTML = `
-                <div class="modal-content">
-                    <h2>📷 Changer la photo de "${product.name}"</h2>
-                    
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; font-weight: 600; margin-bottom: 10px;">Sélectionnez une image depuis GitHub</label>
-                        <button type="button" class="btn-refresh-images" onclick="loadImagesForModal('${productId}')">🔄 Charger les images</button>
-                    </div>
-                    
-                    <div id="modalImageList" class="image-list" style="max-height: 300px;">
-                        <div class="empty-images">
-                            <p>📂 Cliquez sur "Charger les images"</p>
-                        </div>
-                    </div>
-                    
-                    <div id="modalSelectedInfo" style="display: none; margin-top: 10px; padding: 10px; background: #d4edda; border-radius: 8px; color: #155724;">
-                        ✅ Image sélectionnée: <span id="modalSelectedName"></span>
-                    </div>
-                    
-                    <div class="modal-actions">
-                        <button type="button" class="btn-save" onclick="saveModalImage('${productId}')">✅ Appliquer</button>
-                        <button type="button" class="btn-cancel" onclick="this.closest('.modal-overlay').remove()">❌ Annuler</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(overlay);
-            
-            // Variable pour stocker l'image sélectionnée dans le modal
-            window.modalSelectedImage = null;
-        }
-        
-        // Fonction pour charger les images dans le modal
-        window.loadImagesForModal = async function(productId) {
-            const username = document.getElementById('githubUsername').value.trim();
-            const repo = document.getElementById('githubRepo').value.trim();
-            const branch = document.getElementById('githubBranch').value.trim();
-            
-            if (!username || !repo) {
-                showToast('❌ Veuillez configurer votre nom d\'utilisateur et le nom du dépôt', 'error');
-                return;
-            }
-            
-            showToast('⏳ Chargement des images...', 'info');
-            
-            try {
-                const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/images?ref=${branch}`;
-                const response = await fetch(apiUrl);
-                
-                if (!response.ok) {
-                    throw new Error('Dossier "images" non trouvé');
-                }
-                
-                const data = await response.json();
-                const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
-                const images = data.filter(item => 
-                    item.type === 'file' && 
-                    imageExtensions.some(ext => item.name.toLowerCase().endsWith(ext))
-                );
-                
-                const container = document.getElementById('modalImageList');
-                container.innerHTML = '';
-                
-                if (images.length === 0) {
-                    container.innerHTML = `<div class="empty-images">📂 Aucune image trouvée</div>`;
-                    return;
-                }
-                
-                images.forEach((item, index) => {
-                    const div = document.createElement('div');
-                    div.className = 'image-item';
-                    div.innerHTML = `
-                        <img src="${item.download_url}" alt="${item.name}" 
-                             onerror="this.parentElement.style.display='none'">
-                        <div class="image-name">${item.name}</div>
-                        <div class="select-badge">✓ Sélectionné</div>
-                    `;
-                    div.onclick = function() {
-                        document.querySelectorAll('#modalImageList .image-item').forEach(el => el.classList.remove('selected'));
-                        this.classList.add('selected');
-                        window.modalSelectedImage = item.download_url;
-                        document.getElementById('modalSelectedName').textContent = item.name;
-                        document.getElementById('modalSelectedInfo').style.display = 'block';
-                    };
-                    container.appendChild(div);
-                });
-                
-                showToast(`✅ ${images.length} images chargées`, 'success');
-                
-            } catch (error) {
-                showToast('❌ Erreur: ' + error.message, 'error');
-            }
-        };
-        
-        // Fonction pour sauvegarder l'image du modal
-        window.saveModalImage = function(productId) {
-            if (!window.modalSelectedImage) {
-                showToast('⚠️ Veuillez sélectionner une image', 'warning');
-                return;
-            }
-            
-            productsRef.child(productId).update({
-                image: window.modalSelectedImage,
-                updatedAt: Date.now()
-            })
-            .then(() => {
-                showToast('✅ Photo mise à jour avec succès !', 'success');
-                // Fermer le modal
-                const overlay = document.querySelector('.modal-overlay');
-                if (overlay) overlay.remove();
-            })
-            .catch(error => {
-                showToast('❌ Erreur: ' + error.message, 'error');
-            });
-        };
-        
         // ============ AJOUTER UN PRODUIT ============
         function addProduct(productData) {
             if (!validateProduct(productData)) {
@@ -985,6 +890,7 @@
                     console.log('✅ Produit ajouté avec ID:', ref.key);
                     showToast('✅ Produit ajouté avec succès !', 'success');
                     clearImageSelection();
+                    document.getElementById('productForm').reset();
                     return true;
                 })
                 .catch((error) => {
@@ -994,6 +900,124 @@
                 });
         }
         
+        // ============ CHANGER L'IMAGE D'UN PRODUIT ============
+        function changeImage(productId) {
+            // Ouvrir le modal de sélection d'image
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
+                z-index: 9999; animation: fadeIn 0.3s ease;
+            `;
+            overlay.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 12px; max-width: 600px; width: 90%; max-height: 90%; overflow-y: auto;">
+                    <h2 style="margin-bottom: 20px;">📷 Changer la photo</h2>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <button type="button" class="btn-refresh" onclick="loadImagesForModal()">🔄 Charger les images</button>
+                    </div>
+                    
+                    <div id="modalImageList" class="image-list" style="max-height: 300px;">
+                        <div class="empty-images">
+                            <div class="icon">📂</div>
+                            <p>Cliquez sur "Charger les images"</p>
+                        </div>
+                    </div>
+                    
+                    <div id="modalSelectedInfo" style="display: none; margin-top: 12px; padding: 12px; background: #d4edda; border-radius: 8px; color: #155724;">
+                        ✅ Image sélectionnée: <span id="modalSelectedName"></span>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button type="button" class="btn-primary" onclick="saveModalImage('${productId}')" style="flex: 1;">✅ Appliquer</button>
+                        <button type="button" onclick="this.closest('.modal-overlay').remove()" style="flex: 1; padding: 12px; background: #f44336; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">❌ Annuler</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            
+            window.modalSelectedImage = null;
+            
+            window.loadImagesForModal = async function() {
+                const username = document.getElementById('githubUsername').value.trim();
+                const repo = document.getElementById('githubRepo').value.trim();
+                const branch = document.getElementById('githubBranch').value.trim();
+                
+                if (!username || !repo) {
+                    showToast('❌ Veuillez configurer votre dépôt', 'error');
+                    return;
+                }
+                
+                try {
+                    const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents?ref=${branch}`;
+                    const response = await fetch(apiUrl);
+                    
+                    if (!response.ok) {
+                        throw new Error('Dépôt non trouvé');
+                    }
+                    
+                    const data = await response.json();
+                    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
+                    const images = data.filter(item => 
+                        item.type === 'file' && 
+                        imageExtensions.some(ext => item.name.toLowerCase().endsWith(ext))
+                    );
+                    
+                    const container = document.getElementById('modalImageList');
+                    container.innerHTML = '';
+                    
+                    if (images.length === 0) {
+                        container.innerHTML = `<div class="empty-images">📂 Aucune image trouvée</div>`;
+                        return;
+                    }
+                    
+                    images.forEach((item, index) => {
+                        const div = document.createElement('div');
+                        div.className = 'image-item';
+                        div.innerHTML = `
+                            <img src="${item.download_url}" alt="${item.name}" 
+                                 onerror="this.parentElement.style.opacity='0.5'">
+                            <div class="image-name">${item.name}</div>
+                            <div class="select-badge">✓ Sélectionné</div>
+                        `;
+                        div.onclick = function() {
+                            document.querySelectorAll('#modalImageList .image-item').forEach(el => el.classList.remove('selected'));
+                            this.classList.add('selected');
+                            window.modalSelectedImage = item.download_url;
+                            document.getElementById('modalSelectedName').textContent = item.name;
+                            document.getElementById('modalSelectedInfo').style.display = 'block';
+                        };
+                        container.appendChild(div);
+                    });
+                    
+                    showToast(`✅ ${images.length} images chargées`, 'success');
+                    
+                } catch (error) {
+                    showToast('❌ Erreur: ' + error.message, 'error');
+                }
+            };
+            
+            window.saveModalImage = function(productId) {
+                if (!window.modalSelectedImage) {
+                    showToast('⚠️ Veuillez sélectionner une image', 'warning');
+                    return;
+                }
+                
+                productsRef.child(productId).update({
+                    image: window.modalSelectedImage,
+                    updatedAt: Date.now()
+                })
+                .then(() => {
+                    showToast('✅ Photo mise à jour !', 'success');
+                    overlay.remove();
+                })
+                .catch(error => {
+                    showToast('❌ Erreur: ' + error.message, 'error');
+                });
+            };
+        }
+        
         // ============ MODIFIER UN PRODUIT ============
         function editProduct(productId) {
             const product = products.find(p => p.id === productId);
@@ -1001,9 +1025,14 @@
             
             const overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
+            overlay.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
+                z-index: 9999; animation: fadeIn 0.3s ease;
+            `;
             overlay.innerHTML = `
-                <div class="modal-content">
-                    <h2>✏️ Modifier le produit</h2>
+                <div style="background: white; padding: 30px; border-radius: 12px; max-width: 500px; width: 90%; max-height: 90%; overflow-y: auto;">
+                    <h2 style="margin-bottom: 20px;">✏️ Modifier le produit</h2>
                     <form id="editForm">
                         <div style="margin-bottom: 15px;">
                             <label style="display: block; margin-bottom: 5px; font-weight: 600;">Nom *</label>
@@ -1027,15 +1056,15 @@
                             <textarea id="editDesc" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">${product.description || ''}</textarea>
                         </div>
                         <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">📷 URL de l'image (GitHub)</label>
-                            <input type="text" id="editImageUrl" value="${product.image || ''}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" placeholder="https://raw.githubusercontent.com/.../images/mon-image.jpg">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">📷 URL de l'image (PicX)</label>
+                            <input type="text" id="editImageUrl" value="${product.image || ''}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" placeholder="https://raw.githubusercontent.com/.../picx-images-hosting/main/image.jpg">
                             <div style="font-size: 12px; color: #666; margin-top: 5px;">
                                 Laissez vide pour supprimer l'image.
                             </div>
                         </div>
-                        <div class="modal-actions">
-                            <button type="submit" class="btn-save">✅ Sauvegarder</button>
-                            <button type="button" class="btn-cancel" onclick="this.closest('.modal-overlay').remove()">❌ Annuler</button>
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
+                            <button type="submit" style="flex: 1; padding: 12px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">✅ Sauvegarder</button>
+                            <button type="button" onclick="this.closest('.modal-overlay').remove()" style="flex: 1; padding: 12px; background: #f44336; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">❌ Annuler</button>
                         </div>
                     </form>
                 </div>
@@ -1058,10 +1087,10 @@
                 
                 productsRef.child(productId).update(updates)
                     .then(() => {
-                        showToast('✅ Produit modifié avec succès !', 'success');
+                        showToast('✅ Produit modifié !', 'success');
                         overlay.remove();
                     })
-                    .catch((error) => {
+                    .catch(error => {
                         showToast('❌ Erreur: ' + error.message, 'error');
                     });
             });
@@ -1075,11 +1104,9 @@
             if (confirm(`Supprimer "${product.name}" définitivement ?`)) {
                 productsRef.child(productId).remove()
                     .then(() => {
-                        console.log('✅ Produit supprimé');
                         showToast('✅ Produit supprimé !', 'success');
                     })
                     .catch(error => {
-                        console.error('❌ Erreur:', error);
                         showToast('❌ Erreur: ' + error.message, 'error');
                     });
             }
@@ -1097,7 +1124,6 @@
                     console.log('✅ Visibilité modifiée');
                 })
                 .catch(error => {
-                    console.error('❌ Erreur:', error);
                     showToast('❌ Erreur: ' + error.message, 'error');
                 });
             }
@@ -1135,7 +1161,6 @@
         // ============ FORMULAIRE ============
         document.getElementById('productForm')?.addEventListener('submit', function(e) {
             e.preventDefault();
-            console.log('📝 Formulaire soumis');
             
             const productData = {
                 name: document.getElementById('productName').value,
@@ -1144,8 +1169,6 @@
                 description: document.getElementById('productDesc').value
             };
             
-            console.log('Données du formulaire:', productData);
-            
             const btn = document.getElementById('addBtn');
             btn.disabled = true;
             btn.textContent = '⏳ Ajout en cours...';
@@ -1153,12 +1176,11 @@
             addProduct(productData)
                 .then(() => {
                     document.getElementById('productForm').reset();
-                    clearImageSelection();
                 })
                 .catch(() => {})
                 .finally(() => {
                     btn.disabled = false;
-                    btn.textContent = '➕ Ajouter';
+                    btn.textContent = '➕ Ajouter le produit';
                 });
         });
         
@@ -1167,15 +1189,13 @@
         listenToProducts();
         
         // Exposer les fonctions globalement
+        window.loadImagesFromPicX = loadImagesFromPicX;
+        window.clearImageSelection = clearImageSelection;
         window.toggleVisibility = toggleVisibility;
         window.editProduct = editProduct;
         window.deleteProduct = deleteProduct;
         window.changeImage = changeImage;
-        window.loadImagesFromGitHub = loadImagesFromGitHub;
-        window.clearImageSelection = clearImageSelection;
         window.resetFirebaseProducts = resetFirebaseProducts;
-        window.loadImagesForModal = loadImagesForModal;
-        window.saveModalImage = saveModalImage;
         
         console.log('✅ Admin initialisé');
         
