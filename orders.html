@@ -685,7 +685,7 @@
         function listenToOrders() {
             const ordersRef = database.ref('orders/commandes');
             
-            // Écouter toutes les commandes sans limite pour voir toutes les commandes en attente
+            // Écouter toutes les commandes sans limite
             ordersRef.orderByChild('timestamp').on('value', (snapshot) => {
                 const data = snapshot.val();
                 console.log('📦 Commandes reçues:', data);
@@ -1041,7 +1041,6 @@
         // ============ ACTUALISER ============
         function refreshOrders() {
             showToast('🔄 Actualisation en cours...', 'info');
-            // Forcer un rechargement en réécoutant
             listenToOrders();
         }
         
