@@ -11,7 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
     <style>
-        /* ============ STYLES ============ */
+        /* ============ STYLES GÉNÉRAUX ============ */
         * {
             margin: 0;
             padding: 0;
@@ -92,6 +92,51 @@
             transform: none;
         }
         
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
         #connectionStatus {
             padding: 10px 20px;
             border-radius: 5px;
@@ -109,6 +154,144 @@
             background: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
+        }
+        
+        /* ============ GESTION DES CATÉGORIES ============ */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .category-item {
+            background: #f8f9ff;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .category-item:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
+        }
+        
+        .category-item .category-icon {
+            font-size: 32px;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .category-item .category-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .category-item .category-key {
+            font-size: 11px;
+            color: #999;
+            display: block;
+            margin-top: 3px;
+        }
+        
+        .category-item .category-status {
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 5px;
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 12px;
+        }
+        
+        .category-item .category-status.active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .category-item .category-status.inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .category-item .category-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .category-item .category-actions button {
+            padding: 4px 12px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .category-item .category-actions .btn-edit-cat {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .category-item .category-actions .btn-toggle-cat {
+            background: #ff9800;
+            color: white;
+        }
+        
+        .category-item .category-actions .btn-delete-cat {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .category-item .category-actions button:hover {
+            transform: scale(1.05);
+        }
+        
+        .add-category-form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        
+        .add-category-form input,
+        .add-category-form select {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .add-category-form input:focus,
+        .add-category-form select:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        
+        .add-category-form button {
+            padding: 10px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        
+        .add-category-form button:hover {
+            background: #764ba2;
         }
         
         /* ============ IMAGE LIST ============ */
@@ -381,7 +564,7 @@
         }
         
         .btn-delete {
-            background: #f44336;
+            background: #dc3545;
             color: white;
         }
         
@@ -403,7 +586,7 @@
         }
         
         .toast.success { background: #4caf50; }
-        .toast.error { background: #f44336; }
+        .toast.error { background: #dc3545; }
         .toast.info { background: #2196F3; }
         .toast.warning { background: #ff9800; }
         
@@ -478,7 +661,7 @@
             background: white;
             padding: 30px;
             border-radius: 12px;
-            max-width: 600px;
+            max-width: 500px;
             width: 90%;
             max-height: 90%;
             overflow-y: auto;
@@ -488,6 +671,33 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
+        
+        .modal-overlay .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .modal-overlay .modal-actions button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .modal-overlay .modal-actions .btn-save {
+            background: #667eea;
+            color: white;
+        }
+        
+        .modal-overlay .modal-actions .btn-cancel {
+            background: #dc3545;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -496,14 +706,27 @@
         
         <div id="connectionStatus" class="connected">✅ Connecté à Firebase</div>
         
-        <!-- Configuration GitHub / PicX -->
+        <!-- ============ GESTION DES CATÉGORIES ============ -->
+        <div class="admin-section">
+            <h2>📂 Gestion des catégories</h2>
+            
+            <div class="add-category-form">
+                <input type="text" id="newCategoryKey" placeholder="Clé (ex: snacks, sandwichs)" style="flex: 1;">
+                <input type="text" id="newCategoryName" placeholder="Nom (ex: Snacks, Sandwichs)" style="flex: 1;">
+                <input type="text" id="newCategoryIcon" placeholder="Icône (ex: 🥪, 🌮)" style="flex: 0.5; min-width: 80px;">
+                <button onclick="addCategory()">➕ Ajouter</button>
+            </div>
+            
+            <div id="categoriesList" class="categories-grid">
+                <!-- Les catégories seront chargées ici -->
+            </div>
+        </div>
+        
+        <!-- ============ CONFIGURATION PICX ============ -->
         <div class="admin-section">
             <h2>⚙️ Configuration PicX</h2>
             <div class="github-config">
                 <h4>📁 Configuration du dépôt PicX</h4>
-                <p style="font-size: 13px; color: #666; margin-bottom: 10px;">
-                    Configurez votre dépôt PicX pour charger les images.
-                </p>
                 <input type="text" id="githubUsername" placeholder="Nom d'utilisateur GitHub" value="simou-rayane">
                 <input type="text" id="githubRepo" placeholder="Dépôt PicX" value="picx-images-hosting">
                 <input type="text" id="githubBranch" placeholder="Branche" value="master">
@@ -513,23 +736,23 @@
             </div>
         </div>
         
-        <!-- Ajout de produit -->
+        <!-- ============ AJOUTER UN PRODUIT ============ -->
         <div class="admin-section">
             <h2>➕ Ajouter un produit</h2>
             <form id="productForm">
                 <input type="text" id="productName" placeholder="Nom du produit" required>
                 <input type="number" id="productPrice" placeholder="Prix (€)" step="0.01" required>
+                
+                <!-- Sélecteur de catégorie dynamique -->
                 <select id="productCategory" required>
-                    <option value="entrees">Entrées</option>
-                    <option value="plats">Plats</option>
-                    <option value="desserts">Desserts</option>
-                    <option value="boissons">Boissons</option>
+                    <option value="">Choisir une catégorie...</option>
                 </select>
+                
                 <textarea id="productDesc" placeholder="Description"></textarea>
                 
-                <!-- Sélection d'image depuis PicX -->
+                <!-- Sélection d'image -->
                 <div style="margin: 15px 0;">
-                    <label style="display: block; font-weight: 600; color: #555; margin-bottom: 10px;">📷 Choisir une image depuis PicX</label>
+                    <label style="display: block; font-weight: 600; color: #555; margin-bottom: 10px;">📷 Choisir une image</label>
                     
                     <div class="toolbar">
                         <button type="button" class="btn-refresh" onclick="loadImagesFromPicX()">🔄 Charger les images</button>
@@ -565,7 +788,7 @@
             </form>
         </div>
         
-        <!-- Liste des produits -->
+        <!-- ============ LISTE DES PRODUITS ============ -->
         <div class="admin-section">
             <h2>📋 Gestion des produits (<span id="productCount">0</span>)</h2>
             <div id="productsList" class="products-list"></div>
@@ -581,13 +804,17 @@
     
     <!-- Script principal -->
     <script>
-        // ============ ADMIN AVEC INTÉGRATION PICX ============
+        // ============ ADMIN AVEC GESTION DES CATÉGORIES ============
         
         let products = [];
+        let categories = {};
         let isConnected = false;
         let selectedImageUrl = null;
         let selectedImageName = null;
         let picxImages = [];
+        
+        // Référence Firebase pour les catégories
+        const categoriesRef = database.ref('categories');
         
         // ============ ÉTAT DE CONNEXION ============
         function updateConnectionStatus(connected) {
@@ -607,20 +834,245 @@
             updateConnectionStatus(snapshot.val());
         });
         
-        // ============ CHARGER LES IMAGES DEPUIS PICX (CORRIGÉ) ============
+        // ============ CHARGER LES CATÉGORIES ============
+        function loadCategories() {
+            categoriesRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                categories = data || {};
+                
+                // Créer les catégories par défaut si vides
+                if (Object.keys(categories).length === 0) {
+                    createDefaultCategories();
+                } else {
+                    displayCategories();
+                    updateCategorySelect();
+                }
+            }, (error) => {
+                showToast('❌ Erreur chargement catégories: ' + error.message, 'error');
+            });
+        }
+        
+        // ============ CRÉER LES CATÉGORIES PAR DÉFAUT ============
+        function createDefaultCategories() {
+            const defaultCategories = {
+                'entrees': { name: 'Entrées', icon: '🥗', order: 1, active: true },
+                'plats': { name: 'Plats', icon: '🍽️', order: 2, active: true },
+                'desserts': { name: 'Desserts', icon: '🍰', order: 3, active: true },
+                'boissons': { name: 'Boissons', icon: '🥤', order: 4, active: true }
+            };
+            
+            categoriesRef.set(defaultCategories)
+                .then(() => {
+                    console.log('✅ Catégories par défaut créées');
+                })
+                .catch(error => {
+                    console.error('❌ Erreur création catégories:', error);
+                });
+        }
+        
+        // ============ AFFICHER LES CATÉGORIES ============
+        function displayCategories() {
+            const container = document.getElementById('categoriesList');
+            if (!container) return;
+            
+            const sortedKeys = Object.keys(categories).sort((a, b) => 
+                (categories[a].order || 0) - (categories[b].order || 0)
+            );
+            
+            if (sortedKeys.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #999; grid-column: 1/-1;">Aucune catégorie</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            sortedKeys.forEach(key => {
+                const cat = categories[key];
+                const div = document.createElement('div');
+                div.className = 'category-item';
+                div.innerHTML = `
+                    <span class="category-icon">${cat.icon || '📁'}</span>
+                    <span class="category-name">${cat.name}</span>
+                    <span class="category-key">${key}</span>
+                    <span class="category-status ${cat.active !== false ? 'active' : 'inactive'}">
+                        ${cat.active !== false ? '✅ Actif' : '⛔ Inactif'}
+                    </span>
+                    <div class="category-actions">
+                        <button class="btn-edit-cat" onclick="editCategory('${key}')">✏️</button>
+                        <button class="btn-toggle-cat" onclick="toggleCategory('${key}')">
+                            ${cat.active !== false ? '⛔' : '✅'}
+                        </button>
+                        <button class="btn-delete-cat" onclick="deleteCategory('${key}')">🗑</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        // ============ AJOUTER UNE CATÉGORIE ============
+        function addCategory() {
+            const key = document.getElementById('newCategoryKey').value.trim();
+            const name = document.getElementById('newCategoryName').value.trim();
+            const icon = document.getElementById('newCategoryIcon').value.trim() || '📁';
+            
+            if (!key || !name) {
+                showToast('❌ Veuillez entrer une clé et un nom', 'error');
+                return;
+            }
+            
+            // Vérifier que la clé est valide (pas d'espaces, caractères spéciaux)
+            if (!/^[a-z0-9_]+$/.test(key)) {
+                showToast('❌ La clé ne doit contenir que des lettres minuscules, chiffres et underscores', 'error');
+                return;
+            }
+            
+            if (categories[key]) {
+                showToast('❌ Cette catégorie existe déjà', 'error');
+                return;
+            }
+            
+            const newCategory = {
+                name: name,
+                icon: icon,
+                order: Object.keys(categories).length + 1,
+                active: true
+            };
+            
+            categoriesRef.child(key).set(newCategory)
+                .then(() => {
+                    showToast(`✅ Catégorie "${name}" ajoutée !`, 'success');
+                    document.getElementById('newCategoryKey').value = '';
+                    document.getElementById('newCategoryName').value = '';
+                    document.getElementById('newCategoryIcon').value = '';
+                })
+                .catch(error => {
+                    showToast('❌ Erreur: ' + error.message, 'error');
+                });
+        }
+        
+        // ============ MODIFIER UNE CATÉGORIE ============
+        function editCategory(key) {
+            const cat = categories[key];
+            if (!cat) return;
+            
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.innerHTML = `
+                <div class="modal-content">
+                    <h2>✏️ Modifier la catégorie</h2>
+                    <form id="editCategoryForm">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Nom</label>
+                            <input type="text" id="editCatName" value="${cat.name}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" required>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Icône</label>
+                            <input type="text" id="editCatIcon" value="${cat.icon || '📁'}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Ordre d'affichage</label>
+                            <input type="number" id="editCatOrder" value="${cat.order || 0}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        </div>
+                        <div class="modal-actions">
+                            <button type="submit" class="btn-save">✅ Sauvegarder</button>
+                            <button type="button" class="btn-cancel" onclick="this.closest('.modal-overlay').remove()">❌ Annuler</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            
+            document.getElementById('editCategoryForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const updates = {
+                    name: document.getElementById('editCatName').value.trim(),
+                    icon: document.getElementById('editCatIcon').value.trim() || '📁',
+                    order: parseInt(document.getElementById('editCatOrder').value) || 0
+                };
+                
+                categoriesRef.child(key).update(updates)
+                    .then(() => {
+                        showToast('✅ Catégorie modifiée !', 'success');
+                        overlay.remove();
+                    })
+                    .catch(error => {
+                        showToast('❌ Erreur: ' + error.message, 'error');
+                    });
+            });
+        }
+        
+        // ============ ACTIVER/DÉSACTIVER UNE CATÉGORIE ============
+        function toggleCategory(key) {
+            const cat = categories[key];
+            if (!cat) return;
+            
+            const newStatus = cat.active === false ? true : false;
+            categoriesRef.child(key).update({ active: newStatus })
+                .then(() => {
+                    showToast(`✅ Catégorie ${newStatus ? 'activée' : 'désactivée'}`, 'success');
+                })
+                .catch(error => {
+                    showToast('❌ Erreur: ' + error.message, 'error');
+                });
+        }
+        
+        // ============ SUPPRIMER UNE CATÉGORIE ============
+        function deleteCategory(key) {
+            const cat = categories[key];
+            if (!cat) return;
+            
+            // Vérifier si des produits utilisent cette catégorie
+            const productsInCategory = products.filter(p => p.category === key);
+            if (productsInCategory.length > 0) {
+                showToast(`❌ Impossible de supprimer "${cat.name}" : ${productsInCategory.length} produit(s) l'utilisent.`, 'error');
+                return;
+            }
+            
+            if (confirm(`Supprimer la catégorie "${cat.name}" définitivement ?`)) {
+                categoriesRef.child(key).remove()
+                    .then(() => {
+                        showToast('✅ Catégorie supprimée !', 'success');
+                    })
+                    .catch(error => {
+                        showToast('❌ Erreur: ' + error.message, 'error');
+                    });
+            }
+        }
+        
+        // ============ METTRE À JOUR LE SÉLECTEUR DE CATÉGORIE ============
+        function updateCategorySelect() {
+            const select = document.getElementById('productCategory');
+            if (!select) return;
+            
+            // Garder l'option par défaut
+            select.innerHTML = '<option value="">Choisir une catégorie...</option>';
+            
+            const sortedKeys = Object.keys(categories).sort((a, b) => 
+                (categories[a].order || 0) - (categories[b].order || 0)
+            );
+            
+            sortedKeys.forEach(key => {
+                const cat = categories[key];
+                if (cat.active !== false) {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = `${cat.icon || '📁'} ${cat.name}`;
+                    select.appendChild(option);
+                }
+            });
+        }
+        
+        // ============ CHARGER LES IMAGES DEPUIS PICX ============
         async function loadImagesFromPicX() {
             const username = document.getElementById('githubUsername').value.trim();
             const repo = document.getElementById('githubRepo').value.trim();
             const branch = document.getElementById('githubBranch').value.trim();
-            
-            console.log('🔍 Paramètres:', { username, repo, branch });
             
             if (!username || !repo) {
                 showToast('❌ Veuillez configurer votre dépôt', 'error');
                 return;
             }
             
-            // Afficher le spinner
             const spinner = document.getElementById('loadingSpinner');
             const refreshBtn = document.querySelector('.btn-refresh');
             
@@ -629,17 +1081,13 @@
             
             try {
                 const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents?ref=${branch}`;
-                console.log('🌐 Appel API:', apiUrl);
-                
                 const response = await fetch(apiUrl);
-                console.log('📡 Réponse:', response.status);
                 
                 if (!response.ok) {
                     throw new Error(`Dépôt "${repo}" non trouvé (${response.status})`);
                 }
                 
                 const data = await response.json();
-                console.log('📦 Données reçues:', data);
                 
                 const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
                 picxImages = data.filter(item => 
@@ -647,16 +1095,11 @@
                     imageExtensions.some(ext => item.name.toLowerCase().endsWith(ext))
                 );
                 
-                console.log('🖼️ Images trouvées:', picxImages.length);
-                
                 if (picxImages.length === 0) {
                     document.getElementById('imageList').innerHTML = `
                         <div class="empty-images">
                             <div class="icon">📂</div>
-                            <p>Aucune image trouvée dans le dépôt</p>
-                            <p style="font-size: 12px; color: #999;">
-                                Ajoutez des images via PicX ou uploader manuellement
-                            </p>
+                            <p>Aucune image trouvée</p>
                         </div>
                     `;
                     showToast('ℹ️ Aucune image trouvée', 'warning');
@@ -667,15 +1110,11 @@
                 showToast(`✅ ${picxImages.length} images chargées`, 'success');
                 
             } catch (error) {
-                console.error('❌ Erreur:', error);
                 showToast('❌ Erreur: ' + error.message, 'error');
                 document.getElementById('imageList').innerHTML = `
                     <div class="empty-images">
                         <div class="icon">❌</div>
                         <p>${error.message}</p>
-                        <p style="font-size: 12px; color: #999;">
-                            Vérifiez que le dépôt "${repo}" existe et contient des images
-                        </p>
                     </div>
                 `;
             } finally {
@@ -826,6 +1265,9 @@
                     imageHtml = `<div class="product-thumbnail-placeholder">📷</div>`;
                 }
                 
+                const categoryName = categories[product.category]?.name || product.category || 'Non catégorisé';
+                const categoryIcon = categories[product.category]?.icon || '';
+                
                 productDiv.innerHTML = `
                     <div class="product-info">
                         ${imageHtml}
@@ -833,7 +1275,7 @@
                             <div>
                                 <span class="name">${product.name}</span>
                                 <span class="price">${product.price.toFixed(2)} €</span>
-                                <span class="category">(${product.category})</span>
+                                <span class="category">(${categoryIcon} ${categoryName})</span>
                             </div>
                             <div class="description">${product.description || ''}</div>
                         </div>
@@ -863,9 +1305,8 @@
                 errors.push('Le prix doit être un nombre positif');
             }
             
-            const validCategories = ['entrees', 'plats', 'desserts', 'boissons'];
-            if (!product.category || !validCategories.includes(product.category)) {
-                errors.push('Catégorie invalide');
+            if (!product.category) {
+                errors.push('La catégorie est requise');
             }
             
             if (errors.length > 0) {
@@ -936,7 +1377,7 @@
                     
                     <div style="display: flex; gap: 10px; margin-top: 20px;">
                         <button type="button" class="btn-primary" onclick="saveModalImage('${productId}')" style="flex: 1;">✅ Appliquer</button>
-                        <button type="button" onclick="this.closest('.modal-overlay').remove()" style="flex: 1; padding: 12px; background: #f44336; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">❌ Annuler</button>
+                        <button type="button" onclick="this.closest('.modal-overlay').remove()" style="flex: 1; padding: 12px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">❌ Annuler</button>
                     </div>
                 </div>
             `;
@@ -1030,6 +1471,20 @@
             
             const overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
+            
+            // Générer les options de catégories pour le modal
+            let categoryOptions = '';
+            const sortedKeys = Object.keys(categories).sort((a, b) => 
+                (categories[a].order || 0) - (categories[b].order || 0)
+            );
+            sortedKeys.forEach(key => {
+                const cat = categories[key];
+                if (cat.active !== false) {
+                    const selected = key === product.category ? 'selected' : '';
+                    categoryOptions += `<option value="${key}" ${selected}>${cat.icon || '📁'} ${cat.name}</option>`;
+                }
+            });
+            
             overlay.innerHTML = `
                 <div class="modal-content">
                     <h2>✏️ Modifier le produit</h2>
@@ -1045,10 +1500,7 @@
                         <div style="margin-bottom: 15px;">
                             <label style="display: block; margin-bottom: 5px; font-weight: 600;">Catégorie *</label>
                             <select id="editCategory" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-                                <option value="entrees" ${product.category === 'entrees' ? 'selected' : ''}>Entrées</option>
-                                <option value="plats" ${product.category === 'plats' ? 'selected' : ''}>Plats</option>
-                                <option value="desserts" ${product.category === 'desserts' ? 'selected' : ''}>Desserts</option>
-                                <option value="boissons" ${product.category === 'boissons' ? 'selected' : ''}>Boissons</option>
+                                ${categoryOptions}
                             </select>
                         </div>
                         <div style="margin-bottom: 15px;">
@@ -1062,9 +1514,9 @@
                                 Laissez vide pour supprimer l'image.
                             </div>
                         </div>
-                        <div style="display: flex; gap: 10px; margin-top: 20px;">
-                            <button type="submit" style="flex: 1; padding: 12px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">✅ Sauvegarder</button>
-                            <button type="button" onclick="this.closest('.modal-overlay').remove()" style="flex: 1; padding: 12px; background: #f44336; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">❌ Annuler</button>
+                        <div class="modal-actions">
+                            <button type="submit" class="btn-save">✅ Sauvegarder</button>
+                            <button type="button" class="btn-cancel" onclick="this.closest('.modal-overlay').remove()">❌ Annuler</button>
                         </div>
                     </form>
                 </div>
@@ -1141,7 +1593,7 @@
         function showToast(message, type = 'info') {
             const colors = {
                 'success': '#4caf50',
-                'error': '#f44336',
+                'error': '#dc3545',
                 'warning': '#ff9800',
                 'info': '#2196F3'
             };
@@ -1187,6 +1639,7 @@
         // ============ INITIALISATION ============
         console.log('🚀 Démarrage de l\'administration...');
         listenToProducts();
+        loadCategories();
         
         window.loadImagesFromPicX = loadImagesFromPicX;
         window.clearImageSelection = clearImageSelection;
@@ -1195,6 +1648,10 @@
         window.deleteProduct = deleteProduct;
         window.changeImage = changeImage;
         window.resetFirebaseProducts = resetFirebaseProducts;
+        window.addCategory = addCategory;
+        window.editCategory = editCategory;
+        window.toggleCategory = toggleCategory;
+        window.deleteCategory = deleteCategory;
         
         console.log('✅ Admin initialisé');
         
