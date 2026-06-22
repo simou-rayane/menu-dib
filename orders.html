@@ -158,6 +158,11 @@
             color: white;
         }
         
+        .stat-item .badge.prepare {
+            background: #ffa94d;
+            color: white;
+        }
+        
         .stat-item .badge.prepared {
             background: #4caf50;
             color: white;
@@ -165,6 +170,16 @@
         
         .stat-item .badge.served {
             background: #6c757d;
+            color: white;
+        }
+        
+        .stat-item .badge.cancelled {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .stat-item .badge.whatsapp {
+            background: #25D366;
             color: white;
         }
         
@@ -430,15 +445,6 @@
             background: #128C7E;
         }
         
-        .btn-whatsapp:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .btn-whatsapp:disabled:hover {
-            transform: none;
-        }
-        
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -557,7 +563,7 @@
                 <span class="label">En attente</span>
             </div>
             <div class="stat-item">
-                <span class="badge prepared">⏳</span>
+                <span class="badge prepare">⏳</span>
                 <span class="number" id="prepareCount">0</span>
                 <span class="label">En préparation</span>
             </div>
@@ -572,8 +578,18 @@
                 <span class="label">Servies</span>
             </div>
             <div class="stat-item">
+                <span class="badge cancelled">❌</span>
+                <span class="number" id="cancelledCount">0</span>
+                <span class="label">Annulées</span>
+            </div>
+            <div class="stat-item">
+                <span class="badge whatsapp">📱</span>
+                <span class="number" id="whatsappCount">0</span>
+                <span class="label">WhatsApp</span>
+            </div>
+            <div class="stat-item">
                 <span class="number" id="totalCount">0</span>
-                <span class="label">Total commandes</span>
+                <span class="label">Total</span>
             </div>
         </div>
         
@@ -607,6 +623,47 @@
         let allOrders = [];
         let currentFilter = 'all';
         let lastOrderCount = 0;
+        let restaurantData = {};
+        let currentRestaurantId = 'default';
+        
+        // ============ RÉFÉRENCES ============
+        const restaurantsRef = database.ref('restaurants');
+        
+        // ============ CHARGER LE RESTAURANT ============
+        function loadRestaurant() {
+            const urlParams = new URLSearchParams(window.location.search);
+            let restaurantId = urlParams.get('restaurant') || 'default';
+            
+            if (restaurantId === 'default' && !urlParams.get('restaurant')) {
+                const saved = localStorage.getItem('current_restaurant');
+                if (saved) restaurantId = saved;
+            }
+            
+            currentRestaurantId = restaurantId;
+            localStorage.setItem('current_restaurant', restaurantId);
+            
+            restaurantsRef.child(restaurantId).on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    restaurantData = data;
+                    console.log('✅ Restaurant chargé:', data.name);
+                    console.log('📱 WhatsApp:', data.whatsapp);
+                } else {
+                    restaurantData = getDefaultRestaurant();
+                    console.log('⚠️ Restaurant par défaut utilisé');
+                }
+            }, (error) => {
+                console.error('❌ Erreur chargement restaurant:', error);
+                restaurantData = getDefaultRestaurant();
+            });
+        }
+        
+        function getDefaultRestaurant() {
+            return {
+                name: "Mon Restaurant",
+                whatsapp: "1234567890"
+            };
+        }
         
         // ============ ÉTAT DE CONNEXION ============
         function updateConnectionStatus(connected) {
@@ -758,13 +815,16 @@
                     `;
                 }
                 
+                // Récupérer le nom du restaurant depuis les données
+                const restaurantName = order.restaurantName || restaurantData?.name || 'Mon Restaurant';
+                
                 card.innerHTML = `
                     <div class="order-header">
                         <div>
                             <div class="order-number">📋 ${order.orderNumber || order.id.slice(-6)}</div>
                             <div class="order-table">🪑 Table ${order.table}</div>
                             <div class="order-time">${timeStr}</div>
-                            ${order.restaurant ? `<div class="order-time" style="color: #667eea;">🏪 ${order.restaurant}</div>` : ''}
+                            <div class="order-time" style="color: #667eea;">🏪 ${restaurantName}</div>
                         </div>
                         <span class="order-status">${statusLabel}</span>
                     </div>
@@ -832,8 +892,13 @@
                 return;
             }
             
-            const whatsappNumber = order.restaurantWhatsapp || '1234567890';
-            let message = `🍽️ *COMMANDE*\n`;
+            // Récupérer le numéro WhatsApp du restaurant
+            let whatsappNumber = restaurantData?.whatsapp || '1234567890';
+            whatsappNumber = whatsappNumber.replace(/[\s\-+]/g, '');
+            
+            const restaurantName = restaurantData?.name || 'Mon Restaurant';
+            
+            let message = `🍽️ *${restaurantName}*\n`;
             message += `📋 Réf: ${order.orderNumber || orderId.slice(-6)}\n`;
             message += `📌 Table: ${order.table}\n`;
             message += `⏰ ${new Date(order.timestamp).toLocaleString('fr-FR')}\n\n`;
@@ -844,9 +909,12 @@
             });
             
             message += `\n*Total: ${order.total.toFixed(2)}€*`;
+            message += `\n\nMerci de confirmer cette commande.`;
             
             const encodedMessage = encodeURIComponent(message);
             window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
+            
+            showToast(`📱 Message WhatsApp envoyé au ${whatsappNumber}`, 'success');
         }
         
         // ============ METTRE À JOUR LES STATISTIQUES ============
@@ -855,12 +923,16 @@
             const prepare = allOrders.filter(o => o.status === 'prepare').length;
             const prepared = allOrders.filter(o => o.status === 'prepared').length;
             const served = allOrders.filter(o => o.status === 'served').length;
+            const cancelled = allOrders.filter(o => o.status === 'cancelled').length;
+            const whatsapp = allOrders.filter(o => o.status === 'envoye_whatsapp').length;
             const total = allOrders.length;
             
             document.getElementById('pendingCount').textContent = pending;
             document.getElementById('prepareCount').textContent = prepare;
             document.getElementById('preparedCount').textContent = prepared;
             document.getElementById('servedCount').textContent = served;
+            document.getElementById('cancelledCount').textContent = cancelled;
+            document.getElementById('whatsappCount').textContent = whatsapp;
             document.getElementById('totalCount').textContent = total;
         }
         
@@ -881,20 +953,27 @@
                 return;
             }
             
-            // Préparer les données pour l'export
+            const statusLabels = {
+                'en_attente': 'En attente',
+                'prepare': 'En préparation',
+                'prepared': 'Préparée',
+                'served': 'Servie',
+                'cancelled': 'Annulée',
+                'envoye_whatsapp': 'WhatsApp'
+            };
+            
             const exportData = allOrders.map(order => ({
                 orderNumber: order.orderNumber || order.id,
                 table: order.table,
                 date: new Date(order.timestamp).toLocaleString('fr-FR'),
                 items: order.items.map(item => `${item.name} x${item.quantity}`).join(', '),
                 total: order.total.toFixed(2),
-                status: order.status,
+                status: statusLabels[order.status] || order.status,
                 customerName: order.customerName || '',
                 customerPhone: order.customerPhone || '',
                 notes: order.notes || ''
             }));
             
-            // Créer le fichier CSV
             const headers = ['Numéro', 'Table', 'Date', 'Articles', 'Total', 'Statut', 'Client', 'Téléphone', 'Notes'];
             const rows = exportData.map(order => [
                 order.orderNumber,
@@ -952,30 +1031,6 @@
                 });
         }
         
-        // ============ RÉINITIALISER UNIQUEMENT LES COMMANDES TERMINÉES ============
-        function resetCompletedOrders() {
-            const completedOrders = allOrders.filter(o => o.status === 'served' || o.status === 'cancelled');
-            if (completedOrders.length === 0) {
-                showToast('ℹ️ Aucune commande terminée à supprimer', 'info');
-                return;
-            }
-            
-            if (!confirm(`⚠️ Supprimer ${completedOrders.length} commande(s) terminée(s) ?`)) return;
-            
-            const ordersRef = database.ref('orders/commandes');
-            const promises = completedOrders.map(order => {
-                return ordersRef.child(order.id).remove();
-            });
-            
-            Promise.all(promises)
-                .then(() => {
-                    showToast(`✅ ${completedOrders.length} commandes supprimées !`, 'success');
-                })
-                .catch(error => {
-                    showToast('❌ Erreur: ' + error.message, 'error');
-                });
-        }
-        
         // ============ ACTUALISER ============
         function refreshOrders() {
             showToast('🔄 Actualisation en cours...', 'info');
@@ -1017,6 +1072,7 @@
         
         // ============ INITIALISATION ============
         console.log('🚀 Démarrage du gestionnaire de commandes...');
+        loadRestaurant();
         listenToOrders();
         setupFilters();
         
@@ -1025,9 +1081,9 @@
         window.exportOrders = exportOrders;
         window.resetOrders = resetOrders;
         window.refreshOrders = refreshOrders;
-        window.resetCompletedOrders = resetCompletedOrders;
         
         console.log('✅ Commandes initialisées');
+        console.log('📱 WhatsApp:', restaurantData?.whatsapp || 'Non configuré');
         
     </script>
 </body>
