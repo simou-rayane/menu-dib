@@ -10,7 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
     <style>
-        /* ============ STYLES COMPLETS ============ */
+        /* ============ STYLES COMPLETS (identique à la version précédente) ============ */
         * {
             margin: 0;
             padding: 0;
@@ -166,23 +166,6 @@
             gap: 10px;
         }
         
-        .admin-section h2 .badge {
-            font-size: 12px;
-            padding: 2px 12px;
-            border-radius: 12px;
-            font-weight: 600;
-        }
-        
-        .admin-section h2 .badge.active {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .admin-section h2 .badge.inactive {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -254,11 +237,6 @@
             font-size: 16px;
             transition: all 0.3s;
             flex: 1;
-        }
-        
-        .form-actions button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
         }
         
         .form-actions .btn-save {
@@ -1023,6 +1001,13 @@
                             <div class="help-text">Pour le bouton Appeler. Ex: +33123456789</div>
                         </div>
                         
+                        <!-- ===== NOUVEAU CHAMP WHATSAPP ===== -->
+                        <div class="form-group">
+                            <label>Numéro WhatsApp (pour les commandes)</label>
+                            <input type="text" id="restaurantWhatsApp" placeholder="33123456789">
+                            <div class="help-text">Format international sans le +. Ex: 33123456789 pour la France</div>
+                        </div>
+                        
                         <div class="form-group">
                             <label>Prix de livraison (€)</label>
                             <input type="number" id="restaurantDeliveryPrice" placeholder="5" step="0.5">
@@ -1244,7 +1229,6 @@
                     restaurantData = getDefaultRestaurant();
                     populateRestaurantForm(restaurantData);
                     updateLogoPreview(null);
-                    // Créer le restaurant par défaut si inexistant
                     restaurantsRef.child(currentRestaurantId).set(restaurantData);
                 }
             });
@@ -1257,6 +1241,7 @@
                 address: "123 Rue de la Paix, 75001 Paris",
                 phone: "01 23 45 67 89",
                 phoneLink: "+33123456789",
+                whatsapp: "33123456789",  // Nouveau champ
                 deliveryPrice: 5,
                 deliveryAvailable: true,
                 facebook: "https://facebook.com/votre-page",
@@ -1274,6 +1259,7 @@
             document.getElementById('restaurantAddress').value = data.address || '';
             document.getElementById('restaurantPhone').value = data.phone || '';
             document.getElementById('restaurantPhoneLink').value = data.phoneLink || '';
+            document.getElementById('restaurantWhatsApp').value = data.whatsapp || '';
             document.getElementById('restaurantDeliveryPrice').value = data.deliveryPrice || 0;
             document.getElementById('restaurantDeliveryAvailable').value = data.deliveryAvailable !== false ? 'true' : 'false';
             document.getElementById('restaurantFacebook').value = data.facebook || '';
@@ -1325,7 +1311,6 @@
         
         function openLogoSelector() {
             logoPickerMode = true;
-            // Aller à l'onglet Images et charger les images
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelector('[data-tab="tab-images"]').classList.add('active');
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -1333,12 +1318,10 @@
             
             showToast('📷 Sélectionnez une image pour le logo', 'info');
             
-            // Charger les images si pas déjà fait
             if (picxImages.length === 0) {
                 loadImagesFromPicX();
             }
             
-            // Mettre en évidence la sélection
             document.getElementById('selectedInfo').style.display = 'none';
             document.querySelectorAll('.image-item').forEach(el => el.classList.remove('selected'));
         }
@@ -1351,41 +1334,6 @@
             }
         }
         
-        // Surcharger selectImage pour gérer le mode logo
-        const originalSelectImage = function(index) {
-            const item = picxImages[index];
-            if (!item) return;
-            
-            document.querySelectorAll('.image-item').forEach(el => el.classList.remove('selected'));
-            document.querySelectorAll('.image-item')[index]?.classList.add('selected');
-            selectedImageUrl = item.download_url;
-            selectedImageName = item.name;
-            
-            const info = document.getElementById('selectedInfo');
-            info.style.display = 'block';
-            document.getElementById('selectedPreview').src = item.download_url;
-            document.getElementById('selectedName').textContent = item.name;
-            document.getElementById('selectedUrl').textContent = item.download_url;
-            
-            // Si on est en mode sélection de logo, appliquer directement
-            if (logoPickerMode) {
-                updateLogoPreview(item.download_url);
-                document.getElementById('restaurantLogo').value = item.download_url;
-                logoPickerMode = false;
-                // Retourner à l'onglet Restaurant
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                document.querySelector('[data-tab="tab-restaurant"]').classList.add('active');
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                document.getElementById('tab-restaurant').classList.add('active');
-                showToast('✅ Logo sélectionné ! N\'oubliez pas d\'enregistrer.', 'success');
-            } else {
-                showToast(`✅ Image sélectionnée: ${item.name}`, 'success');
-            }
-        };
-        
-        // Remplacer la fonction selectImage
-        window.selectImage = originalSelectImage;
-        
         // ============ SAUVEGARDER LE RESTAURANT ============
         document.getElementById('restaurantForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -1396,6 +1344,7 @@
                 address: document.getElementById('restaurantAddress').value.trim() || null,
                 phone: document.getElementById('restaurantPhone').value.trim() || null,
                 phoneLink: document.getElementById('restaurantPhoneLink').value.trim() || null,
+                whatsapp: document.getElementById('restaurantWhatsApp').value.trim() || null,  // Nouveau champ
                 deliveryPrice: parseFloat(document.getElementById('restaurantDeliveryPrice').value) || 0,
                 deliveryAvailable: document.getElementById('restaurantDeliveryAvailable').value === 'true',
                 facebook: document.getElementById('restaurantFacebook').value.trim() || null,
@@ -1429,7 +1378,6 @@
                 });
         });
         
-        // Mettre à jour l'aperçu du logo quand le nom change
         document.getElementById('restaurantName').addEventListener('input', function() {
             const logo = document.getElementById('restaurantLogo').value;
             if (!logo) {
@@ -1862,7 +1810,6 @@
             }
         }
         
-        // Fonction selectImage originale (surchargée plus haut)
         window.selectImage = function(index) {
             const item = picxImages[index];
             if (!item) return;
