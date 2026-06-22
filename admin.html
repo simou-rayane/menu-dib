@@ -275,6 +275,88 @@
             color: white;
         }
         
+        /* ============ LOGO PREVIEW ============ */
+        .logo-preview {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 15px;
+            background: #f8f9ff;
+            border-radius: 8px;
+            border: 2px dashed #e0e0e0;
+            flex-wrap: wrap;
+        }
+        
+        .logo-preview img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 2px solid #667eea;
+            background: white;
+        }
+        
+        .logo-preview .logo-placeholder {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 32px;
+            font-weight: 700;
+        }
+        
+        .logo-preview .logo-info {
+            flex: 1;
+        }
+        
+        .logo-preview .logo-info .name {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .logo-preview .logo-info .url {
+            font-size: 12px;
+            color: #999;
+            word-break: break-all;
+        }
+        
+        .logo-preview .logo-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .logo-preview .logo-actions button {
+            padding: 6px 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        
+        .logo-preview .logo-actions .btn-select-logo {
+            background: #667eea;
+            color: white;
+        }
+        
+        .logo-preview .logo-actions .btn-select-logo:hover {
+            background: #764ba2;
+        }
+        
+        .logo-preview .logo-actions .btn-remove-logo {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .logo-preview .logo-actions .btn-remove-logo:hover {
+            background: #c62828;
+        }
+        
         /* ============ CATEGORIES ============ */
         .categories-grid {
             display: grid;
@@ -848,6 +930,11 @@
             .categories-grid {
                 grid-template-columns: 1fr 1fr;
             }
+            
+            .logo-preview {
+                flex-direction: column;
+                text-align: center;
+            }
         }
         
         @media (max-width: 480px) {
@@ -891,7 +978,7 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label>Identifiant du restaurant</label>
-                            <input type="text" id="restaurantId" placeholder="default" value="default">
+                            <input type="text" id="restaurantId" placeholder="default" value="default" disabled>
                             <div class="help-text">Utilisé dans l'URL: ?restaurant=identifiant</div>
                         </div>
                         
@@ -900,10 +987,24 @@
                             <input type="text" id="restaurantName" placeholder="Mon Restaurant" required>
                         </div>
                         
-                        <div class="form-group">
-                            <label>Logo (URL)</label>
-                            <input type="text" id="restaurantLogo" placeholder="images/logo.png">
-                            <div class="help-text">Chemin vers le logo dans votre dépôt GitHub</div>
+                        <div class="form-group full-width">
+                            <label>Logo</label>
+                            <div class="logo-preview">
+                                <div id="logoPreviewContainer">
+                                    <img id="logoPreviewImg" src="" alt="Logo" style="display: none;">
+                                    <div class="logo-placeholder" id="logoPlaceholder">R</div>
+                                </div>
+                                <div class="logo-info">
+                                    <div class="name" id="logoName">Aucun logo</div>
+                                    <div class="url" id="logoUrl">-</div>
+                                </div>
+                                <div class="logo-actions">
+                                    <button type="button" class="btn-select-logo" onclick="openLogoSelector()">📷 Choisir</button>
+                                    <button type="button" class="btn-remove-logo" onclick="removeLogo()">🗑 Supprimer</button>
+                                </div>
+                            </div>
+                            <input type="hidden" id="restaurantLogo" value="">
+                            <div class="help-text">Sélectionnez une image depuis PicX ou entrez l'URL manuellement</div>
                         </div>
                         
                         <div class="form-group">
@@ -1016,7 +1117,7 @@
                             <textarea id="productDesc" placeholder="Description du produit..." rows="2"></textarea>
                         </div>
                     </div>
-                    <button type="submit" class="btn-primary" id="addBtn" style="width:100%; margin-top:10px;">➕ Ajouter le produit</button>
+                    <button type="submit" class="btn-primary" id="addBtn" style="width:100%; margin-top:10px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; border:none; padding:12px; border-radius:8px; cursor:pointer; font-size:16px; font-weight:600;">➕ Ajouter le produit</button>
                 </form>
             </div>
             
@@ -1095,6 +1196,7 @@
         let selectedImageName = null;
         let picxImages = [];
         let restaurantData = {};
+        let logoPickerMode = false;
         
         // Références
         const categoriesRef = database.ref('categories');
@@ -1136,10 +1238,12 @@
                 if (data) {
                     restaurantData = data;
                     populateRestaurantForm(data);
+                    updateLogoPreview(data.logo);
                     console.log('✅ Restaurant chargé:', data.name);
                 } else {
                     restaurantData = getDefaultRestaurant();
                     populateRestaurantForm(restaurantData);
+                    updateLogoPreview(null);
                     // Créer le restaurant par défaut si inexistant
                     restaurantsRef.child(currentRestaurantId).set(restaurantData);
                 }
@@ -1149,7 +1253,7 @@
         function getDefaultRestaurant() {
             return {
                 name: "Mon Restaurant",
-                logo: "images/logo.png",
+                logo: null,
                 address: "123 Rue de la Paix, 75001 Paris",
                 phone: "01 23 45 67 89",
                 phoneLink: "+33123456789",
@@ -1177,6 +1281,7 @@
             document.getElementById('restaurantWebsite').value = data.website || '';
             document.getElementById('restaurantMapsUrl').value = data.mapsUrl || '';
             document.getElementById('restaurantActive').value = data.active !== false ? 'true' : 'false';
+            updateLogoPreview(data.logo);
         }
         
         function resetRestaurantForm() {
@@ -1185,6 +1290,101 @@
                 showToast('🔄 Formulaire réinitialisé', 'info');
             }
         }
+        
+        // ============ GESTION DU LOGO ============
+        function updateLogoPreview(logoUrl) {
+            const img = document.getElementById('logoPreviewImg');
+            const placeholder = document.getElementById('logoPlaceholder');
+            const name = document.getElementById('logoName');
+            const url = document.getElementById('logoUrl');
+            const hiddenInput = document.getElementById('restaurantLogo');
+            
+            if (logoUrl && logoUrl.trim()) {
+                img.src = logoUrl;
+                img.style.display = 'block';
+                placeholder.style.display = 'none';
+                name.textContent = 'Logo actuel';
+                url.textContent = logoUrl;
+                hiddenInput.value = logoUrl;
+                img.onerror = function() {
+                    this.style.display = 'none';
+                    placeholder.style.display = 'flex';
+                    name.textContent = 'Image invalide';
+                    url.textContent = 'L\'URL du logo est invalide';
+                };
+            } else {
+                img.style.display = 'none';
+                placeholder.style.display = 'flex';
+                const restaurantName = document.getElementById('restaurantName').value || 'R';
+                placeholder.textContent = restaurantName.charAt(0).toUpperCase();
+                name.textContent = 'Aucun logo';
+                url.textContent = '-';
+                hiddenInput.value = '';
+            }
+        }
+        
+        function openLogoSelector() {
+            logoPickerMode = true;
+            // Aller à l'onglet Images et charger les images
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-tab="tab-images"]').classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById('tab-images').classList.add('active');
+            
+            showToast('📷 Sélectionnez une image pour le logo', 'info');
+            
+            // Charger les images si pas déjà fait
+            if (picxImages.length === 0) {
+                loadImagesFromPicX();
+            }
+            
+            // Mettre en évidence la sélection
+            document.getElementById('selectedInfo').style.display = 'none';
+            document.querySelectorAll('.image-item').forEach(el => el.classList.remove('selected'));
+        }
+        
+        function removeLogo() {
+            if (confirm('🗑️ Supprimer le logo actuel ?')) {
+                updateLogoPreview(null);
+                document.getElementById('restaurantLogo').value = '';
+                showToast('🗑️ Logo supprimé', 'info');
+            }
+        }
+        
+        // Surcharger selectImage pour gérer le mode logo
+        const originalSelectImage = function(index) {
+            const item = picxImages[index];
+            if (!item) return;
+            
+            document.querySelectorAll('.image-item').forEach(el => el.classList.remove('selected'));
+            document.querySelectorAll('.image-item')[index]?.classList.add('selected');
+            selectedImageUrl = item.download_url;
+            selectedImageName = item.name;
+            
+            const info = document.getElementById('selectedInfo');
+            info.style.display = 'block';
+            document.getElementById('selectedPreview').src = item.download_url;
+            document.getElementById('selectedName').textContent = item.name;
+            document.getElementById('selectedUrl').textContent = item.download_url;
+            
+            // Si on est en mode sélection de logo, appliquer directement
+            if (logoPickerMode) {
+                updateLogoPreview(item.download_url);
+                document.getElementById('restaurantLogo').value = item.download_url;
+                logoPickerMode = false;
+                // Retourner à l'onglet Restaurant
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelector('[data-tab="tab-restaurant"]').classList.add('active');
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById('tab-restaurant').classList.add('active');
+                showToast('✅ Logo sélectionné ! N\'oubliez pas d\'enregistrer.', 'success');
+            } else {
+                showToast(`✅ Image sélectionnée: ${item.name}`, 'success');
+            }
+        };
+        
+        // Remplacer la fonction selectImage
+        window.selectImage = originalSelectImage;
         
         // ============ SAUVEGARDER LE RESTAURANT ============
         document.getElementById('restaurantForm').addEventListener('submit', function(e) {
@@ -1218,6 +1418,7 @@
                 .then(() => {
                     showToast('✅ Restaurant mis à jour avec succès !', 'success');
                     restaurantData = data;
+                    updateLogoPreview(data.logo);
                 })
                 .catch(error => {
                     showToast('❌ Erreur: ' + error.message, 'error');
@@ -1226,6 +1427,15 @@
                     btn.disabled = false;
                     btn.textContent = '💾 Enregistrer';
                 });
+        });
+        
+        // Mettre à jour l'aperçu du logo quand le nom change
+        document.getElementById('restaurantName').addEventListener('input', function() {
+            const logo = document.getElementById('restaurantLogo').value;
+            if (!logo) {
+                const placeholder = document.getElementById('logoPlaceholder');
+                placeholder.textContent = this.value.charAt(0).toUpperCase() || 'R';
+            }
         });
         
         // ============ GESTION DES CATÉGORIES ============
@@ -1652,7 +1862,8 @@
             }
         }
         
-        function selectImage(index) {
+        // Fonction selectImage originale (surchargée plus haut)
+        window.selectImage = function(index) {
             const item = picxImages[index];
             if (!item) return;
             document.querySelectorAll('.image-item').forEach(el => el.classList.remove('selected'));
@@ -1664,14 +1875,31 @@
             document.getElementById('selectedPreview').src = item.download_url;
             document.getElementById('selectedName').textContent = item.name;
             document.getElementById('selectedUrl').textContent = item.download_url;
-            showToast(`✅ Image: ${item.name}`, 'success');
-        }
+            
+            if (logoPickerMode) {
+                updateLogoPreview(item.download_url);
+                document.getElementById('restaurantLogo').value = item.download_url;
+                logoPickerMode = false;
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelector('[data-tab="tab-restaurant"]').classList.add('active');
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById('tab-restaurant').classList.add('active');
+                showToast('✅ Logo sélectionné ! N\'oubliez pas d\'enregistrer.', 'success');
+            } else {
+                showToast(`✅ Image sélectionnée: ${item.name}`, 'success');
+            }
+        };
         
         function clearImageSelection() {
-            selectedImageUrl = null;
-            selectedImageName = null;
-            document.querySelectorAll('.image-item').forEach(el => el.classList.remove('selected'));
-            document.getElementById('selectedInfo').style.display = 'none';
+            if (!logoPickerMode) {
+                selectedImageUrl = null;
+                selectedImageName = null;
+                document.querySelectorAll('.image-item').forEach(el => el.classList.remove('selected'));
+                document.getElementById('selectedInfo').style.display = 'none';
+            } else {
+                logoPickerMode = false;
+                showToast('🔙 Sélection de logo annulée', 'info');
+            }
         }
         
         // ============ FORMULAIRES ============
@@ -1756,6 +1984,9 @@
         
         window.loadImagesFromPicX = loadImagesFromPicX;
         window.clearImageSelection = clearImageSelection;
+        window.selectImage = selectImage;
+        window.openLogoSelector = openLogoSelector;
+        window.removeLogo = removeLogo;
         window.addCategory = addCategory;
         window.editCategory = editCategory;
         window.toggleCategory = toggleCategory;
