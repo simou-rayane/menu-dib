@@ -285,11 +285,50 @@
             color: white;
         }
         
+        /* ============ MENU GRID AVEC SÉPARATEURS DE CATÉGORIES ============ */
         .menu-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 25px;
             margin-top: 5px;
+        }
+        
+        .category-section {
+            grid-column: 1 / -1;
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+        
+        .category-section:first-child {
+            margin-top: 0;
+        }
+        
+        .category-section .category-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .category-section .category-title .icon {
+            font-size: 28px;
+        }
+        
+        .category-section .category-title .count {
+            font-size: 14px;
+            font-weight: 400;
+            color: #999;
+        }
+        
+        .category-section .category-products {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 15px;
         }
         
         .product-card {
@@ -712,7 +751,8 @@
             .header-left .restaurant-info h1 { font-size: 18px; }
             .action-bar { justify-content: center; padding: 10px 15px; }
             .action-btn { font-size: 12px; padding: 6px 14px; }
-            .menu-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px; }
+            .menu-grid { grid-template-columns: 1fr; gap: 18px; }
+            .category-section .category-products { grid-template-columns: 1fr; gap: 18px; }
             .product-card .product-image-wrapper { height: 170px; }
             .product-card .product-body { padding: 14px 16px 16px; }
             .product-card .product-name { font-size: 16px; }
@@ -726,7 +766,6 @@
         }
         
         @media (max-width: 480px) {
-            .menu-grid { grid-template-columns: 1fr; }
             .product-card .product-image-wrapper { height: 200px; }
             .action-bar { gap: 6px; }
             .action-btn { font-size: 11px; padding: 5px 12px; gap: 4px; }
@@ -818,7 +857,7 @@
     
     <!-- ============ SCRIPT PRINCIPAL ============ -->
     <script>
-        // ============ MENU AVEC CHARGEMENT DYNAMIQUE DES INFOS RESTAURANT ============
+        // ============ MENU AVEC PRODUITS ORDONNÉS PAR CATÉGORIE ============
         
         let products = [];
         let categories = {};
@@ -890,7 +929,7 @@
                 address: "123 Rue de la Paix, 75001 Paris",
                 phone: "01 23 45 67 89",
                 phoneLink: "+33123456789",
-                whatsapp: "1234567890",  // Numéro WhatsApp par défaut
+                whatsapp: "1234567890",
                 deliveryPrice: 5,
                 deliveryAvailable: true,
                 facebook: "https://facebook.com/votre-page",
@@ -903,10 +942,8 @@
         
         // ============ METTRE À JOUR L'UI DU RESTAURANT ============
         function updateRestaurantUI(data) {
-            // Nom
             document.getElementById('restaurantName').textContent = data.name || 'Mon Restaurant';
             
-            // Logo
             const logoImg = document.querySelector('.header-left .logo');
             const logoPlaceholder = document.getElementById('logoPlaceholder');
             
@@ -925,13 +962,9 @@
                 logoPlaceholder.textContent = (data.name || 'R').charAt(0).toUpperCase();
             }
             
-            // Adresse
             document.getElementById('restaurantAddress').textContent = data.address ? '📍 ' + data.address : '';
-            
-            // Téléphone
             document.getElementById('restaurantPhone').textContent = data.phone ? '📞 ' + data.phone : '';
             
-            // Livraison
             const deliveryBadge = document.getElementById('deliveryBadge');
             const deliveryPrice = document.getElementById('deliveryPrice');
             
@@ -943,7 +976,7 @@
                 deliveryBadge.textContent = '🚫 Livraison non disponible';
             }
             
-            // Bouton Appeler
+            // Boutons d'action
             const callBtn = document.getElementById('callBtn');
             if (data.phoneLink) {
                 callBtn.href = 'tel:' + data.phoneLink;
@@ -955,7 +988,6 @@
                 callBtn.style.display = 'none';
             }
             
-            // Bouton Itinéraire
             const directionsBtn = document.getElementById('directionsBtn');
             if (data.mapsUrl) {
                 directionsBtn.href = data.mapsUrl;
@@ -967,7 +999,6 @@
                 directionsBtn.style.display = 'none';
             }
             
-            // Bouton Facebook
             const facebookBtn = document.getElementById('facebookBtn');
             if (data.facebook) {
                 facebookBtn.href = data.facebook;
@@ -976,7 +1007,6 @@
                 facebookBtn.style.display = 'none';
             }
             
-            // Bouton Instagram
             const instagramBtn = document.getElementById('instagramBtn');
             if (data.instagram) {
                 instagramBtn.href = data.instagram;
@@ -985,7 +1015,6 @@
                 instagramBtn.style.display = 'none';
             }
             
-            // Bouton Site web
             const websiteBtn = document.getElementById('websiteBtn');
             if (data.website) {
                 websiteBtn.href = data.website;
@@ -994,7 +1023,6 @@
                 websiteBtn.style.display = 'none';
             }
             
-            // Footer
             document.getElementById('footerName').textContent = data.name || 'Mon Restaurant';
             
             console.log('✅ UI du restaurant mise à jour');
@@ -1083,13 +1111,15 @@
             });
         }
         
-        // ============ AFFICHER LE MENU ============
+        // ============ AFFICHER LE MENU AVEC PRODUITS ORDONNÉS PAR CATÉGORIE ============
         function displayMenu() {
             const grid = document.getElementById('menuGrid');
             if (!grid) return;
             
+            // Filtrer les produits visibles
             let filteredProducts = products.filter(p => p.visible !== false);
             
+            // Appliquer le filtre de catégorie
             if (currentFilter !== 'all') {
                 filteredProducts = filteredProducts.filter(p => p.category === currentFilter);
             }
@@ -1105,32 +1135,108 @@
                 return;
             }
             
-            grid.innerHTML = '';
-            filteredProducts.forEach(product => {
-                const card = document.createElement('div');
-                card.className = 'product-card';
+            // Si le filtre est "tous", organiser par catégorie
+            if (currentFilter === 'all') {
+                // Grouper les produits par catégorie
+                const groupedProducts = {};
+                const categoryOrder = {};
                 
-                const categoryIcon = categories[product.category]?.icon || '📁';
-                const categoryName = categories[product.category]?.name || product.category || 'Non catégorisé';
+                // Initialiser les groupes avec les catégories existantes
+                Object.keys(categories).forEach(key => {
+                    if (categories[key].active !== false) {
+                        groupedProducts[key] = [];
+                        categoryOrder[key] = categories[key].order || 0;
+                    }
+                });
                 
-                let imageHTML = '';
-                if (product.image) {
-                    imageHTML = `
-                        <div class="product-image-wrapper">
-                            <img src="${product.image}" alt="${product.name}" 
-                                 onerror="this.style.display='none'; this.parentElement.querySelector('.placeholder').style.display='flex';">
-                            <div class="placeholder" style="display: none;">🍽️</div>
+                // Ajouter les produits à leur catégorie respective
+                filteredProducts.forEach(product => {
+                    const catKey = product.category;
+                    if (groupedProducts[catKey]) {
+                        groupedProducts[catKey].push(product);
+                    } else {
+                        // Si la catégorie n'existe pas dans les catégories configurées
+                        if (!groupedProducts['autres']) {
+                            groupedProducts['autres'] = [];
+                            categoryOrder['autres'] = 999;
+                        }
+                        groupedProducts['autres'].push(product);
+                    }
+                });
+                
+                // Trier les catégories par order
+                const sortedCategoryKeys = Object.keys(groupedProducts).sort((a, b) => 
+                    (categoryOrder[a] || 0) - (categoryOrder[b] || 0)
+                );
+                
+                // Construire le HTML
+                let html = '';
+                sortedCategoryKeys.forEach(catKey => {
+                    const catProducts = groupedProducts[catKey];
+                    if (catProducts.length === 0) return;
+                    
+                    const cat = categories[catKey];
+                    const catName = cat ? cat.name : (catKey === 'autres' ? 'Autres' : catKey);
+                    const catIcon = cat ? (cat.icon || '📁') : '📁';
+                    
+                    html += `
+                        <div class="category-section">
+                            <div class="category-title">
+                                <span class="icon">${catIcon}</span>
+                                ${catName}
+                                <span class="count">(${catProducts.length})</span>
+                            </div>
+                            <div class="category-products">
+                    `;
+                    
+                    catProducts.forEach(product => {
+                        html += createProductCardHTML(product);
+                    });
+                    
+                    html += `
+                            </div>
                         </div>
                     `;
-                } else {
-                    imageHTML = `
-                        <div class="product-image-wrapper">
-                            <div class="placeholder">🍽️</div>
-                        </div>
-                    `;
-                }
+                });
                 
-                card.innerHTML = `
+                grid.innerHTML = html;
+                
+            } else {
+                // Mode filtre simple (une seule catégorie)
+                let html = '';
+                filteredProducts.forEach(product => {
+                    html += createProductCardHTML(product);
+                });
+                grid.innerHTML = html;
+            }
+            
+            console.log(`✅ ${filteredProducts.length} produits affichés`);
+        }
+        
+        // ============ CRÉER LE HTML D'UNE CARTE PRODUIT ============
+        function createProductCardHTML(product) {
+            const categoryIcon = categories[product.category]?.icon || '📁';
+            const categoryName = categories[product.category]?.name || product.category || 'Non catégorisé';
+            
+            let imageHTML = '';
+            if (product.image) {
+                imageHTML = `
+                    <div class="product-image-wrapper">
+                        <img src="${product.image}" alt="${product.name}" 
+                             onerror="this.style.display='none'; this.parentElement.querySelector('.placeholder').style.display='flex';">
+                        <div class="placeholder" style="display: none;">🍽️</div>
+                    </div>
+                `;
+            } else {
+                imageHTML = `
+                    <div class="product-image-wrapper">
+                        <div class="placeholder">🍽️</div>
+                    </div>
+                `;
+            }
+            
+            return `
+                <div class="product-card">
                     ${imageHTML}
                     <div class="product-body">
                         <div class="product-header">
@@ -1143,11 +1249,8 @@
                             🛒 Ajouter au panier
                         </button>
                     </div>
-                `;
-                grid.appendChild(card);
-            });
-            
-            console.log(`✅ ${filteredProducts.length} produits affichés`);
+                </div>
+            `;
         }
         
         // ============ GESTION DU PANIER ============
@@ -1393,17 +1496,11 @@
             });
         }
         
-        // ============ ENVOYER LA COMMANDE SUR WHATSAPP ============
         function sendOrderToWhatsApp(order) {
             if (!order) return;
             
             const restaurantName = restaurantData?.name || 'Mon Restaurant';
-            
-            // Récupérer le numéro WhatsApp depuis les données du restaurant
-            // Si non défini, utiliser le numéro par défaut
             let whatsappNumber = restaurantData?.whatsapp || '1234567890';
-            
-            // Nettoyer le numéro (enlever les espaces, les tirets, les +)
             whatsappNumber = whatsappNumber.replace(/[\s\-+]/g, '');
             
             console.log('📱 Numéro WhatsApp utilisé:', whatsappNumber);
@@ -1425,8 +1522,6 @@
             message += `\n\nMerci de confirmer cette commande.`;
             
             const encodedMessage = encodeURIComponent(message);
-            
-            // Ouvrir WhatsApp avec le numéro du restaurant
             window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
             
             ordersRef.child(`commandes/${order.id}`).update({
