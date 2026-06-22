@@ -4,14 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administration - Firebase</title>
-    <link rel="stylesheet" href="style.css">
     
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
     <style>
-        /* ============ STYLES GÉNÉRAUX ============ */
+        /* ============ STYLES COMPLETS ============ */
         * {
             margin: 0;
             padding: 0;
@@ -29,117 +28,67 @@
             margin: 0 auto;
         }
         
-        .admin-section {
+        header {
             background: white;
-            padding: 25px;
-            border-radius: 10px;
+            padding: 20px 30px;
+            border-radius: 12px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.08);
             margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
         }
         
-        .admin-section h2 {
+        header h1 {
             color: #333;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #f0f2f5;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
-        .admin-section input,
-        .admin-section select,
-        .admin-section textarea {
-            width: 100%;
-            padding: 10px 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            margin-bottom: 10px;
-            transition: border-color 0.3s;
+        header h1 span {
+            color: #667eea;
         }
         
-        .admin-section input:focus,
-        .admin-section select:focus,
-        .admin-section textarea:focus {
-            border-color: #667eea;
-            outline: none;
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
         
-        .admin-section textarea {
-            resize: vertical;
-            min-height: 60px;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+        .header-actions button {
+            padding: 8px 20px;
             border: none;
-            padding: 12px 30px;
             border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.3s;
-            width: 100%;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-        }
-        
-        .btn-primary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
             cursor: pointer;
             font-weight: 600;
             transition: all 0.3s;
         }
         
-        .btn-secondary:hover {
-            background: #5a6268;
+        .header-actions button:hover {
+            transform: scale(1.05);
         }
         
-        .btn-danger {
+        .btn-export {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .btn-import {
+            background: #ff9800;
+            color: white;
+        }
+        
+        .btn-reset {
             background: #dc3545;
             color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        
-        .btn-danger:hover {
-            background: #c82333;
-        }
-        
-        .btn-success {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        
-        .btn-success:hover {
-            background: #218838;
         }
         
         #connectionStatus {
             padding: 10px 20px;
-            border-radius: 5px;
+            border-radius: 8px;
             margin-bottom: 20px;
             font-weight: 500;
         }
@@ -156,7 +105,177 @@
             border: 1px solid #f5c6cb;
         }
         
-        /* ============ GESTION DES CATÉGORIES ============ */
+        /* ============ TABS ============ */
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            background: white;
+            padding: 8px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        
+        .tab-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            background: transparent;
+            color: #666;
+        }
+        
+        .tab-btn:hover {
+            background: #f0f4ff;
+            color: #667eea;
+        }
+        
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* ============ ADMIN SECTION ============ */
+        .admin-section {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+        
+        .admin-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f2f5;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .admin-section h2 .badge {
+            font-size: 12px;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        
+        .admin-section h2 .badge.active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .admin-section h2 .badge.inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 5px;
+        }
+        
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .form-group label .required {
+            color: #dc3545;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        
+        .form-group .help-text {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+        
+        .form-actions {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .form-actions button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s;
+            flex: 1;
+        }
+        
+        .form-actions button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        
+        .form-actions .btn-save {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .form-actions .btn-save:hover {
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .form-actions .btn-reset {
+            background: #6c757d;
+            color: white;
+        }
+        
+        /* ============ CATEGORIES ============ */
         .categories-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -171,7 +290,6 @@
             padding: 15px;
             text-align: center;
             transition: all 0.3s;
-            position: relative;
         }
         
         .category-item:hover {
@@ -236,6 +354,10 @@
             transition: all 0.3s;
         }
         
+        .category-item .category-actions button:hover {
+            transform: scale(1.05);
+        }
+        
         .category-item .category-actions .btn-edit-cat {
             background: #2196F3;
             color: white;
@@ -251,10 +373,6 @@
             color: white;
         }
         
-        .category-item .category-actions button:hover {
-            transform: scale(1.05);
-        }
-        
         .add-category-form {
             display: flex;
             gap: 10px;
@@ -262,8 +380,7 @@
             margin-bottom: 15px;
         }
         
-        .add-category-form input,
-        .add-category-form select {
+        .add-category-form input {
             flex: 1;
             min-width: 120px;
             padding: 10px 12px;
@@ -272,8 +389,7 @@
             font-size: 14px;
         }
         
-        .add-category-form input:focus,
-        .add-category-form select:focus {
+        .add-category-form input:focus {
             border-color: #667eea;
             outline: none;
         }
@@ -292,6 +408,118 @@
         
         .add-category-form button:hover {
             background: #764ba2;
+        }
+        
+        /* ============ PRODUCT LIST ============ */
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            transition: background 0.3s;
+        }
+        
+        .product-item:hover {
+            background: #f8f9ff;
+        }
+        
+        .product-item .product-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+        
+        .product-item .product-thumbnail {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            background: #f8f9fa;
+        }
+        
+        .product-item .product-thumbnail-placeholder {
+            width: 50px;
+            height: 50px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 24px;
+            border: 1px solid #eee;
+        }
+        
+        .product-item .product-details {
+            flex: 1;
+        }
+        
+        .product-item .product-details .name {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .product-item .product-details .price {
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .product-item .product-details .category {
+            color: #666;
+            font-size: 13px;
+        }
+        
+        .product-item .product-details .description {
+            color: #999;
+            font-size: 13px;
+        }
+        
+        .product-item .product-actions {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .product-item .product-actions button {
+            padding: 5px 12px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .product-item .product-actions button:hover {
+            transform: scale(1.05);
+        }
+        
+        .status-visible {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .status-hidden {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-edit {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .btn-photo {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-delete {
+            background: #dc3545;
+            color: white;
         }
         
         /* ============ IMAGE LIST ============ */
@@ -396,7 +624,7 @@
         }
         
         .btn-clear-selection {
-            background: #f44336;
+            background: #dc3545;
             color: white;
             border: none;
             padding: 10px 24px;
@@ -456,116 +684,66 @@
             word-break: break-all;
         }
         
-        /* ============ PRODUCT LIST ============ */
-        .product-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid #eee;
-            transition: background 0.3s;
-        }
-        
-        .product-item:hover {
-            background: #f8f9ff;
-        }
-        
-        .product-item .product-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            flex: 1;
-        }
-        
-        .product-item .product-thumbnail {
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-            border-radius: 8px;
-            border: 1px solid #eee;
-            background: #f8f9fa;
-        }
-        
-        .product-item .product-thumbnail-placeholder {
-            width: 50px;
-            height: 50px;
-            background: #f0f0f0;
-            border-radius: 8px;
+        /* ============ MODAL ============ */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #999;
-            font-size: 24px;
-            border: 1px solid #eee;
+            z-index: 9999;
+            animation: fadeIn 0.3s ease;
         }
         
-        .product-item .product-details {
-            flex: 1;
+        .modal-overlay .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
         }
         
-        .product-item .product-details .name {
-            font-weight: 600;
+        .modal-overlay .modal-content h2 {
+            margin-bottom: 20px;
             color: #333;
         }
         
-        .product-item .product-details .price {
-            color: #667eea;
-            font-weight: 600;
-        }
-        
-        .product-item .product-details .category {
-            color: #666;
-            font-size: 13px;
-        }
-        
-        .product-item .product-details .description {
-            color: #999;
-            font-size: 13px;
-        }
-        
-        .product-item .product-actions {
+        .modal-overlay .modal-actions {
             display: flex;
-            gap: 5px;
-            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
         }
         
-        .product-item .product-actions button {
-            padding: 5px 12px;
+        .modal-overlay .modal-actions button {
+            flex: 1;
+            padding: 12px;
             border: none;
-            border-radius: 15px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 12px;
             font-weight: 600;
+            font-size: 14px;
             transition: all 0.3s;
         }
         
-        .product-item .product-actions button:hover {
-            transform: scale(1.05);
-        }
-        
-        .status-visible {
-            background: #4caf50;
+        .modal-overlay .modal-actions .btn-save {
+            background: #667eea;
             color: white;
         }
         
-        .status-hidden {
-            background: #f44336;
-            color: white;
-        }
-        
-        .btn-edit {
-            background: #2196F3;
-            color: white;
-        }
-        
-        .btn-photo {
-            background: #4CAF50;
-            color: white;
-        }
-        
-        .btn-delete {
+        .modal-overlay .modal-actions .btn-cancel {
             background: #dc3545;
             color: white;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
         /* ============ TOAST ============ */
@@ -595,6 +773,27 @@
             to { transform: translateX(-50%) translateY(0); opacity: 1; }
         }
         
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading-spinner .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
         .github-config {
             background: #f8f9ff;
             padding: 15px;
@@ -622,138 +821,227 @@
             margin-top: 5px;
         }
         
-        .loading-spinner {
-            display: none;
-            text-align: center;
-            padding: 20px;
+        /* ============ RESPONSIVE ============ */
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .tabs {
+                justify-content: center;
+            }
+            
+            .tab-btn {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+            
+            .categories-grid {
+                grid-template-columns: 1fr 1fr;
+            }
         }
         
-        .loading-spinner .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .modal-overlay .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 90%;
-            overflow-y: auto;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .modal-overlay .modal-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
-        .modal-overlay .modal-actions button {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-        
-        .modal-overlay .modal-actions .btn-save {
-            background: #667eea;
-            color: white;
-        }
-        
-        .modal-overlay .modal-actions .btn-cancel {
-            background: #dc3545;
-            color: white;
+        @media (max-width: 480px) {
+            .categories-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .add-category-form {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🔧 Administration Firebase</h1>
+        <header>
+            <h1>🔧 <span>Administration</span> Firebase</h1>
+            <div class="header-actions">
+                <button class="btn-export" onclick="exportProducts()">📤 Exporter</button>
+                <button class="btn-import" onclick="importProducts()">📥 Importer</button>
+                <button class="btn-reset" onclick="resetFirebaseProducts()">🔄 Réinitialiser</button>
+            </div>
+        </header>
         
         <div id="connectionStatus" class="connected">✅ Connecté à Firebase</div>
         
-        <!-- ============ GESTION DES CATÉGORIES ============ -->
-        <div class="admin-section">
-            <h2>📂 Gestion des catégories</h2>
-            
-            <div class="add-category-form">
-                <input type="text" id="newCategoryKey" placeholder="Clé (ex: snacks, sandwichs)" style="flex: 1;">
-                <input type="text" id="newCategoryName" placeholder="Nom (ex: Snacks, Sandwichs)" style="flex: 1;">
-                <input type="text" id="newCategoryIcon" placeholder="Icône (ex: 🥪, 🌮)" style="flex: 0.5; min-width: 80px;">
-                <button onclick="addCategory()">➕ Ajouter</button>
-            </div>
-            
-            <div id="categoriesList" class="categories-grid">
-                <!-- Les catégories seront chargées ici -->
+        <!-- ============ TABS ============ -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="tab-restaurant">🏪 Restaurant</button>
+            <button class="tab-btn" data-tab="tab-categories">📂 Catégories</button>
+            <button class="tab-btn" data-tab="tab-products">🍽️ Produits</button>
+            <button class="tab-btn" data-tab="tab-images">📷 Images</button>
+        </div>
+        
+        <!-- ============ TAB 1: RESTAURANT ============ -->
+        <div class="tab-content active" id="tab-restaurant">
+            <div class="admin-section">
+                <h2>🏪 Informations du restaurant</h2>
+                
+                <form id="restaurantForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Identifiant du restaurant</label>
+                            <input type="text" id="restaurantId" placeholder="default" value="default">
+                            <div class="help-text">Utilisé dans l'URL: ?restaurant=identifiant</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Nom du restaurant <span class="required">*</span></label>
+                            <input type="text" id="restaurantName" placeholder="Mon Restaurant" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Logo (URL)</label>
+                            <input type="text" id="restaurantLogo" placeholder="images/logo.png">
+                            <div class="help-text">Chemin vers le logo dans votre dépôt GitHub</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Adresse</label>
+                            <input type="text" id="restaurantAddress" placeholder="123 Rue de la Paix, 75001 Paris">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Téléphone</label>
+                            <input type="text" id="restaurantPhone" placeholder="01 23 45 67 89">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Téléphone (format international)</label>
+                            <input type="text" id="restaurantPhoneLink" placeholder="+33123456789">
+                            <div class="help-text">Pour le bouton Appeler. Ex: +33123456789</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Prix de livraison (€)</label>
+                            <input type="number" id="restaurantDeliveryPrice" placeholder="5" step="0.5">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Livraison disponible</label>
+                            <select id="restaurantDeliveryAvailable">
+                                <option value="true">✅ Oui</option>
+                                <option value="false">❌ Non</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Facebook (URL)</label>
+                            <input type="url" id="restaurantFacebook" placeholder="https://facebook.com/votre-page">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Instagram (URL)</label>
+                            <input type="url" id="restaurantInstagram" placeholder="https://instagram.com/votre-compte">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Site web (URL)</label>
+                            <input type="url" id="restaurantWebsite" placeholder="https://votre-site.com">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Google Maps (URL)</label>
+                            <input type="url" id="restaurantMapsUrl" placeholder="https://maps.google.com/maps?q=...">
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label>Restaurant actif</label>
+                            <select id="restaurantActive">
+                                <option value="true">✅ Actif</option>
+                                <option value="false">❌ Inactif</option>
+                            </select>
+                            <div class="help-text">Si inactif, le restaurant n'apparaîtra pas sur le menu</div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn-save">💾 Enregistrer</button>
+                            <button type="button" class="btn-reset" onclick="resetRestaurantForm()">🔄 Réinitialiser</button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
         
-        <!-- ============ CONFIGURATION PICX ============ -->
-        <div class="admin-section">
-            <h2>⚙️ Configuration PicX</h2>
-            <div class="github-config">
-                <h4>📁 Configuration du dépôt PicX</h4>
-                <input type="text" id="githubUsername" placeholder="Nom d'utilisateur GitHub" value="simou-rayane">
-                <input type="text" id="githubRepo" placeholder="Dépôt PicX" value="picx-images-hosting">
-                <input type="text" id="githubBranch" placeholder="Branche" value="master">
-                <div class="help-text">
-                    💡 Utilisez PicX pour uploader vos images dans ce dépôt.
+        <!-- ============ TAB 2: CATÉGORIES ============ -->
+        <div class="tab-content" id="tab-categories">
+            <div class="admin-section">
+                <h2>📂 Gestion des catégories</h2>
+                
+                <div class="add-category-form">
+                    <input type="text" id="newCategoryKey" placeholder="Clé (ex: snacks)" style="flex: 1;">
+                    <input type="text" id="newCategoryName" placeholder="Nom (ex: Snacks)" style="flex: 1;">
+                    <input type="text" id="newCategoryIcon" placeholder="Icône (ex: 🌮)" style="flex: 0.5; min-width: 80px;">
+                    <button onclick="addCategory()">➕ Ajouter</button>
+                </div>
+                
+                <div id="categoriesList" class="categories-grid">
+                    <!-- Les catégories seront chargées ici -->
                 </div>
             </div>
         </div>
         
-        <!-- ============ AJOUTER UN PRODUIT ============ -->
-        <div class="admin-section">
-            <h2>➕ Ajouter un produit</h2>
-            <form id="productForm">
-                <input type="text" id="productName" placeholder="Nom du produit" required>
-                <input type="number" id="productPrice" placeholder="Prix (€)" step="0.01" required>
+        <!-- ============ TAB 3: PRODUITS ============ -->
+        <div class="tab-content" id="tab-products">
+            <div class="admin-section">
+                <h2>➕ Ajouter un produit</h2>
+                <form id="productForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Nom du produit <span class="required">*</span></label>
+                            <input type="text" id="productName" placeholder="Nom du produit" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Prix (€) <span class="required">*</span></label>
+                            <input type="number" id="productPrice" placeholder="14.00" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Catégorie <span class="required">*</span></label>
+                            <select id="productCategory" required>
+                                <option value="">Choisir une catégorie...</option>
+                            </select>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Description</label>
+                            <textarea id="productDesc" placeholder="Description du produit..." rows="2"></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary" id="addBtn" style="width:100%; margin-top:10px;">➕ Ajouter le produit</button>
+                </form>
+            </div>
+            
+            <div class="admin-section">
+                <h2>📋 Gestion des produits (<span id="productCount">0</span>)</h2>
+                <div id="productsList" class="products-list"></div>
+            </div>
+        </div>
+        
+        <!-- ============ TAB 4: IMAGES ============ -->
+        <div class="tab-content" id="tab-images">
+            <div class="admin-section">
+                <h2>📷 Gestion des images</h2>
                 
-                <!-- Sélecteur de catégorie dynamique -->
-                <select id="productCategory" required>
-                    <option value="">Choisir une catégorie...</option>
-                </select>
+                <div class="github-config">
+                    <h4>📁 Configuration du dépôt PicX</h4>
+                    <input type="text" id="githubUsername" placeholder="Nom d'utilisateur GitHub" value="simou-rayane">
+                    <input type="text" id="githubRepo" placeholder="Dépôt PicX" value="picx-images-hosting">
+                    <input type="text" id="githubBranch" placeholder="Branche" value="master">
+                    <div class="help-text">
+                        💡 Utilisez PicX pour uploader vos images dans ce dépôt.
+                    </div>
+                </div>
                 
-                <textarea id="productDesc" placeholder="Description"></textarea>
-                
-                <!-- Sélection d'image -->
-                <div style="margin: 15px 0;">
-                    <label style="display: block; font-weight: 600; color: #555; margin-bottom: 10px;">📷 Choisir une image</label>
-                    
+                <div style="margin-top: 15px;">
                     <div class="toolbar">
                         <button type="button" class="btn-refresh" onclick="loadImagesFromPicX()">🔄 Charger les images</button>
                         <button type="button" class="btn-clear-selection" onclick="clearImageSelection()">✕ Désélectionner</button>
@@ -783,20 +1071,14 @@
                         </div>
                     </div>
                 </div>
-                
-                <button type="submit" class="btn-primary" id="addBtn">➕ Ajouter le produit</button>
-            </form>
+            </div>
         </div>
         
-        <!-- ============ LISTE DES PRODUITS ============ -->
-        <div class="admin-section">
-            <h2>📋 Gestion des produits (<span id="productCount">0</span>)</h2>
-            <div id="productsList" class="products-list"></div>
+        <!-- Informations -->
+        <div style="background: #f8f9ff; padding: 15px; border-radius: 10px; text-align: center; color: #666; font-size: 13px;">
+            💡 Les données sont synchronisées en temps réel avec Firebase.
+            <br>Utilisez <code>?restaurant=identifiant</code> dans l'URL du menu pour afficher un restaurant spécifique.
         </div>
-        
-        <button onclick="resetFirebaseProducts()" style="background: #ff9800; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px;">
-            🔄 Réinitialiser les produits
-        </button>
     </div>
     
     <!-- Configuration Firebase -->
@@ -804,7 +1086,7 @@
     
     <!-- Script principal -->
     <script>
-        // ============ ADMIN AVEC GESTION DES CATÉGORIES ============
+        // ============ ADMIN COMPLET ============
         
         let products = [];
         let categories = {};
@@ -812,9 +1094,12 @@
         let selectedImageUrl = null;
         let selectedImageName = null;
         let picxImages = [];
+        let restaurantData = {};
         
-        // Référence Firebase pour les catégories
+        // Références
         const categoriesRef = database.ref('categories');
+        const restaurantsRef = database.ref('restaurants');
+        const currentRestaurantId = 'default';
         
         // ============ ÉTAT DE CONNEXION ============
         function updateConnectionStatus(connected) {
@@ -834,25 +1119,129 @@
             updateConnectionStatus(snapshot.val());
         });
         
-        // ============ CHARGER LES CATÉGORIES ============
+        // ============ TABS ============
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById(this.dataset.tab).classList.add('active');
+            });
+        });
+        
+        // ============ GESTION DU RESTAURANT ============
+        function loadRestaurant() {
+            restaurantsRef.child(currentRestaurantId).on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    restaurantData = data;
+                    populateRestaurantForm(data);
+                    console.log('✅ Restaurant chargé:', data.name);
+                } else {
+                    restaurantData = getDefaultRestaurant();
+                    populateRestaurantForm(restaurantData);
+                    // Créer le restaurant par défaut si inexistant
+                    restaurantsRef.child(currentRestaurantId).set(restaurantData);
+                }
+            });
+        }
+        
+        function getDefaultRestaurant() {
+            return {
+                name: "Mon Restaurant",
+                logo: "images/logo.png",
+                address: "123 Rue de la Paix, 75001 Paris",
+                phone: "01 23 45 67 89",
+                phoneLink: "+33123456789",
+                deliveryPrice: 5,
+                deliveryAvailable: true,
+                facebook: "https://facebook.com/votre-page",
+                instagram: "https://instagram.com/votre-compte",
+                website: "https://votre-site.com",
+                mapsUrl: "https://maps.google.com/maps?q=123+Rue+de+la+Paix+75001+Paris",
+                active: true
+            };
+        }
+        
+        function populateRestaurantForm(data) {
+            document.getElementById('restaurantId').value = currentRestaurantId;
+            document.getElementById('restaurantName').value = data.name || '';
+            document.getElementById('restaurantLogo').value = data.logo || '';
+            document.getElementById('restaurantAddress').value = data.address || '';
+            document.getElementById('restaurantPhone').value = data.phone || '';
+            document.getElementById('restaurantPhoneLink').value = data.phoneLink || '';
+            document.getElementById('restaurantDeliveryPrice').value = data.deliveryPrice || 0;
+            document.getElementById('restaurantDeliveryAvailable').value = data.deliveryAvailable !== false ? 'true' : 'false';
+            document.getElementById('restaurantFacebook').value = data.facebook || '';
+            document.getElementById('restaurantInstagram').value = data.instagram || '';
+            document.getElementById('restaurantWebsite').value = data.website || '';
+            document.getElementById('restaurantMapsUrl').value = data.mapsUrl || '';
+            document.getElementById('restaurantActive').value = data.active !== false ? 'true' : 'false';
+        }
+        
+        function resetRestaurantForm() {
+            if (confirm('🔄 Réinitialiser le formulaire avec les valeurs actuelles ?')) {
+                populateRestaurantForm(restaurantData);
+                showToast('🔄 Formulaire réinitialisé', 'info');
+            }
+        }
+        
+        // ============ SAUVEGARDER LE RESTAURANT ============
+        document.getElementById('restaurantForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const data = {
+                name: document.getElementById('restaurantName').value.trim(),
+                logo: document.getElementById('restaurantLogo').value.trim() || null,
+                address: document.getElementById('restaurantAddress').value.trim() || null,
+                phone: document.getElementById('restaurantPhone').value.trim() || null,
+                phoneLink: document.getElementById('restaurantPhoneLink').value.trim() || null,
+                deliveryPrice: parseFloat(document.getElementById('restaurantDeliveryPrice').value) || 0,
+                deliveryAvailable: document.getElementById('restaurantDeliveryAvailable').value === 'true',
+                facebook: document.getElementById('restaurantFacebook').value.trim() || null,
+                instagram: document.getElementById('restaurantInstagram').value.trim() || null,
+                website: document.getElementById('restaurantWebsite').value.trim() || null,
+                mapsUrl: document.getElementById('restaurantMapsUrl').value.trim() || null,
+                active: document.getElementById('restaurantActive').value === 'true'
+            };
+            
+            if (!data.name) {
+                showToast('❌ Le nom du restaurant est requis', 'error');
+                return;
+            }
+            
+            const btn = this.querySelector('.btn-save');
+            btn.disabled = true;
+            btn.textContent = '⏳ Sauvegarde...';
+            
+            restaurantsRef.child(currentRestaurantId).set(data)
+                .then(() => {
+                    showToast('✅ Restaurant mis à jour avec succès !', 'success');
+                    restaurantData = data;
+                })
+                .catch(error => {
+                    showToast('❌ Erreur: ' + error.message, 'error');
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.textContent = '💾 Enregistrer';
+                });
+        });
+        
+        // ============ GESTION DES CATÉGORIES ============
         function loadCategories() {
             categoriesRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 categories = data || {};
-                
-                // Créer les catégories par défaut si vides
                 if (Object.keys(categories).length === 0) {
                     createDefaultCategories();
                 } else {
                     displayCategories();
                     updateCategorySelect();
                 }
-            }, (error) => {
-                showToast('❌ Erreur chargement catégories: ' + error.message, 'error');
             });
         }
         
-        // ============ CRÉER LES CATÉGORIES PAR DÉFAUT ============
         function createDefaultCategories() {
             const defaultCategories = {
                 'entrees': { name: 'Entrées', icon: '🥗', order: 1, active: true },
@@ -860,17 +1249,9 @@
                 'desserts': { name: 'Desserts', icon: '🍰', order: 3, active: true },
                 'boissons': { name: 'Boissons', icon: '🥤', order: 4, active: true }
             };
-            
-            categoriesRef.set(defaultCategories)
-                .then(() => {
-                    console.log('✅ Catégories par défaut créées');
-                })
-                .catch(error => {
-                    console.error('❌ Erreur création catégories:', error);
-                });
+            categoriesRef.set(defaultCategories);
         }
         
-        // ============ AFFICHER LES CATÉGORIES ============
         function displayCategories() {
             const container = document.getElementById('categoriesList');
             if (!container) return;
@@ -908,7 +1289,6 @@
             });
         }
         
-        // ============ AJOUTER UNE CATÉGORIE ============
         function addCategory() {
             const key = document.getElementById('newCategoryKey').value.trim();
             const name = document.getElementById('newCategoryName').value.trim();
@@ -918,38 +1298,25 @@
                 showToast('❌ Veuillez entrer une clé et un nom', 'error');
                 return;
             }
-            
-            // Vérifier que la clé est valide (pas d'espaces, caractères spéciaux)
             if (!/^[a-z0-9_]+$/.test(key)) {
-                showToast('❌ La clé ne doit contenir que des lettres minuscules, chiffres et underscores', 'error');
+                showToast('❌ Clé invalide (minuscules, chiffres, underscores)', 'error');
                 return;
             }
-            
             if (categories[key]) {
                 showToast('❌ Cette catégorie existe déjà', 'error');
                 return;
             }
             
-            const newCategory = {
-                name: name,
-                icon: icon,
-                order: Object.keys(categories).length + 1,
-                active: true
-            };
-            
-            categoriesRef.child(key).set(newCategory)
+            categoriesRef.child(key).set({ name, icon, order: Object.keys(categories).length + 1, active: true })
                 .then(() => {
                     showToast(`✅ Catégorie "${name}" ajoutée !`, 'success');
                     document.getElementById('newCategoryKey').value = '';
                     document.getElementById('newCategoryName').value = '';
                     document.getElementById('newCategoryIcon').value = '';
                 })
-                .catch(error => {
-                    showToast('❌ Erreur: ' + error.message, 'error');
-                });
+                .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
         }
         
-        // ============ MODIFIER UNE CATÉGORIE ============
         function editCategory(key) {
             const cat = categories[key];
             if (!cat) return;
@@ -962,15 +1329,15 @@
                     <form id="editCategoryForm">
                         <div style="margin-bottom: 15px;">
                             <label style="display: block; margin-bottom: 5px; font-weight: 600;">Nom</label>
-                            <input type="text" id="editCatName" value="${cat.name}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" required>
+                            <input type="text" id="editCatName" value="${cat.name}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;" required>
                         </div>
                         <div style="margin-bottom: 15px;">
                             <label style="display: block; margin-bottom: 5px; font-weight: 600;">Icône</label>
-                            <input type="text" id="editCatIcon" value="${cat.icon || '📁'}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                            <input type="text" id="editCatIcon" value="${cat.icon || '📁'}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;">
                         </div>
                         <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Ordre d'affichage</label>
-                            <input type="number" id="editCatOrder" value="${cat.order || 0}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Ordre</label>
+                            <input type="number" id="editCatOrder" value="${cat.order || 0}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;">
                         </div>
                         <div class="modal-actions">
                             <button type="submit" class="btn-save">✅ Sauvegarder</button>
@@ -983,74 +1350,46 @@
             
             document.getElementById('editCategoryForm').addEventListener('submit', function(e) {
                 e.preventDefault();
-                
                 const updates = {
                     name: document.getElementById('editCatName').value.trim(),
                     icon: document.getElementById('editCatIcon').value.trim() || '📁',
                     order: parseInt(document.getElementById('editCatOrder').value) || 0
                 };
-                
                 categoriesRef.child(key).update(updates)
-                    .then(() => {
-                        showToast('✅ Catégorie modifiée !', 'success');
-                        overlay.remove();
-                    })
-                    .catch(error => {
-                        showToast('❌ Erreur: ' + error.message, 'error');
-                    });
+                    .then(() => { showToast('✅ Catégorie modifiée !', 'success'); overlay.remove(); })
+                    .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
             });
         }
         
-        // ============ ACTIVER/DÉSACTIVER UNE CATÉGORIE ============
         function toggleCategory(key) {
             const cat = categories[key];
             if (!cat) return;
-            
             const newStatus = cat.active === false ? true : false;
             categoriesRef.child(key).update({ active: newStatus })
-                .then(() => {
-                    showToast(`✅ Catégorie ${newStatus ? 'activée' : 'désactivée'}`, 'success');
-                })
-                .catch(error => {
-                    showToast('❌ Erreur: ' + error.message, 'error');
-                });
+                .then(() => showToast(`✅ Catégorie ${newStatus ? 'activée' : 'désactivée'}`, 'success'))
+                .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
         }
         
-        // ============ SUPPRIMER UNE CATÉGORIE ============
         function deleteCategory(key) {
             const cat = categories[key];
             if (!cat) return;
-            
-            // Vérifier si des produits utilisent cette catégorie
             const productsInCategory = products.filter(p => p.category === key);
             if (productsInCategory.length > 0) {
-                showToast(`❌ Impossible de supprimer "${cat.name}" : ${productsInCategory.length} produit(s) l'utilisent.`, 'error');
+                showToast(`❌ ${productsInCategory.length} produit(s) utilisent cette catégorie`, 'error');
                 return;
             }
-            
-            if (confirm(`Supprimer la catégorie "${cat.name}" définitivement ?`)) {
+            if (confirm(`Supprimer "${cat.name}" ?`)) {
                 categoriesRef.child(key).remove()
-                    .then(() => {
-                        showToast('✅ Catégorie supprimée !', 'success');
-                    })
-                    .catch(error => {
-                        showToast('❌ Erreur: ' + error.message, 'error');
-                    });
+                    .then(() => showToast('✅ Catégorie supprimée !', 'success'))
+                    .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
             }
         }
         
-        // ============ METTRE À JOUR LE SÉLECTEUR DE CATÉGORIE ============
         function updateCategorySelect() {
             const select = document.getElementById('productCategory');
             if (!select) return;
-            
-            // Garder l'option par défaut
             select.innerHTML = '<option value="">Choisir une catégorie...</option>';
-            
-            const sortedKeys = Object.keys(categories).sort((a, b) => 
-                (categories[a].order || 0) - (categories[b].order || 0)
-            );
-            
+            const sortedKeys = Object.keys(categories).sort((a, b) => (categories[a].order || 0) - (categories[b].order || 0));
             sortedKeys.forEach(key => {
                 const cat = categories[key];
                 if (cat.active !== false) {
@@ -1062,213 +1401,46 @@
             });
         }
         
-        // ============ CHARGER LES IMAGES DEPUIS PICX ============
-        async function loadImagesFromPicX() {
-            const username = document.getElementById('githubUsername').value.trim();
-            const repo = document.getElementById('githubRepo').value.trim();
-            const branch = document.getElementById('githubBranch').value.trim();
-            
-            if (!username || !repo) {
-                showToast('❌ Veuillez configurer votre dépôt', 'error');
-                return;
-            }
-            
-            const spinner = document.getElementById('loadingSpinner');
-            const refreshBtn = document.querySelector('.btn-refresh');
-            
-            spinner.style.display = 'block';
-            if (refreshBtn) refreshBtn.disabled = true;
-            
-            try {
-                const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents?ref=${branch}`;
-                const response = await fetch(apiUrl);
-                
-                if (!response.ok) {
-                    throw new Error(`Dépôt "${repo}" non trouvé (${response.status})`);
-                }
-                
-                const data = await response.json();
-                
-                const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
-                picxImages = data.filter(item => 
-                    item.type === 'file' && 
-                    imageExtensions.some(ext => item.name.toLowerCase().endsWith(ext))
-                );
-                
-                if (picxImages.length === 0) {
-                    document.getElementById('imageList').innerHTML = `
-                        <div class="empty-images">
-                            <div class="icon">📂</div>
-                            <p>Aucune image trouvée</p>
-                        </div>
-                    `;
-                    showToast('ℹ️ Aucune image trouvée', 'warning');
-                    return;
-                }
-                
-                displayImagesList();
-                showToast(`✅ ${picxImages.length} images chargées`, 'success');
-                
-            } catch (error) {
-                showToast('❌ Erreur: ' + error.message, 'error');
-                document.getElementById('imageList').innerHTML = `
-                    <div class="empty-images">
-                        <div class="icon">❌</div>
-                        <p>${error.message}</p>
-                    </div>
-                `;
-            } finally {
-                spinner.style.display = 'none';
-                if (refreshBtn) refreshBtn.disabled = false;
-            }
-        }
-        
-        // ============ AFFICHER LA LISTE DES IMAGES ============
-        function displayImagesList() {
-            const container = document.getElementById('imageList');
-            container.innerHTML = '';
-            
-            picxImages.forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = 'image-item';
-                div.dataset.index = index;
-                
-                div.innerHTML = `
-                    <img src="${item.download_url}" alt="${item.name}" 
-                         onerror="this.parentElement.style.opacity='0.5'; this.parentElement.title='Image inaccessible'">
-                    <div class="image-name">${item.name}</div>
-                    <div class="select-badge">✓ Sélectionné</div>
-                `;
-                
-                div.onclick = function() {
-                    selectImage(index);
-                };
-                
-                container.appendChild(div);
-            });
-        }
-        
-        // ============ SÉLECTIONNER UNE IMAGE ============
-        function selectImage(index) {
-            const item = picxImages[index];
-            if (!item) return;
-            
-            document.querySelectorAll('.image-item').forEach(el => el.classList.remove('selected'));
-            
-            const items = document.querySelectorAll('.image-item');
-            if (items[index]) {
-                items[index].classList.add('selected');
-            }
-            
-            selectedImageUrl = item.download_url;
-            selectedImageName = item.name;
-            
-            const info = document.getElementById('selectedInfo');
-            info.style.display = 'block';
-            document.getElementById('selectedPreview').src = item.download_url;
-            document.getElementById('selectedName').textContent = item.name;
-            document.getElementById('selectedUrl').textContent = item.download_url;
-            
-            showToast(`✅ Image sélectionnée: ${item.name}`, 'success');
-        }
-        
-        // ============ DÉSÉLECTIONNER L'IMAGE ============
-        function clearImageSelection() {
-            selectedImageUrl = null;
-            selectedImageName = null;
-            
-            document.querySelectorAll('.image-item').forEach(el => el.classList.remove('selected'));
-            document.getElementById('selectedInfo').style.display = 'none';
-        }
-        
-        // ============ ÉCOUTER LES PRODUITS ============
+        // ============ GESTION DES PRODUITS ============
         function listenToProducts() {
             productsRef.on('value', (snapshot) => {
                 const data = snapshot.val();
-                
                 if (data) {
-                    products = Object.keys(data).map(key => ({
-                        id: key,
-                        ...data[key]
-                    }));
+                    products = Object.keys(data).map(key => ({ id: key, ...data[key] }));
                 } else {
                     products = [];
                     createDefaultProducts();
                 }
-                
                 displayProducts();
                 document.getElementById('productCount').textContent = products.length;
-            }, (error) => {
-                showToast('❌ Erreur: ' + error.message, 'error');
             });
         }
         
-        // ============ CRÉER DES PRODUITS PAR DÉFAUT ============
         function createDefaultProducts() {
             const defaultProducts = {
-                'prod1': {
-                    name: "Salade César",
-                    price: 12,
-                    category: "entrees",
-                    description: "Salade, poulet, parmesan",
-                    visible: true,
-                    createdAt: Date.now()
-                },
-                'prod2': {
-                    name: "Steak Frites",
-                    price: 18,
-                    category: "plats",
-                    description: "Steak grillé, frites maison",
-                    visible: true,
-                    createdAt: Date.now()
-                },
-                'prod3': {
-                    name: "Tiramisu",
-                    price: 7,
-                    category: "desserts",
-                    description: "Café, mascarpone",
-                    visible: true,
-                    createdAt: Date.now()
-                },
-                'prod4': {
-                    name: "Coca-Cola",
-                    price: 3,
-                    category: "boissons",
-                    description: "33cl",
-                    visible: true,
-                    createdAt: Date.now()
-                }
+                'prod1': { name: "Salade César", price: 12, category: "entrees", description: "Salade, poulet, parmesan", visible: true, createdAt: Date.now() },
+                'prod2': { name: "Steak Frites", price: 18, category: "plats", description: "Steak grillé, frites maison", visible: true, createdAt: Date.now() },
+                'prod3': { name: "Tiramisu", price: 7, category: "desserts", description: "Café, mascarpone", visible: true, createdAt: Date.now() },
+                'prod4': { name: "Coca-Cola", price: 3, category: "boissons", description: "33cl", visible: true, createdAt: Date.now() }
             };
-            
             productsRef.set(defaultProducts);
         }
         
-        // ============ AFFICHER LES PRODUITS ============
         function displayProducts() {
             const container = document.getElementById('productsList');
             if (!container) return;
-            
             if (products.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #999;">Aucun produit</p>';
+                container.innerHTML = '<p style="text-align:center; color:#999;">Aucun produit</p>';
                 return;
             }
-            
             container.innerHTML = '';
             products.forEach((product) => {
-                const productDiv = document.createElement('div');
-                productDiv.className = 'product-item';
-                
-                let imageHtml = '';
-                if (product.image) {
-                    imageHtml = `<img src="${product.image}" class="product-thumbnail" alt="${product.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'product-thumbnail-placeholder\\'>📷</div>'">`;
-                } else {
-                    imageHtml = `<div class="product-thumbnail-placeholder">📷</div>`;
-                }
-                
+                const div = document.createElement('div');
+                div.className = 'product-item';
                 const categoryName = categories[product.category]?.name || product.category || 'Non catégorisé';
                 const categoryIcon = categories[product.category]?.icon || '';
-                
-                productDiv.innerHTML = `
+                let imageHtml = product.image ? `<img src="${product.image}" class="product-thumbnail">` : `<div class="product-thumbnail-placeholder">📷</div>`;
+                div.innerHTML = `
                     <div class="product-info">
                         ${imageHtml}
                         <div class="product-details">
@@ -1289,144 +1461,141 @@
                         <button class="btn-delete" onclick="deleteProduct('${product.id}')">🗑</button>
                     </div>
                 `;
-                container.appendChild(productDiv);
+                container.appendChild(div);
             });
         }
         
-        // ============ VALIDATION ============
-        function validateProduct(product) {
-            const errors = [];
-            
-            if (!product.name || product.name.trim() === '') {
-                errors.push('Le nom est requis');
-            }
-            
-            if (!product.price || isNaN(product.price) || product.price <= 0) {
-                errors.push('Le prix doit être un nombre positif');
-            }
-            
-            if (!product.category) {
-                errors.push('La catégorie est requise');
-            }
-            
-            if (errors.length > 0) {
-                showToast('❌ ' + errors.join('\n'), 'error');
-                return false;
-            }
+        function validateProduct(p) {
+            if (!p.name?.trim()) { showToast('❌ Le nom est requis', 'error'); return false; }
+            if (!p.price || isNaN(p.price) || p.price <= 0) { showToast('❌ Prix invalide', 'error'); return false; }
+            if (!p.category) { showToast('❌ La catégorie est requise', 'error'); return false; }
             return true;
         }
         
-        // ============ AJOUTER UN PRODUIT ============
         function addProduct(productData) {
             return new Promise((resolve, reject) => {
-                if (!validateProduct(productData)) {
-                    reject(new Error('Validation échouée'));
-                    return;
-                }
-                
+                if (!validateProduct(productData)) { reject(new Error('Validation')); return; }
                 const newProduct = {
                     name: productData.name.trim(),
                     price: parseFloat(productData.price),
                     category: productData.category,
-                    description: productData.description ? productData.description.trim() : '',
+                    description: productData.description?.trim() || '',
                     visible: true,
                     image: selectedImageUrl || null,
                     createdAt: Date.now()
                 };
-                
-                const newRef = productsRef.push();
-                
-                newRef.set(newProduct)
+                const ref = productsRef.push();
+                ref.set(newProduct)
                     .then(() => {
-                        console.log('✅ Produit ajouté avec ID:', newRef.key);
-                        showToast('✅ Produit ajouté avec succès !', 'success');
+                        showToast('✅ Produit ajouté !', 'success');
                         clearImageSelection();
                         document.getElementById('productForm').reset();
                         resolve(true);
                     })
-                    .catch((error) => {
-                        console.error('❌ Erreur Firebase:', error);
-                        showToast('❌ Erreur: ' + error.message, 'error');
-                        reject(error);
-                    });
+                    .catch(error => { showToast('❌ Erreur: ' + error.message, 'error'); reject(error); });
             });
         }
         
-        // ============ CHANGER L'IMAGE D'UN PRODUIT ============
+        function editProduct(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            let catOptions = '';
+            const sortedKeys = Object.keys(categories).sort((a, b) => (categories[a].order || 0) - (categories[b].order || 0));
+            sortedKeys.forEach(key => {
+                const cat = categories[key];
+                if (cat.active !== false) {
+                    catOptions += `<option value="${key}" ${key === product.category ? 'selected' : ''}>${cat.icon || '📁'} ${cat.name}</option>`;
+                }
+            });
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.innerHTML = `
+                <div class="modal-content">
+                    <h2>✏️ Modifier le produit</h2>
+                    <form id="editForm">
+                        <div style="margin-bottom:15px;"><label style="font-weight:600;">Nom</label><input type="text" id="editName" value="${product.name}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;" required></div>
+                        <div style="margin-bottom:15px;"><label style="font-weight:600;">Prix (€)</label><input type="number" id="editPrice" value="${product.price}" step="0.01" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;" required></div>
+                        <div style="margin-bottom:15px;"><label style="font-weight:600;">Catégorie</label><select id="editCategory" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;">${catOptions}</select></div>
+                        <div style="margin-bottom:15px;"><label style="font-weight:600;">Description</label><textarea id="editDesc" rows="3" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;">${product.description || ''}</textarea></div>
+                        <div style="margin-bottom:15px;"><label style="font-weight:600;">Image URL</label><input type="text" id="editImageUrl" value="${product.image || ''}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;" placeholder="https://..."></div>
+                        <div class="modal-actions">
+                            <button type="submit" class="btn-save">✅ Sauvegarder</button>
+                            <button type="button" class="btn-cancel" onclick="this.closest('.modal-overlay').remove()">❌ Annuler</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            document.getElementById('editForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const updates = {
+                    name: document.getElementById('editName').value.trim(),
+                    price: parseFloat(document.getElementById('editPrice').value),
+                    category: document.getElementById('editCategory').value,
+                    description: document.getElementById('editDesc').value.trim(),
+                    image: document.getElementById('editImageUrl').value.trim() || null,
+                    updatedAt: Date.now()
+                };
+                if (!validateProduct(updates)) return;
+                productsRef.child(productId).update(updates)
+                    .then(() => { showToast('✅ Produit modifié !', 'success'); overlay.remove(); })
+                    .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
+            });
+        }
+        
+        function deleteProduct(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            if (confirm(`Supprimer "${product.name}" ?`)) {
+                productsRef.child(productId).remove()
+                    .then(() => showToast('✅ Produit supprimé !', 'success'))
+                    .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
+            }
+        }
+        
+        function toggleVisibility(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            productsRef.child(productId).update({ visible: !product.visible, updatedAt: Date.now() })
+                .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
+        }
+        
         function changeImage(productId) {
             const overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
             overlay.innerHTML = `
                 <div class="modal-content">
                     <h2>📷 Changer la photo</h2>
-                    
-                    <div style="margin-bottom: 15px;">
-                        <button type="button" class="btn-refresh" onclick="loadImagesForModal()">🔄 Charger les images</button>
+                    <button class="btn-refresh" onclick="loadImagesForModal()">🔄 Charger les images</button>
+                    <div id="modalImageList" class="image-list" style="margin-top:10px; max-height:300px;">
+                        <div class="empty-images"><div class="icon">📂</div><p>Cliquez sur "Charger les images"</p></div>
                     </div>
-                    
-                    <div id="modalImageList" class="image-list" style="max-height: 300px;">
-                        <div class="empty-images">
-                            <div class="icon">📂</div>
-                            <p>Cliquez sur "Charger les images"</p>
-                        </div>
-                    </div>
-                    
-                    <div id="modalSelectedInfo" style="display: none; margin-top: 12px; padding: 12px; background: #d4edda; border-radius: 8px; color: #155724;">
-                        ✅ Image sélectionnée: <span id="modalSelectedName"></span>
-                    </div>
-                    
-                    <div style="display: flex; gap: 10px; margin-top: 20px;">
-                        <button type="button" class="btn-primary" onclick="saveModalImage('${productId}')" style="flex: 1;">✅ Appliquer</button>
-                        <button type="button" onclick="this.closest('.modal-overlay').remove()" style="flex: 1; padding: 12px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">❌ Annuler</button>
+                    <div id="modalSelectedInfo" style="display:none; margin-top:10px; padding:10px; background:#d4edda; border-radius:8px; color:#155724;">✅ Image sélectionnée: <span id="modalSelectedName"></span></div>
+                    <div class="modal-actions" style="margin-top:15px;">
+                        <button class="btn-save" onclick="saveModalImage('${productId}')">✅ Appliquer</button>
+                        <button class="btn-cancel" onclick="this.closest('.modal-overlay').remove()">❌ Annuler</button>
                     </div>
                 </div>
             `;
             document.body.appendChild(overlay);
-            
             window.modalSelectedImage = null;
-            
             window.loadImagesForModal = async function() {
                 const username = document.getElementById('githubUsername').value.trim();
                 const repo = document.getElementById('githubRepo').value.trim();
                 const branch = document.getElementById('githubBranch').value.trim();
-                
-                if (!username || !repo) {
-                    showToast('❌ Veuillez configurer votre dépôt', 'error');
-                    return;
-                }
-                
+                if (!username || !repo) { showToast('❌ Configurez le dépôt', 'error'); return; }
                 try {
-                    const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents?ref=${branch}`;
-                    const response = await fetch(apiUrl);
-                    
-                    if (!response.ok) {
-                        throw new Error('Dépôt non trouvé');
-                    }
-                    
+                    const response = await fetch(`https://api.github.com/repos/${username}/${repo}/contents?ref=${branch}`);
+                    if (!response.ok) throw new Error('Dépôt non trouvé');
                     const data = await response.json();
-                    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
-                    const images = data.filter(item => 
-                        item.type === 'file' && 
-                        imageExtensions.some(ext => item.name.toLowerCase().endsWith(ext))
-                    );
-                    
+                    const images = data.filter(item => ['jpg','jpeg','png','gif','webp','svg','bmp'].some(ext => item.name.toLowerCase().endsWith(ext)));
                     const container = document.getElementById('modalImageList');
                     container.innerHTML = '';
-                    
-                    if (images.length === 0) {
-                        container.innerHTML = `<div class="empty-images">📂 Aucune image trouvée</div>`;
-                        return;
-                    }
-                    
+                    if (images.length === 0) { container.innerHTML = '<div class="empty-images">📂 Aucune image</div>'; return; }
                     images.forEach((item) => {
                         const div = document.createElement('div');
                         div.className = 'image-item';
-                        div.innerHTML = `
-                            <img src="${item.download_url}" alt="${item.name}" 
-                                 onerror="this.parentElement.style.opacity='0.5'">
-                            <div class="image-name">${item.name}</div>
-                            <div class="select-badge">✓ Sélectionné</div>
-                        `;
+                        div.innerHTML = `<img src="${item.download_url}" onerror="this.parentElement.style.opacity='0.5'"><div class="image-name">${item.name}</div><div class="select-badge">✓ Sélectionné</div>`;
                         div.onclick = function() {
                             document.querySelectorAll('#modalImageList .image-item').forEach(el => el.classList.remove('selected'));
                             this.classList.add('selected');
@@ -1436,154 +1605,130 @@
                         };
                         container.appendChild(div);
                     });
-                    
                     showToast(`✅ ${images.length} images chargées`, 'success');
-                    
-                } catch (error) {
-                    showToast('❌ Erreur: ' + error.message, 'error');
-                }
+                } catch (error) { showToast('❌ Erreur: ' + error.message, 'error'); }
             };
-            
             window.saveModalImage = function(productId) {
-                if (!window.modalSelectedImage) {
-                    showToast('⚠️ Veuillez sélectionner une image', 'warning');
+                if (!window.modalSelectedImage) { showToast('⚠️ Sélectionnez une image', 'warning'); return; }
+                productsRef.child(productId).update({ image: window.modalSelectedImage, updatedAt: Date.now() })
+                    .then(() => { showToast('✅ Photo mise à jour !', 'success'); overlay.remove(); })
+                    .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
+            };
+        }
+        
+        // ============ GESTION DES IMAGES ============
+        async function loadImagesFromPicX() {
+            const username = document.getElementById('githubUsername').value.trim();
+            const repo = document.getElementById('githubRepo').value.trim();
+            const branch = document.getElementById('githubBranch').value.trim();
+            if (!username || !repo) { showToast('❌ Configurez le dépôt', 'error'); return; }
+            const spinner = document.getElementById('loadingSpinner');
+            spinner.style.display = 'block';
+            try {
+                const response = await fetch(`https://api.github.com/repos/${username}/${repo}/contents?ref=${branch}`);
+                if (!response.ok) throw new Error('Dépôt non trouvé');
+                const data = await response.json();
+                picxImages = data.filter(item => ['jpg','jpeg','png','gif','webp','svg','bmp'].some(ext => item.name.toLowerCase().endsWith(ext)));
+                if (picxImages.length === 0) {
+                    document.getElementById('imageList').innerHTML = '<div class="empty-images"><div class="icon">📂</div><p>Aucune image</p></div>';
+                    showToast('ℹ️ Aucune image', 'warning');
                     return;
                 }
-                
-                productsRef.child(productId).update({
-                    image: window.modalSelectedImage,
-                    updatedAt: Date.now()
-                })
-                .then(() => {
-                    showToast('✅ Photo mise à jour !', 'success');
-                    overlay.remove();
-                })
-                .catch(error => {
-                    showToast('❌ Erreur: ' + error.message, 'error');
+                const container = document.getElementById('imageList');
+                container.innerHTML = '';
+                picxImages.forEach((item, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'image-item';
+                    div.innerHTML = `<img src="${item.download_url}" onerror="this.parentElement.style.opacity='0.5'"><div class="image-name">${item.name}</div><div class="select-badge">✓ Sélectionné</div>`;
+                    div.onclick = function() { selectImage(index); };
+                    container.appendChild(div);
                 });
+                showToast(`✅ ${picxImages.length} images chargées`, 'success');
+            } catch (error) {
+                showToast('❌ Erreur: ' + error.message, 'error');
+                document.getElementById('imageList').innerHTML = `<div class="empty-images"><div class="icon">❌</div><p>${error.message}</p></div>`;
+            } finally {
+                spinner.style.display = 'none';
+            }
+        }
+        
+        function selectImage(index) {
+            const item = picxImages[index];
+            if (!item) return;
+            document.querySelectorAll('.image-item').forEach(el => el.classList.remove('selected'));
+            document.querySelectorAll('.image-item')[index]?.classList.add('selected');
+            selectedImageUrl = item.download_url;
+            selectedImageName = item.name;
+            const info = document.getElementById('selectedInfo');
+            info.style.display = 'block';
+            document.getElementById('selectedPreview').src = item.download_url;
+            document.getElementById('selectedName').textContent = item.name;
+            document.getElementById('selectedUrl').textContent = item.download_url;
+            showToast(`✅ Image: ${item.name}`, 'success');
+        }
+        
+        function clearImageSelection() {
+            selectedImageUrl = null;
+            selectedImageName = null;
+            document.querySelectorAll('.image-item').forEach(el => el.classList.remove('selected'));
+            document.getElementById('selectedInfo').style.display = 'none';
+        }
+        
+        // ============ FORMULAIRES ============
+        document.getElementById('productForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('productName').value,
+                price: document.getElementById('productPrice').value,
+                category: document.getElementById('productCategory').value,
+                description: document.getElementById('productDesc').value
             };
+            const btn = document.getElementById('addBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Ajout...';
+            addProduct(data)
+                .then(() => { document.getElementById('productForm').reset(); })
+                .finally(() => { btn.disabled = false; btn.textContent = '➕ Ajouter le produit'; });
+        });
+        
+        // ============ EXPORT / IMPORT ============
+        function exportProducts() {
+            if (products.length === 0) { showToast('❌ Aucun produit', 'error'); return; }
+            const blob = new Blob([JSON.stringify(products, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `produits_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            showToast('✅ Export terminé !', 'success');
         }
         
-        // ============ MODIFIER UN PRODUIT ============
-        function editProduct(productId) {
-            const product = products.find(p => p.id === productId);
-            if (!product) return;
-            
-            const overlay = document.createElement('div');
-            overlay.className = 'modal-overlay';
-            
-            // Générer les options de catégories pour le modal
-            let categoryOptions = '';
-            const sortedKeys = Object.keys(categories).sort((a, b) => 
-                (categories[a].order || 0) - (categories[b].order || 0)
-            );
-            sortedKeys.forEach(key => {
-                const cat = categories[key];
-                if (cat.active !== false) {
-                    const selected = key === product.category ? 'selected' : '';
-                    categoryOptions += `<option value="${key}" ${selected}>${cat.icon || '📁'} ${cat.name}</option>`;
-                }
-            });
-            
-            overlay.innerHTML = `
-                <div class="modal-content">
-                    <h2>✏️ Modifier le produit</h2>
-                    <form id="editForm">
-                        <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Nom *</label>
-                            <input type="text" id="editName" value="${product.name}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" required>
-                        </div>
-                        <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Prix (€) *</label>
-                            <input type="number" id="editPrice" value="${product.price}" step="0.01" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" required>
-                        </div>
-                        <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Catégorie *</label>
-                            <select id="editCategory" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-                                ${categoryOptions}
-                            </select>
-                        </div>
-                        <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Description</label>
-                            <textarea id="editDesc" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">${product.description || ''}</textarea>
-                        </div>
-                        <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">📷 URL de l'image</label>
-                            <input type="text" id="editImageUrl" value="${product.image || ''}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" placeholder="https://raw.githubusercontent.com/.../image.jpg">
-                            <div style="font-size: 12px; color: #666; margin-top: 5px;">
-                                Laissez vide pour supprimer l'image.
-                            </div>
-                        </div>
-                        <div class="modal-actions">
-                            <button type="submit" class="btn-save">✅ Sauvegarder</button>
-                            <button type="button" class="btn-cancel" onclick="this.closest('.modal-overlay').remove()">❌ Annuler</button>
-                        </div>
-                    </form>
-                </div>
-            `;
-            document.body.appendChild(overlay);
-            
-            document.getElementById('editForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const updates = {
-                    name: document.getElementById('editName').value.trim(),
-                    price: parseFloat(document.getElementById('editPrice').value),
-                    category: document.getElementById('editCategory').value,
-                    description: document.getElementById('editDesc').value.trim(),
-                    image: document.getElementById('editImageUrl').value.trim() || null,
-                    updatedAt: Date.now()
+        function importProducts() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    try {
+                        const imported = JSON.parse(event.target.result);
+                        if (!Array.isArray(imported)) throw new Error('Format invalide');
+                        if (!confirm(`Importer ${imported.length} produits ?`)) return;
+                        const promises = imported.map(p => {
+                            const np = { name: p.name, price: p.price, category: p.category || 'plats', description: p.description || '', visible: true, createdAt: Date.now() };
+                            return productsRef.push().set(np);
+                        });
+                        Promise.all(promises).then(() => showToast(`✅ ${imported.length} produits importés !`, 'success'));
+                    } catch (error) { showToast('❌ Fichier invalide', 'error'); }
                 };
-                
-                if (!validateProduct(updates)) return;
-                
-                productsRef.child(productId).update(updates)
-                    .then(() => {
-                        showToast('✅ Produit modifié !', 'success');
-                        overlay.remove();
-                    })
-                    .catch(error => {
-                        showToast('❌ Erreur: ' + error.message, 'error');
-                    });
-            });
+                reader.readAsText(file);
+            };
+            input.click();
         }
         
-        // ============ SUPPRIMER UN PRODUIT ============
-        function deleteProduct(productId) {
-            const product = products.find(p => p.id === productId);
-            if (!product) return;
-            
-            if (confirm(`Supprimer "${product.name}" définitivement ?`)) {
-                productsRef.child(productId).remove()
-                    .then(() => {
-                        showToast('✅ Produit supprimé !', 'success');
-                    })
-                    .catch(error => {
-                        showToast('❌ Erreur: ' + error.message, 'error');
-                    });
-            }
-        }
-        
-        // ============ MASQUER/AFFICHER ============
-        function toggleVisibility(productId) {
-            const product = products.find(p => p.id === productId);
-            if (product) {
-                productsRef.child(productId).update({
-                    visible: !product.visible,
-                    updatedAt: Date.now()
-                })
-                .then(() => {
-                    console.log('✅ Visibilité modifiée');
-                })
-                .catch(error => {
-                    showToast('❌ Erreur: ' + error.message, 'error');
-                });
-            }
-        }
-        
-        // ============ RÉINITIALISER ============
         function resetFirebaseProducts() {
-            if (confirm('⚠️ Supprimer tous les produits et les réinitialiser ?')) {
+            if (confirm('⚠️ Réinitialiser tous les produits ?')) {
                 createDefaultProducts();
                 showToast('✅ Produits réinitialisés !', 'success');
             }
@@ -1591,67 +1736,38 @@
         
         // ============ TOAST ============
         function showToast(message, type = 'info') {
-            const colors = {
-                'success': '#4caf50',
-                'error': '#dc3545',
-                'warning': '#ff9800',
-                'info': '#2196F3'
-            };
-            
+            const colors = { 'success': '#4caf50', 'error': '#dc3545', 'warning': '#ff9800', 'info': '#2196F3' };
             const toast = document.createElement('div');
             toast.className = 'toast ' + type;
             toast.style.background = colors[type] || '#667eea';
             toast.textContent = message;
             document.body.appendChild(toast);
-            
             setTimeout(() => {
                 toast.style.animation = 'slideUp 0.5s ease reverse';
                 setTimeout(() => toast.remove(), 500);
             }, 3000);
         }
         
-        // ============ FORMULAIRE ============
-        document.getElementById('productForm')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const productData = {
-                name: document.getElementById('productName').value,
-                price: document.getElementById('productPrice').value,
-                category: document.getElementById('productCategory').value,
-                description: document.getElementById('productDesc').value
-            };
-            
-            const btn = document.getElementById('addBtn');
-            btn.disabled = true;
-            btn.textContent = '⏳ Ajout en cours...';
-            
-            addProduct(productData)
-                .then(() => {
-                    document.getElementById('productForm').reset();
-                })
-                .catch(() => {})
-                .finally(() => {
-                    btn.disabled = false;
-                    btn.textContent = '➕ Ajouter le produit';
-                });
-        });
-        
         // ============ INITIALISATION ============
         console.log('🚀 Démarrage de l\'administration...');
-        listenToProducts();
+        loadRestaurant();
         loadCategories();
+        listenToProducts();
         
         window.loadImagesFromPicX = loadImagesFromPicX;
         window.clearImageSelection = clearImageSelection;
-        window.toggleVisibility = toggleVisibility;
-        window.editProduct = editProduct;
-        window.deleteProduct = deleteProduct;
-        window.changeImage = changeImage;
-        window.resetFirebaseProducts = resetFirebaseProducts;
         window.addCategory = addCategory;
         window.editCategory = editCategory;
         window.toggleCategory = toggleCategory;
         window.deleteCategory = deleteCategory;
+        window.toggleVisibility = toggleVisibility;
+        window.editProduct = editProduct;
+        window.deleteProduct = deleteProduct;
+        window.changeImage = changeImage;
+        window.exportProducts = exportProducts;
+        window.importProducts = importProducts;
+        window.resetFirebaseProducts = resetFirebaseProducts;
+        window.resetRestaurantForm = resetRestaurantForm;
         
         console.log('✅ Admin initialisé');
         
