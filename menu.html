@@ -10,7 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
     <style>
-        /* ============ STYLES COMPLETS (identique à avant) ============ */
+        /* ============ STYLES COMPLETS ============ */
         * {
             margin: 0;
             padding: 0;
@@ -854,7 +854,6 @@
             const urlParams = new URLSearchParams(window.location.search);
             let restaurantId = urlParams.get('restaurant') || 'default';
             
-            // Si pas de paramètre, essayer de récupérer depuis localStorage
             if (restaurantId === 'default' && !urlParams.get('restaurant')) {
                 const saved = localStorage.getItem('current_restaurant');
                 if (saved) restaurantId = saved;
@@ -891,6 +890,7 @@
                 address: "123 Rue de la Paix, 75001 Paris",
                 phone: "01 23 45 67 89",
                 phoneLink: "+33123456789",
+                whatsapp: "1234567890",  // Numéro WhatsApp par défaut
                 deliveryPrice: 5,
                 deliveryAvailable: true,
                 facebook: "https://facebook.com/votre-page",
@@ -1150,7 +1150,7 @@
             console.log(`✅ ${filteredProducts.length} produits affichés`);
         }
         
-        // ============ GESTION DU PANIER (identique à avant) ============
+        // ============ GESTION DU PANIER ============
         function loadCart() {
             if (currentTable) {
                 const cartPath = `table_${currentTable}`;
@@ -1393,10 +1393,20 @@
             });
         }
         
+        // ============ ENVOYER LA COMMANDE SUR WHATSAPP ============
         function sendOrderToWhatsApp(order) {
             if (!order) return;
             
             const restaurantName = restaurantData?.name || 'Mon Restaurant';
+            
+            // Récupérer le numéro WhatsApp depuis les données du restaurant
+            // Si non défini, utiliser le numéro par défaut
+            let whatsappNumber = restaurantData?.whatsapp || '1234567890';
+            
+            // Nettoyer le numéro (enlever les espaces, les tirets, les +)
+            whatsappNumber = whatsappNumber.replace(/[\s\-+]/g, '');
+            
+            console.log('📱 Numéro WhatsApp utilisé:', whatsappNumber);
             
             let message = `🍽️ *${restaurantName}*\n`;
             message += `📋 Réf: ${order.orderNumber}\n`;
@@ -1412,10 +1422,12 @@
             });
             
             message += `\n*Total: ${order.total.toFixed(2)}€*`;
+            message += `\n\nMerci de confirmer cette commande.`;
             
             const encodedMessage = encodeURIComponent(message);
-            const phoneNumber = restaurantData?.phoneLink?.replace('+', '') || "1234567890";
-            window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
+            
+            // Ouvrir WhatsApp avec le numéro du restaurant
+            window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
             
             ordersRef.child(`commandes/${order.id}`).update({
                 status: 'envoye_whatsapp',
