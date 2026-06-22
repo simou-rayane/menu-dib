@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏪 Manager - Gestion des restaurants</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        header h1 {
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        header h1 span {
+            color: #667eea;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .header-actions button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .header-actions button:hover {
+            transform: scale(1.05);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        #connectionStatus {
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        
+        #connectionStatus.connected {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        #connectionStatus.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .restaurant-section {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+        
+        .restaurant-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f2f5;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .restaurant-section h2 .badge {
+            font-size: 12px;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        
+        .restaurant-section h2 .badge.active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .restaurant-section h2 .badge.inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 5px;
+        }
+        
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .form-group label .required {
+            color: #dc3545;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        
+        .form-group .help-text {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+        
+        .form-actions {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .form-actions button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s;
+            flex: 1;
+        }
+        
+        .form-actions button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        
+        .form-actions .btn-save {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .form-actions .btn-reset {
+            background: #6c757d;
+            color: white;
+        }
+        
+        /* Liste des restaurants */
+        .restaurants-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .restaurant-card {
+            background: #f8f9ff;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .restaurant-card:hover {
+            border-color: #667eea;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
+        }
+        
+        .restaurant-card .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .restaurant-card .card-header .name {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .restaurant-card .card-header .status {
+            font-size: 11px;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        
+        .restaurant-card .card-header .status.active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .restaurant-card .card-header .status.inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .restaurant-card .card-body {
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .restaurant-card .card-body div {
+            margin-bottom: 3px;
+        }
+        
+        .restaurant-card .card-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 5px;
+        }
+        
+        .restaurant-card .card-actions button {
+            padding: 4px 12px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .restaurant-card .card-actions button:hover {
+            transform: scale(1.05);
+        }
+        
+        .restaurant-card .card-actions .btn-edit {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .restaurant-card .card-actions .btn-toggle {
+            background: #ff9800;
+            color: white;
+        }
+        
+        .restaurant-card .card-actions .btn-duplicate {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .restaurant-card .card-actions .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            animation: slideUp 0.5s ease;
+            max-width: 90%;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .toast.success { background: #4caf50; }
+        .toast.error { background: #dc3545; }
+        .toast.info { background: #2196F3; }
+        .toast.warning { background: #ff9800; }
+        
+        @keyframes slideUp {
+            from { transform: translateX(-50%) translateY(100px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-overlay .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+        }
+        
+        .modal-overlay .modal-content h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .modal-overlay .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .modal-overlay .modal-actions button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .modal-overlay .modal-actions .btn-confirm {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .modal-overlay .modal-actions .btn-cancel {
+            background: #6c757d;
+            color: white;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .restaurants-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏪 <span>Manager</span> - Gestion des restaurants</h1>
+            <div class="header-actions">
+                <button class="btn-primary" onclick="showAddRestaurant()">➕ Nouveau restaurant</button>
+                <button class="btn-secondary" onclick="loadRestaurants()">🔄 Actualiser</button>
+            </div>
+        </header>
+        
+        <div id="connectionStatus" class="connected">✅ Connecté à Firebase</div>
+        
+        <!-- Formulaire d'ajout/modification -->
+        <div class="restaurant-section" id="formSection" style="display: none;">
+            <h2 id="formTitle">➕ Ajouter un restaurant</h2>
+            
+            <form id="restaurantForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Identifiant unique <span class="required">*</span></label>
+                        <input type="text" id="restaurantId" placeholder="ex: mon-restaurant" required>
+                        <div class="help-text">Utilisé dans l'URL. Lettres minuscules, chiffres et tirets.</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Nom du restaurant <span class="required">*</span></label>
+                        <input type="text" id="restaurantName" placeholder="ex: Restaurant Le Gourmet" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Logo (URL)</label>
+                        <input type="text" id="restaurantLogo" placeholder="images/logo.png">
+                        <div class="help-text">Chemin vers le logo dans votre dépôt GitHub</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Adresse</label>
+                        <input type="text" id="restaurantAddress" placeholder="123 Rue de la Paix, 75001 Paris">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Téléphone</label>
+                        <input type="text" id="restaurantPhone" placeholder="01 23 45 67 89">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Téléphone (format international)</label>
+                        <input type="text" id="restaurantPhoneLink" placeholder="+33123456789">
+                        <div class="help-text">Pour le bouton Appeler. Ex: +33123456789</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Prix de livraison (€)</label>
+                        <input type="number" id="restaurantDeliveryPrice" placeholder="5" step="0.5">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Livraison disponible</label>
+                        <select id="restaurantDeliveryAvailable">
+                            <option value="true">✅ Oui</option>
+                            <option value="false">❌ Non</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Facebook (URL)</label>
+                        <input type="url" id="restaurantFacebook" placeholder="https://facebook.com/votre-page">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Instagram (URL)</label>
+                        <input type="url" id="restaurantInstagram" placeholder="https://instagram.com/votre-compte">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Site web (URL)</label>
+                        <input type="url" id="restaurantWebsite" placeholder="https://votre-site.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Google Maps (URL)</label>
+                        <input type="url" id="restaurantMapsUrl" placeholder="https://maps.google.com/maps?q=...">
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label>Actif</label>
+                        <select id="restaurantActive">
+                            <option value="true">✅ Actif</option>
+                            <option value="false">❌ Inactif</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn-save">💾 Enregistrer</button>
+                        <button type="button" class="btn-reset" onclick="cancelForm()">❌ Annuler</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Liste des restaurants -->
+        <div class="restaurant-section">
+            <h2>📋 Liste des restaurants</h2>
+            <div id="restaurantsList" class="restaurants-list">
+                <div class="empty-state">
+                    <div class="icon">🏪</div>
+                    <p>Aucun restaurant configuré</p>
+                    <p style="font-size: 12px; color: #bbb;">Cliquez sur "Nouveau restaurant" pour en créer un</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Informations -->
+        <div style="background: #f8f9ff; padding: 15px; border-radius: 10px; text-align: center; color: #666; font-size: 13px;">
+            💡 Les restaurants sont synchronisés en temps réel avec Firebase.
+            <br>Pour utiliser un restaurant dans le menu, ajoutez <code>?restaurant=mon-restaurant</code> à l'URL.
+        </div>
+    </div>
+    
+    <!-- Configuration Firebase -->
+    <script src="firebase-config.js"></script>
+    
+    <!-- Script principal -->
+    <script>
+        // ============ MANAGER - GESTION DES RESTAURANTS ============
+        
+        let restaurants = {};
+        let editingId = null;
+        let isConnected = false;
+        
+        const restaurantsRef = database.ref('restaurants');
+        
+        // ============ ÉTAT DE CONNEXION ============
+        function updateConnectionStatus(connected) {
+            const statusEl = document.getElementById('connectionStatus');
+            if (connected) {
+                statusEl.className = 'connected';
+                statusEl.innerHTML = '✅ Connecté à Firebase';
+                isConnected = true;
+            } else {
+                statusEl.className = 'disconnected';
+                statusEl.innerHTML = '❌ Déconnecté de Firebase - Vérifiez votre configuration';
+                isConnected = false;
+            }
+        }
+        
+        database.ref('.info/connected').on('value', (snapshot) => {
+            updateConnectionStatus(snapshot.val());
+        });
+        
+        // ============ CHARGER LES RESTAURANTS ============
+        function loadRestaurants() {
+            restaurantsRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                restaurants = data || {};
+                displayRestaurants();
+            }, (error) => {
+                showToast('❌ Erreur chargement: ' + error.message, 'error');
+            });
+        }
+        
+        // ============ AFFICHER LES RESTAURANTS ============
+        function displayRestaurants() {
+            const container = document.getElementById('restaurantsList');
+            if (!container) return;
+            
+            const keys = Object.keys(restaurants);
+            
+            if (keys.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">🏪</div>
+                        <p>Aucun restaurant configuré</p>
+                        <p style="font-size: 12px; color: #bbb;">Cliquez sur "Nouveau restaurant" pour en créer un</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            keys.forEach(key => {
+                const r = restaurants[key];
+                const card = document.createElement('div');
+                card.className = 'restaurant-card';
+                
+                card.innerHTML = `
+                    <div class="card-header">
+                        <span class="name">${r.name || key}</span>
+                        <span class="status ${r.active !== false ? 'active' : 'inactive'}">
+                            ${r.active !== false ? '✅ Actif' : '⛔ Inactif'}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div>📌 ${r.address || 'Adresse non définie'}</div>
+                        <div>📞 ${r.phone || 'Téléphone non défini'}</div>
+                        <div>🚚 Livraison: ${r.deliveryAvailable !== false ? '✅ ' + (r.deliveryPrice || 0) + '€' : '❌ Non disponible'}</div>
+                        <div>📧 ID: <code style="background: #f0f0f0; padding: 1px 6px; border-radius: 3px;">${key}</code></div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-edit" onclick="editRestaurant('${key}')">✏️</button>
+                        <button class="btn-toggle" onclick="toggleRestaurant('${key}')">
+                            ${r.active !== false ? '⛔' : '✅'}
+                        </button>
+                        <button class="btn-duplicate" onclick="duplicateRestaurant('${key}')">📋</button>
+                        <button class="btn-delete" onclick="deleteRestaurant('${key}')">🗑</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+        
+        // ============ AFFICHER LE FORMULAIRE D'AJOUT ============
+        function showAddRestaurant() {
+            editingId = null;
+            document.getElementById('formSection').style.display = 'block';
+            document.getElementById('formTitle').textContent = '➕ Ajouter un restaurant';
+            document.getElementById('restaurantForm').reset();
+            document.getElementById('restaurantId').disabled = false;
+            document.getElementById('restaurantId').value = '';
+            document.getElementById('restaurantActive').value = 'true';
+            document.getElementById('restaurantDeliveryAvailable').value = 'true';
+            document.getElementById('formSection').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // ============ MODIFIER UN RESTAURANT ============
+        function editRestaurant(key) {
+            const r = restaurants[key];
+            if (!r) {
+                showToast('❌ Restaurant non trouvé', 'error');
+                return;
+            }
+            
+            editingId = key;
+            document.getElementById('formSection').style.display = 'block';
+            document.getElementById('formTitle').textContent = `✏️ Modifier: ${r.name || key}`;
+            document.getElementById('restaurantId').disabled = true;
+            
+            document.getElementById('restaurantId').value = key;
+            document.getElementById('restaurantName').value = r.name || '';
+            document.getElementById('restaurantLogo').value = r.logo || '';
+            document.getElementById('restaurantAddress').value = r.address || '';
+            document.getElementById('restaurantPhone').value = r.phone || '';
+            document.getElementById('restaurantPhoneLink').value = r.phoneLink || '';
+            document.getElementById('restaurantDeliveryPrice').value = r.deliveryPrice || 0;
+            document.getElementById('restaurantDeliveryAvailable').value = r.deliveryAvailable !== false ? 'true' : 'false';
+            document.getElementById('restaurantFacebook').value = r.facebook || '';
+            document.getElementById('restaurantInstagram').value = r.instagram || '';
+            document.getElementById('restaurantWebsite').value = r.website || '';
+            document.getElementById('restaurantMapsUrl').value = r.mapsUrl || '';
+            document.getElementById('restaurantActive').value = r.active !== false ? 'true' : 'false';
+            
+            document.getElementById('formSection').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // ============ ANNULER LE FORMULAIRE ============
+        function cancelForm() {
+            document.getElementById('formSection').style.display = 'none';
+            document.getElementById('restaurantForm').reset();
+            editingId = null;
+        }
+        
+        // ============ SAUVEGARDER UN RESTAURANT ============
+        function saveRestaurant(data, id) {
+            const saveData = {
+                name: data.name.trim(),
+                logo: data.logo ? data.logo.trim() : null,
+                address: data.address ? data.address.trim() : null,
+                phone: data.phone ? data.phone.trim() : null,
+                phoneLink: data.phoneLink ? data.phoneLink.trim() : null,
+                deliveryPrice: parseFloat(data.deliveryPrice) || 0,
+                deliveryAvailable: data.deliveryAvailable === 'true',
+                facebook: data.facebook ? data.facebook.trim() : null,
+                instagram: data.instagram ? data.instagram.trim() : null,
+                website: data.website ? data.website.trim() : null,
+                mapsUrl: data.mapsUrl ? data.mapsUrl.trim() : null,
+                active: data.active === 'true',
+                updatedAt: Date.now()
+            };
+            
+            return restaurantsRef.child(id).set(saveData);
+        }
+        
+        // ============ FORMULAIRE DE SAUVEGARDE ============
+        document.getElementById('restaurantForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('restaurantId').value.trim();
+            const name = document.getElementById('restaurantName').value.trim();
+            
+            if (!id) {
+                showToast('❌ L\'identifiant est requis', 'error');
+                return;
+            }
+            
+            if (!/^[a-z0-9-]+$/.test(id)) {
+                showToast('❌ L\'identifiant ne doit contenir que des lettres minuscules, chiffres et tirets', 'error');
+                return;
+            }
+            
+            if (!name) {
+                showToast('❌ Le nom est requis', 'error');
+                return;
+            }
+            
+            // Vérifier si l'ID existe déjà (pour un ajout)
+            if (!editingId && restaurants[id]) {
+                showToast('❌ Cet identifiant existe déjà', 'error');
+                return;
+            }
+            
+            const data = {
+                name: name,
+                logo: document.getElementById('restaurantLogo').value,
+                address: document.getElementById('restaurantAddress').value,
+                phone: document.getElementById('restaurantPhone').value,
+                phoneLink: document.getElementById('restaurantPhoneLink').value,
+                deliveryPrice: document.getElementById('restaurantDeliveryPrice').value,
+                deliveryAvailable: document.getElementById('restaurantDeliveryAvailable').value,
+                facebook: document.getElementById('restaurantFacebook').value,
+                instagram: document.getElementById('restaurantInstagram').value,
+                website: document.getElementById('restaurantWebsite').value,
+                mapsUrl: document.getElementById('restaurantMapsUrl').value,
+                active: document.getElementById('restaurantActive').value
+            };
+            
+            const btn = this.querySelector('.btn-save');
+            btn.disabled = true;
+            btn.textContent = '⏳ Sauvegarde...';
+            
+            saveRestaurant(data, id)
+                .then(() => {
+                    showToast(`✅ Restaurant "${name}" ${editingId ? 'modifié' : 'ajouté'} avec succès !`, 'success');
+                    cancelForm();
+                })
+                .catch(error => {
+                    showToast('❌ Erreur: ' + error.message, 'error');
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.textContent = '💾 Enregistrer';
+                });
+        });
+        
+        // ============ ACTIVER/DÉSACTIVER UN RESTAURANT ============
+        function toggleRestaurant(key) {
+            const r = restaurants[key];
+            if (!r) return;
+            
+            const newStatus = r.active === false ? true : false;
+            const action = newStatus ? 'activer' : 'désactiver';
+            
+            if (confirm(`⚠️ ${action} le restaurant "${r.name}" ?`)) {
+                restaurantsRef.child(key).update({
+                    active: newStatus,
+                    updatedAt: Date.now()
+                })
+                .then(() => {
+                    showToast(`✅ Restaurant ${action}é`, 'success');
+                })
+                .catch(error => {
+                    showToast('❌ Erreur: ' + error.message, 'error');
+                });
+            }
+        }
+        
+        // ============ DUPLIQUER UN RESTAURANT ============
+        function duplicateRestaurant(key) {
+            const r = restaurants[key];
+            if (!r) return;
+            
+            const newId = prompt('Nouvel identifiant pour le restaurant dupliqué:', key + '-copy');
+            if (!newId) return;
+            
+            if (!/^[a-z0-9-]+$/.test(newId)) {
+                showToast('❌ Identifiant invalide', 'error');
+                return;
+            }
+            
+            if (restaurants[newId]) {
+                showToast('❌ Cet identifiant existe déjà', 'error');
+                return;
+            }
+            
+            const copy = {
+                ...r,
+                name: r.name + ' (copie)',
+                active: true,
+                updatedAt: Date.now()
+            };
+            
+            restaurantsRef.child(newId).set(copy)
+                .then(() => {
+                    showToast(`✅ Restaurant dupliqué avec succès !`, 'success');
+                })
+                .catch(error => {
+                    showToast('❌ Erreur: ' + error.message, 'error');
+                });
+        }
+        
+        // ============ SUPPRIMER UN RESTAURANT ============
+        function deleteRestaurant(key) {
+            const r = restaurants[key];
+            if (!r) return;
+            
+            // Vérifier qu'il n'y a pas de produits associés
+            // Note: cette vérification est optionnelle, vous pouvez l'adapter
+            
+            const confirmMsg = `⚠️ Supprimer le restaurant "${r.name}" définitivement ?\n\nCette action est irréversible.`;
+            if (!confirm(confirmMsg)) return;
+            
+            restaurantsRef.child(key).remove()
+                .then(() => {
+                    showToast(`✅ Restaurant "${r.name}" supprimé`, 'success');
+                })
+                .catch(error => {
+                    showToast('❌ Erreur: ' + error.message, 'error');
+                });
+        }
+        
+        // ============ TOAST ============
+        function showToast(message, type = 'info') {
+            const colors = {
+                'success': '#4caf50',
+                'error': '#dc3545',
+                'warning': '#ff9800',
+                'info': '#2196F3'
+            };
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.style.background = colors[type] || '#667eea';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideUp 0.5s ease reverse';
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+        
+        // ============ INITIALISATION ============
+        console.log('🚀 Démarrage du Manager...');
+        loadRestaurants();
+        
+        window.showAddRestaurant = showAddRestaurant;
+        window.editRestaurant = editRestaurant;
+        window.cancelForm = cancelForm;
+        window.toggleRestaurant = toggleRestaurant;
+        window.duplicateRestaurant = duplicateRestaurant;
+        window.deleteRestaurant = deleteRestaurant;
+        window.loadRestaurants = loadRestaurants;
+        
+        console.log('✅ Manager initialisé');
+        
+    </script>
+</body>
+</html>
