@@ -98,7 +98,7 @@
             color: #667eea;
         }
         
-        /* ============ FILTRES ============ */
+        /* ============ FILTRES DYNAMIQUES ============ */
         .menu-filters {
             display: flex;
             gap: 10px;
@@ -155,7 +155,6 @@
             box-shadow: 0 8px 30px rgba(0,0,0,0.12);
         }
         
-        /* ============ IMAGE DU PRODUIT (EN ENTIER) ============ */
         .product-card .product-image-wrapper {
             width: 100%;
             height: 220px;
@@ -171,7 +170,6 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
-            /* ← Clé: l'image est entièrement visible */
             object-position: center;
             background: #f5f7fa;
             transition: transform 0.4s;
@@ -192,7 +190,6 @@
             background: #f5f7fa;
         }
         
-        /* ============ CORPS DE LA CARTE ============ */
         .product-card .product-body {
             padding: 18px 20px 20px;
         }
@@ -647,12 +644,9 @@
             🪑 Table n°<span id="tableNumber"></span>
         </div>
 
-        <div class="menu-filters">
-            <button class="filter-btn active" data-category="all">📊 Tous</button>
-            <button class="filter-btn" data-category="entrees">🥗 Entrées</button>
-            <button class="filter-btn" data-category="plats">🍽️ Plats</button>
-            <button class="filter-btn" data-category="desserts">🍰 Desserts</button>
-            <button class="filter-btn" data-category="boissons">🥤 Boissons</button>
+        <!-- ============ FILTRES DYNAMIQUES ============ -->
+        <div class="menu-filters" id="filtersContainer">
+            <!-- Les filtres seront générés dynamiquement -->
         </div>
 
         <div id="menuGrid" class="menu-grid">
@@ -687,9 +681,10 @@
     
     <!-- Script principal -->
     <script>
-        // ============ SCRIPT.JS - MENU AVEC IMAGES EN ENTIER ============
+        // ============ SCRIPT.JS - MENU AVEC CATÉGORIES DYNAMIQUES ============
         
         let products = [];
+        let categories = {};
         let cart = [];
         let currentTable = null;
         let currentFilter = 'all';
@@ -712,21 +707,75 @@
             console.log('🪑 Table actuelle:', currentTable);
         }
         
+        // ============ ÉCOUTER LES CATÉGORIES ============
+        function listenToCategories() {
+            database.ref('categories').on('value', (snapshot) => {
+                const data = snapshot.val();
+                categories = data || {};
+                console.log('📂 Catégories chargées:', Object.keys(categories).length);
+                generateFilters();
+            });
+        }
+        
+        // ============ GÉNÉRER LES FILTRES DYNAMIQUEMENT ============
+        function generateFilters() {
+            const container = document.getElementById('filtersContainer');
+            if (!container) return;
+            
+            // Vider le conteneur
+            container.innerHTML = '';
+            
+            // Ajouter le filtre "Tous"
+            const allBtn = document.createElement('button');
+            allBtn.className = 'filter-btn active';
+            allBtn.dataset.category = 'all';
+            allBtn.textContent = '📊 Tous';
+            allBtn.onclick = function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.dataset.category;
+                displayMenu();
+            };
+            container.appendChild(allBtn);
+            
+            // Trier les catégories par ordre
+            const sortedKeys = Object.keys(categories).sort((a, b) => 
+                (categories[a].order || 0) - (categories[b].order || 0)
+            );
+            
+            // Ajouter les filtres pour chaque catégorie active
+            sortedKeys.forEach(key => {
+                const cat = categories[key];
+                if (cat.active === false) return; // Ignorer les catégories inactives
+                
+                const btn = document.createElement('button');
+                btn.className = 'filter-btn';
+                btn.dataset.category = key;
+                btn.textContent = `${cat.icon || '📁'} ${cat.name}`;
+                btn.onclick = function() {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.dataset.category;
+                    displayMenu();
+                };
+                container.appendChild(btn);
+            });
+            
+            console.log('✅ Filtres générés:', container.children.length);
+        }
+        
         // ============ ÉCOUTER LES PRODUITS ============
         function listenToProducts() {
             productsRef.on('value', (snapshot) => {
                 const data = snapshot.val();
-                console.log('📦 Données produits reçues:', data);
                 
                 if (data) {
                     products = Object.keys(data).map(key => ({
                         id: key,
                         ...data[key]
                     }));
-                    console.log(`✅ ${products.length} produits chargés`);
                 } else {
                     products = [];
-                    console.log('ℹ️ Aucun produit disponible');
                 }
                 
                 displayMenu();
@@ -745,13 +794,14 @@
             });
         }
         
-        // ============ AFFICHER LE MENU AVEC IMAGES EN ENTIER ============
+        // ============ AFFICHER LE MENU ============
         function displayMenu() {
             const grid = document.getElementById('menuGrid');
             if (!grid) return;
             
             let filteredProducts = products.filter(p => p.visible !== false);
             
+            // Filtrer par catégorie
             if (currentFilter !== 'all') {
                 filteredProducts = filteredProducts.filter(p => p.category === currentFilter);
             }
@@ -772,15 +822,10 @@
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 
-                const categoryLabels = {
-                    'entrees': '🥗 Entrée',
-                    'plats': '🍽️ Plat',
-                    'desserts': '🍰 Dessert',
-                    'boissons': '🥤 Boisson'
-                };
-                const categoryLabel = categoryLabels[product.category] || product.category;
+                const categoryIcon = categories[product.category]?.icon || '📁';
+                const categoryName = categories[product.category]?.name || product.category || 'Non catégorisé';
                 
-                // ===== IMAGE AVEC object-fit: contain =====
+                // Image
                 let imageHTML = '';
                 if (product.image) {
                     imageHTML = `
@@ -803,7 +848,7 @@
                     <div class="product-body">
                         <div class="product-header">
                             <h3 class="product-name">${product.name}</h3>
-                            <span class="product-category-badge">${categoryLabel}</span>
+                            <span class="product-category-badge">${categoryIcon} ${categoryName}</span>
                         </div>
                         <div class="product-price">${product.price.toFixed(2)} €</div>
                         <div class="product-description">${product.description || 'Aucune description'}</div>
@@ -1184,18 +1229,6 @@
             });
         }
         
-        // ============ FILTRES ============
-        function setupFilters() {
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    currentFilter = this.dataset.category;
-                    displayMenu();
-                });
-            });
-        }
-        
         // ============ TOAST ============
         function showToast(message, type = 'info') {
             const colors = {
@@ -1233,6 +1266,7 @@
                     if (snapshot.val()) {
                         showToast('✅ Reconnecté !', 'success');
                         listenToProducts();
+                        listenToCategories();
                         loadCart();
                     } else {
                         showToast('❌ Impossible de se connecter', 'error');
@@ -1248,9 +1282,9 @@
         
         loadTableInfo();
         listenToProducts();
+        listenToCategories();
         loadCart();
         setupCartModal();
-        setupFilters();
         
         window.addToCart = addToCart;
         window.removeFromCart = removeFromCart;
