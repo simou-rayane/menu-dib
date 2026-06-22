@@ -685,7 +685,8 @@
         function listenToOrders() {
             const ordersRef = database.ref('orders/commandes');
             
-            ordersRef.orderByChild('timestamp').limitToLast(200).on('value', (snapshot) => {
+            // Écouter toutes les commandes sans limite pour voir toutes les commandes en attente
+            ordersRef.orderByChild('timestamp').on('value', (snapshot) => {
                 const data = snapshot.val();
                 console.log('📦 Commandes reçues:', data);
                 
@@ -695,15 +696,18 @@
                         ...data[key]
                     })).sort((a, b) => b.timestamp - a.timestamp);
                     
-                    // Vérifier les nouvelles commandes
+                    // Vérifier les nouvelles commandes en attente
                     const newOrders = allOrders.filter(o => o.status === 'en_attente');
                     if (newOrders.length > lastOrderCount) {
                         showNotification(`🆕 ${newOrders.length - lastOrderCount} nouvelle(s) commande(s) !`);
                         playNotificationSound();
                     }
                     lastOrderCount = newOrders.length;
+                    
+                    console.log(`📊 ${allOrders.length} commandes totales, ${newOrders.length} en attente`);
                 } else {
                     allOrders = [];
+                    console.log('📭 Aucune commande dans Firebase');
                 }
                 
                 displayOrders();
@@ -749,10 +753,11 @@
             const container = document.getElementById('ordersContainer');
             if (!container) return;
             
-            // Filtrer les commandes
+            // Filtrer les commandes selon le filtre actuel
             let filteredOrders = allOrders;
             if (currentFilter !== 'all') {
                 filteredOrders = filteredOrders.filter(o => o.status === currentFilter);
+                console.log(`🔍 Filtre "${currentFilter}": ${filteredOrders.length} commandes`);
             }
             
             if (filteredOrders.length === 0) {
@@ -791,6 +796,7 @@
                 
                 const statusLabel = statusLabels[order.status] || order.status;
                 
+                // Actions selon le statut
                 let actionsHTML = '';
                 if (order.status === 'en_attente' || order.status === 'envoye_whatsapp') {
                     actionsHTML = `
@@ -815,7 +821,6 @@
                     `;
                 }
                 
-                // Récupérer le nom du restaurant depuis les données
                 const restaurantName = order.restaurantName || restaurantData?.name || 'Mon Restaurant';
                 
                 card.innerHTML = `
@@ -934,6 +939,8 @@
             document.getElementById('cancelledCount').textContent = cancelled;
             document.getElementById('whatsappCount').textContent = whatsapp;
             document.getElementById('totalCount').textContent = total;
+            
+            console.log(`📊 Stats: En attente=${pending}, Préparation=${prepare}, Prêtes=${prepared}, Servies=${served}, Annulées=${cancelled}, WhatsApp=${whatsapp}, Total=${total}`);
         }
         
         // ============ METTRE À JOUR LE TITRE ============
@@ -1034,6 +1041,7 @@
         // ============ ACTUALISER ============
         function refreshOrders() {
             showToast('🔄 Actualisation en cours...', 'info');
+            // Forcer un rechargement en réécoutant
             listenToOrders();
         }
         
