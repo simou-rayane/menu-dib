@@ -1,4 +1,4 @@
-// ============ SCRIPT.JS - VERSION COMPLÈTE AVEC SESSION UNIQUE ============
+// ============ SCRIPT.JS - VERSION COMPLÈTE ============
 
 let products = [];
 let categories = {};
@@ -15,7 +15,6 @@ const restaurantsRef = database.ref('restaurants');
 
 // ============ GÉNÉRER UN IDENTIFIANT DE SESSION UNIQUE ============
 function generateSessionId() {
-    // Générer un ID unique de 8 caractères
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let result = '';
     for (let i = 0; i < 8; i++) {
@@ -25,7 +24,6 @@ function generateSessionId() {
 }
 
 function getSessionId() {
-    // Récupérer ou créer un ID de session
     let session = localStorage.getItem('session_id');
     if (!session) {
         session = generateSessionId();
@@ -44,7 +42,6 @@ function loadTableInfo() {
         localStorage.setItem('current_table', currentTable);
     }
     
-    // Générer l'ID de session
     sessionId = getSessionId();
     
     const tableNumberSpan = document.getElementById('tableNumber');
@@ -76,6 +73,7 @@ function loadRestaurant() {
         if (data) {
             restaurantData = data;
             console.log('✅ Restaurant chargé:', data.name);
+            console.log('📱 WhatsApp configuré:', data.whatsapp || 'Non configuré');
             updateRestaurantUI(data);
         } else {
             console.warn('⚠️ Restaurant non trouvé, utilisation des valeurs par défaut');
@@ -109,10 +107,8 @@ function getDefaultRestaurant() {
 
 // ============ METTRE À JOUR L'UI DU RESTAURANT ============
 function updateRestaurantUI(data) {
-    // Nom
     document.getElementById('restaurantName').textContent = data.name || 'Mon Restaurant';
     
-    // Logo
     const logoImg = document.querySelector('.header-left .logo');
     const logoPlaceholder = document.getElementById('logoPlaceholder');
     
@@ -131,16 +127,10 @@ function updateRestaurantUI(data) {
         logoPlaceholder.textContent = (data.name || 'R').charAt(0).toUpperCase();
     }
     
-    // Adresse
     document.getElementById('restaurantAddress').textContent = data.address ? '📍 ' + data.address : '';
-    
-    // Téléphone
     document.getElementById('restaurantPhone').textContent = data.phone ? '📞 ' + data.phone : '';
     
-    // Livraison
     const deliveryBadge = document.getElementById('deliveryBadge');
-    const deliveryPrice = document.getElementById('deliveryPrice');
-    
     if (data.deliveryAvailable !== false && data.deliveryPrice !== undefined) {
         deliveryBadge.className = 'delivery-badge';
         deliveryBadge.innerHTML = `🚚 Livraison <span class="price">${data.deliveryPrice}€</span>`;
@@ -149,7 +139,6 @@ function updateRestaurantUI(data) {
         deliveryBadge.textContent = '🚫 Livraison non disponible';
     }
     
-    // Bouton Appeler
     const callBtn = document.getElementById('callBtn');
     if (data.phoneLink) {
         callBtn.href = 'tel:' + data.phoneLink;
@@ -161,7 +150,6 @@ function updateRestaurantUI(data) {
         callBtn.style.display = 'none';
     }
     
-    // Bouton Itinéraire
     const directionsBtn = document.getElementById('directionsBtn');
     if (data.mapsUrl) {
         directionsBtn.href = data.mapsUrl;
@@ -173,37 +161,10 @@ function updateRestaurantUI(data) {
         directionsBtn.style.display = 'none';
     }
     
-    // Bouton Facebook
-    const facebookBtn = document.getElementById('facebookBtn');
-    if (data.facebook) {
-        facebookBtn.href = data.facebook;
-        facebookBtn.style.display = 'inline-flex';
-    } else {
-        facebookBtn.style.display = 'none';
-    }
-    
-    // Bouton Instagram
-    const instagramBtn = document.getElementById('instagramBtn');
-    if (data.instagram) {
-        instagramBtn.href = data.instagram;
-        instagramBtn.style.display = 'inline-flex';
-    } else {
-        instagramBtn.style.display = 'none';
-    }
-    
-    // Bouton Site web
-    const websiteBtn = document.getElementById('websiteBtn');
-    if (data.website) {
-        websiteBtn.href = data.website;
-        websiteBtn.style.display = 'inline-flex';
-    } else {
-        websiteBtn.style.display = 'none';
-    }
-    
-    // Footer
+    document.getElementById('facebookBtn').style.display = data.facebook ? 'inline-flex' : 'none';
+    document.getElementById('instagramBtn').style.display = data.instagram ? 'inline-flex' : 'none';
+    document.getElementById('websiteBtn').style.display = data.website ? 'inline-flex' : 'none';
     document.getElementById('footerName').textContent = data.name || 'Mon Restaurant';
-    
-    console.log('✅ UI du restaurant mise à jour');
 }
 
 // ============ ÉCOUTER LES CATÉGORIES ============
@@ -223,7 +184,6 @@ function generateFilters() {
     
     container.innerHTML = '';
     
-    // Bouton "Tous"
     const allBtn = document.createElement('button');
     allBtn.className = 'filter-btn active';
     allBtn.dataset.category = 'all';
@@ -236,12 +196,10 @@ function generateFilters() {
     };
     container.appendChild(allBtn);
     
-    // Trier les catégories par ordre
     const sortedKeys = Object.keys(categories).sort((a, b) => 
         (categories[a].order || 0) - (categories[b].order || 0)
     );
     
-    // Ajouter les filtres pour chaque catégorie active
     sortedKeys.forEach(key => {
         const cat = categories[key];
         if (cat.active === false) return;
@@ -258,8 +216,6 @@ function generateFilters() {
         };
         container.appendChild(btn);
     });
-    
-    console.log('✅ Filtres générés:', container.children.length);
 }
 
 // ============ ÉCOUTER LES PRODUITS ============
@@ -314,12 +270,10 @@ function displayMenu() {
         return;
     }
     
-    // Si le filtre est "tous", organiser par catégorie
     if (currentFilter === 'all') {
         const groupedProducts = {};
         const categoryOrder = {};
         
-        // Initialiser les groupes avec les catégories existantes
         Object.keys(categories).forEach(key => {
             if (categories[key].active !== false) {
                 groupedProducts[key] = [];
@@ -327,13 +281,11 @@ function displayMenu() {
             }
         });
         
-        // Ajouter les produits à leur catégorie respective
         filteredProducts.forEach(product => {
             const catKey = product.category;
             if (groupedProducts[catKey]) {
                 groupedProducts[catKey].push(product);
             } else {
-                // Si la catégorie n'existe pas dans les catégories configurées
                 if (!groupedProducts['autres']) {
                     groupedProducts['autres'] = [];
                     categoryOrder['autres'] = 999;
@@ -342,12 +294,10 @@ function displayMenu() {
             }
         });
         
-        // Trier les catégories par order
         const sortedCategoryKeys = Object.keys(groupedProducts).sort((a, b) => 
             (categoryOrder[a] || 0) - (categoryOrder[b] || 0)
         );
         
-        // Construire le HTML
         let html = '';
         sortedCategoryKeys.forEach(catKey => {
             const catProducts = groupedProducts[catKey];
@@ -378,20 +328,15 @@ function displayMenu() {
         });
         
         grid.innerHTML = html;
-        
     } else {
-        // Mode filtre simple (une seule catégorie)
         let html = '';
         filteredProducts.forEach(product => {
             html += createProductCardHTML(product);
         });
         grid.innerHTML = html;
     }
-    
-    console.log(`✅ ${filteredProducts.length} produits affichés`);
 }
 
-// ============ CRÉER LE HTML D'UNE CARTE PRODUIT ============
 function createProductCardHTML(product) {
     const categoryIcon = categories[product.category]?.icon || '📁';
     const categoryName = categories[product.category]?.name || product.category || 'Non catégorisé';
@@ -431,9 +376,7 @@ function createProductCardHTML(product) {
     `;
 }
 
-// ============ GESTION DU PANIER (SESSION ISOLÉE) ============
-
-// Charger le panier depuis Firebase (session isolée)
+// ============ GESTION DU PANIER ============
 function loadCart() {
     if (currentTable && sessionId) {
         const cartPath = `carts/table_${currentTable}/session_${sessionId}`;
@@ -446,14 +389,11 @@ function loadCart() {
         
         cartListenerRef = cartsRef.child(cartPath).on('value', (snapshot) => {
             const data = snapshot.val();
-            console.log('📥 Données du panier reçues:', data);
             
             if (data && Array.isArray(data) && data.length > 0) {
                 cart = data;
-                console.log('✅ Panier chargé:', cart);
             } else {
                 cart = [];
-                console.log('📭 Panier vide');
             }
             
             updateCartCount();
@@ -466,35 +406,22 @@ function loadCart() {
     }
 }
 
-// Sauvegarder le panier dans Firebase (session isolée)
 function saveCart() {
     if (currentTable && sessionId) {
         const cartPath = `carts/table_${currentTable}/session_${sessionId}`;
-        console.log('💾 Sauvegarde du panier dans:', cartPath);
-        
         return cartsRef.child(cartPath).set(cart)
-            .then(() => {
-                console.log('✅ Panier sauvegardé');
-            })
-            .catch(error => {
-                console.error('❌ Erreur sauvegarde panier:', error);
-                showToast('❌ Erreur sauvegarde: ' + error.message, 'error');
-            });
+            .then(() => console.log('✅ Panier sauvegardé'))
+            .catch(error => console.error('❌ Erreur sauvegarde panier:', error));
     }
 }
 
-// Vider le panier (session isolée)
 function clearCart() {
     console.log('🗑️ VIDAGE DU PANIER...');
-    
-    // Vider le tableau local
     cart = [];
     
     if (currentTable && sessionId) {
         const cartPath = `carts/table_${currentTable}/session_${sessionId}`;
-        console.log('🗑️ Suppression dans Firebase:', cartPath);
         
-        // Arrêter l'écouteur pendant le vidage
         if (cartListenerRef) {
             cartsRef.child(cartPath).off('value');
             cartListenerRef = null;
@@ -502,41 +429,28 @@ function clearCart() {
         
         return cartsRef.child(cartPath).remove()
             .then(() => {
-                console.log('✅ Panier supprimé de Firebase');
                 updateCartCount();
                 if (document.getElementById('cartItems')) {
                     displayCart();
                 }
                 showToast('🗑️ Panier vidé', 'info');
-                setTimeout(() => {
-                    loadCart();
-                }, 300);
+                setTimeout(() => loadCart(), 300);
             })
             .catch(error => {
-                console.error('❌ Erreur vidage:', error);
                 return cartsRef.child(cartPath).set([])
                     .then(() => {
-                        console.log('✅ Panier vidé avec set([])');
                         updateCartCount();
                         if (document.getElementById('cartItems')) {
                             displayCart();
                         }
                         showToast('🗑️ Panier vidé', 'info');
-                        setTimeout(() => {
-                            loadCart();
-                        }, 300);
-                    })
-                    .catch(err => {
-                        console.error('❌ Erreur alternative:', err);
-                        showToast('❌ Erreur vidage: ' + err.message, 'error');
+                        setTimeout(() => loadCart(), 300);
                     });
             });
     }
-    
     return Promise.resolve();
 }
 
-// Ajouter au panier
 function addToCart(productId) {
     const product = products.find(p => p.id === productId);
     if (!product) {
@@ -562,7 +476,6 @@ function addToCart(productId) {
     showToast(`✅ ${product.name} ajouté au panier !`, 'success');
 }
 
-// Supprimer du panier
 function removeFromCart(productId) {
     const index = cart.findIndex(item => item.id === productId);
     if (index !== -1) {
@@ -575,7 +488,6 @@ function removeFromCart(productId) {
     }
 }
 
-// Mettre à jour la quantité
 function updateCartItem(productId, delta) {
     const item = cart.find(i => i.id === productId);
     if (!item) return;
@@ -592,7 +504,6 @@ function updateCartItem(productId, delta) {
     updateCartCount();
 }
 
-// Mettre à jour le compteur
 function updateCartCount() {
     const count = cart.reduce((sum, item) => sum + item.quantity, 0);
     const cartCountSpan = document.getElementById('cartCount');
@@ -607,7 +518,6 @@ function updateCartCount() {
     }
 }
 
-// Afficher le panier
 function displayCart() {
     const cartItemsDiv = document.getElementById('cartItems');
     const cartTotalSpan = document.getElementById('cartTotal');
@@ -652,8 +562,6 @@ function displayCart() {
 }
 
 // ============ COMMANDES ============
-
-// Générer un numéro de commande
 function generateOrderNumber() {
     const now = new Date();
     const year = now.getFullYear();
@@ -665,7 +573,6 @@ function generateOrderNumber() {
     return `CMD-${year}${month}${day}-${hours}${minutes}-${random}`;
 }
 
-// Créer une commande avec l'ID de session
 function createOrder() {
     return new Promise((resolve, reject) => {
         if (cart.length === 0) {
@@ -705,8 +612,7 @@ function createOrder() {
             restaurantName: restaurantData?.name || 'Mon Restaurant'
         };
         
-        console.log('📝 Création de la commande avec session:', sessionId);
-        console.log('📦 Commande:', orderData);
+        console.log('📝 Création de la commande:', orderData);
         
         ordersRef.child('commandes').push(orderData)
             .then((ref) => {
@@ -723,49 +629,93 @@ function createOrder() {
     });
 }
 
-// Envoyer la commande sur WhatsApp
+// ============ ENVOYER SUR WHATSAPP ============
 function sendOrderToWhatsApp(order) {
-    if (!order) return;
+    if (!order) {
+        showToast('❌ Aucune commande à envoyer', 'error');
+        return;
+    }
+    
+    console.log('📱 Envoi de la commande sur WhatsApp...');
+    console.log('📦 Commande:', order);
     
     const restaurantName = restaurantData?.name || 'Mon Restaurant';
+    
+    // Récupérer le numéro WhatsApp
     let whatsappNumber = restaurantData?.whatsapp || '1234567890';
+    
+    // Nettoyer le numéro
     whatsappNumber = whatsappNumber.replace(/[\s\-+]/g, '');
     
     console.log('📱 Numéro WhatsApp utilisé:', whatsappNumber);
     
+    // Vérifier le numéro
+    if (!whatsappNumber || whatsappNumber.length < 6) {
+        whatsappNumber = '1234567890';
+        console.warn('⚠️ Numéro WhatsApp invalide, utilisation du numéro par défaut');
+    }
+    
+    // Construire le message
     let message = `🍽️ *${restaurantName}*\n`;
     message += `📋 Réf: ${order.orderNumber}\n`;
     message += `📌 Table: ${order.table}\n`;
     message += `⏰ ${new Date(order.timestamp).toLocaleString('fr-FR')}\n\n`;
     message += `*DÉTAILS DE LA COMMANDE:*\n`;
     
-    order.items.forEach(item => {
-        message += `• ${item.name} x${item.quantity} = ${item.subtotal.toFixed(2)}€\n`;
-        if (item.notes) {
-            message += `  📝 ${item.notes}\n`;
-        }
-    });
+    if (order.items && order.items.length > 0) {
+        order.items.forEach(item => {
+            message += `• ${item.name} x${item.quantity} = ${item.subtotal.toFixed(2)}€\n`;
+            if (item.notes) {
+                message += `  📝 ${item.notes}\n`;
+            }
+        });
+    } else {
+        message += `• Aucun article\n`;
+    }
     
     message += `\n*Total: ${order.total.toFixed(2)}€*`;
     message += `\n\nMerci de confirmer cette commande.`;
     
     const encodedMessage = encodeURIComponent(message);
-    window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
+    const url = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
     
+    console.log('🔗 URL WhatsApp:', url);
+    
+    // Ouvrir WhatsApp
+    window.open(url, '_blank');
+    
+    // Mettre à jour le statut
     ordersRef.child(`commandes/${order.id}`).update({
         status: 'envoye_whatsapp',
         whatsappSent: true,
-        whatsappSentAt: Date.now()
+        whatsappSentAt: Date.now(),
+        whatsappNumber: whatsappNumber
+    })
+    .then(() => {
+        console.log('✅ Statut de la commande mis à jour');
+    })
+    .catch(error => {
+        console.error('❌ Erreur mise à jour statut:', error);
     });
+    
+    showToast(`📱 Commande envoyée sur WhatsApp`, 'success');
 }
 
-// Processus complet d'envoi de commande
+// ============ PROCESSUS COMPLET DE COMMANDE ============
 function processOrder() {
     console.log('🔥🔥🔥 DÉBUT PROCESSUS COMMANDE 🔥🔥🔥');
     
     if (cart.length === 0) {
         showToast('❌ Votre panier est vide !', 'error');
         return;
+    }
+    
+    // Vérifier le numéro WhatsApp
+    const whatsappNumber = restaurantData?.whatsapp || '1234567890';
+    console.log('📱 Numéro WhatsApp configuré:', whatsappNumber);
+    
+    if (!whatsappNumber || whatsappNumber.length < 6) {
+        showToast('⚠️ Numéro WhatsApp non configuré dans l\'administration', 'warning');
     }
     
     const sendBtn = document.getElementById('sendWhatsAppBtn');
@@ -785,7 +735,6 @@ function processOrder() {
         .then((order) => {
             console.log('📱 Envoi sur WhatsApp...');
             sendOrderToWhatsApp(order);
-            showToast(`✅ Commande ${order.orderNumber} envoyée !`, 'success');
             
             const modal = document.getElementById('cartModal');
             if (modal) {
@@ -807,7 +756,6 @@ function processOrder() {
         });
 }
 
-// Point d'entrée pour l'envoi de commande
 function sendToWhatsApp() {
     processOrder();
 }
@@ -871,13 +819,6 @@ function setupFilters() {
             this.classList.add('active');
             currentFilter = this.dataset.category;
             displayMenu();
-            
-            const grid = document.getElementById('menuGrid');
-            grid.style.opacity = '0';
-            setTimeout(() => {
-                grid.style.transition = 'opacity 0.3s ease';
-                grid.style.opacity = '1';
-            }, 50);
         });
     });
 }
@@ -943,7 +884,6 @@ loadCart();
 setupCartModal();
 setupFilters();
 
-// Exposer les fonctions globalement
 window.addToCart = addToCart;
 window.removeFromCart = removeFromCart;
 window.updateCartItem = updateCartItem;
