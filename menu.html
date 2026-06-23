@@ -10,7 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
     <style>
-        /* ============ STYLES COMPLETS ============ */
+        /* ============ STYLES (IDENTIQUE À LA VERSION PRÉCÉDENTE) ============ */
         * {
             margin: 0;
             padding: 0;
@@ -285,7 +285,6 @@
             color: white;
         }
         
-        /* ============ MENU GRID AVEC SÉPARATEURS DE CATÉGORIES ============ */
         .menu-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -857,7 +856,7 @@
     
     <!-- ============ SCRIPT PRINCIPAL ============ -->
     <script>
-        // ============ MENU AVEC PRODUITS ORDONNÉS PAR CATÉGORIE ============
+        // ============ MENU AVEC SESSION UNIQUE ============
         
         let products = [];
         let categories = {};
@@ -867,9 +866,30 @@
         let cartListenerRef = null;
         let currentRestaurantId = null;
         let restaurantData = null;
+        let sessionId = null;
         
         // ============ RÉFÉRENCES ============
         const restaurantsRef = database.ref('restaurants');
+        
+        // ============ GÉNÉRER UN IDENTIFIANT DE SESSION ============
+        function generateSessionId() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < 8; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+        
+        function getSessionId() {
+            let session = localStorage.getItem('session_id');
+            if (!session) {
+                session = generateSessionId();
+                localStorage.setItem('session_id', session);
+                console.log('🔑 Nouvelle session créée:', session);
+            }
+            return session;
+        }
         
         // ============ CHARGER LA TABLE ============
         function loadTableInfo() {
@@ -880,12 +900,15 @@
                 localStorage.setItem('current_table', currentTable);
             }
             
+            sessionId = getSessionId();
+            
             const tableNumberSpan = document.getElementById('tableNumber');
             if (tableNumberSpan) {
                 tableNumberSpan.textContent = currentTable;
             }
             
             console.log('🪑 Table actuelle:', currentTable);
+            console.log('🔑 Session ID:', sessionId);
         }
         
         // ============ CHARGER LE RESTAURANT ============
@@ -901,16 +924,12 @@
             currentRestaurantId = restaurantId;
             localStorage.setItem('current_restaurant', restaurantId);
             
-            console.log('🏪 Restaurant demandé:', restaurantId);
-            
             restaurantsRef.child(restaurantId).on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
                     restaurantData = data;
-                    console.log('✅ Restaurant chargé:', data.name);
                     updateRestaurantUI(data);
                 } else {
-                    console.warn('⚠️ Restaurant non trouvé, utilisation des valeurs par défaut');
                     restaurantData = getDefaultRestaurant();
                     updateRestaurantUI(restaurantData);
                 }
@@ -921,7 +940,6 @@
             });
         }
         
-        // ============ RESTAURANT PAR DÉFAUT ============
         function getDefaultRestaurant() {
             return {
                 name: "Mon Restaurant",
@@ -940,7 +958,6 @@
             };
         }
         
-        // ============ METTRE À JOUR L'UI DU RESTAURANT ============
         function updateRestaurantUI(data) {
             document.getElementById('restaurantName').textContent = data.name || 'Mon Restaurant';
             
@@ -966,8 +983,6 @@
             document.getElementById('restaurantPhone').textContent = data.phone ? '📞 ' + data.phone : '';
             
             const deliveryBadge = document.getElementById('deliveryBadge');
-            const deliveryPrice = document.getElementById('deliveryPrice');
-            
             if (data.deliveryAvailable !== false && data.deliveryPrice !== undefined) {
                 deliveryBadge.className = 'delivery-badge';
                 deliveryBadge.innerHTML = `🚚 Livraison <span class="price">${data.deliveryPrice}€</span>`;
@@ -976,7 +991,6 @@
                 deliveryBadge.textContent = '🚫 Livraison non disponible';
             }
             
-            // Boutons d'action
             const callBtn = document.getElementById('callBtn');
             if (data.phoneLink) {
                 callBtn.href = 'tel:' + data.phoneLink;
@@ -999,33 +1013,10 @@
                 directionsBtn.style.display = 'none';
             }
             
-            const facebookBtn = document.getElementById('facebookBtn');
-            if (data.facebook) {
-                facebookBtn.href = data.facebook;
-                facebookBtn.style.display = 'inline-flex';
-            } else {
-                facebookBtn.style.display = 'none';
-            }
-            
-            const instagramBtn = document.getElementById('instagramBtn');
-            if (data.instagram) {
-                instagramBtn.href = data.instagram;
-                instagramBtn.style.display = 'inline-flex';
-            } else {
-                instagramBtn.style.display = 'none';
-            }
-            
-            const websiteBtn = document.getElementById('websiteBtn');
-            if (data.website) {
-                websiteBtn.href = data.website;
-                websiteBtn.style.display = 'inline-flex';
-            } else {
-                websiteBtn.style.display = 'none';
-            }
-            
+            document.getElementById('facebookBtn').style.display = data.facebook ? 'inline-flex' : 'none';
+            document.getElementById('instagramBtn').style.display = data.instagram ? 'inline-flex' : 'none';
+            document.getElementById('websiteBtn').style.display = data.website ? 'inline-flex' : 'none';
             document.getElementById('footerName').textContent = data.name || 'Mon Restaurant';
-            
-            console.log('✅ UI du restaurant mise à jour');
         }
         
         // ============ ÉCOUTER LES CATÉGORIES ============
@@ -1033,7 +1024,6 @@
             database.ref('categories').on('value', (snapshot) => {
                 const data = snapshot.val();
                 categories = data || {};
-                console.log('📂 Catégories chargées:', Object.keys(categories).length);
                 generateFilters();
             });
         }
@@ -1077,8 +1067,6 @@
                 };
                 container.appendChild(btn);
             });
-            
-            console.log('✅ Filtres générés:', container.children.length);
         }
         
         // ============ ÉCOUTER LES PRODUITS ============
@@ -1111,15 +1099,13 @@
             });
         }
         
-        // ============ AFFICHER LE MENU AVEC PRODUITS ORDONNÉS PAR CATÉGORIE ============
+        // ============ AFFICHER LE MENU ============
         function displayMenu() {
             const grid = document.getElementById('menuGrid');
             if (!grid) return;
             
-            // Filtrer les produits visibles
             let filteredProducts = products.filter(p => p.visible !== false);
             
-            // Appliquer le filtre de catégorie
             if (currentFilter !== 'all') {
                 filteredProducts = filteredProducts.filter(p => p.category === currentFilter);
             }
@@ -1135,13 +1121,10 @@
                 return;
             }
             
-            // Si le filtre est "tous", organiser par catégorie
             if (currentFilter === 'all') {
-                // Grouper les produits par catégorie
                 const groupedProducts = {};
                 const categoryOrder = {};
                 
-                // Initialiser les groupes avec les catégories existantes
                 Object.keys(categories).forEach(key => {
                     if (categories[key].active !== false) {
                         groupedProducts[key] = [];
@@ -1149,13 +1132,11 @@
                     }
                 });
                 
-                // Ajouter les produits à leur catégorie respective
                 filteredProducts.forEach(product => {
                     const catKey = product.category;
                     if (groupedProducts[catKey]) {
                         groupedProducts[catKey].push(product);
                     } else {
-                        // Si la catégorie n'existe pas dans les catégories configurées
                         if (!groupedProducts['autres']) {
                             groupedProducts['autres'] = [];
                             categoryOrder['autres'] = 999;
@@ -1164,12 +1145,10 @@
                     }
                 });
                 
-                // Trier les catégories par order
                 const sortedCategoryKeys = Object.keys(groupedProducts).sort((a, b) => 
                     (categoryOrder[a] || 0) - (categoryOrder[b] || 0)
                 );
                 
-                // Construire le HTML
                 let html = '';
                 sortedCategoryKeys.forEach(catKey => {
                     const catProducts = groupedProducts[catKey];
@@ -1200,20 +1179,15 @@
                 });
                 
                 grid.innerHTML = html;
-                
             } else {
-                // Mode filtre simple (une seule catégorie)
                 let html = '';
                 filteredProducts.forEach(product => {
                     html += createProductCardHTML(product);
                 });
                 grid.innerHTML = html;
             }
-            
-            console.log(`✅ ${filteredProducts.length} produits affichés`);
         }
         
-        // ============ CRÉER LE HTML D'UNE CARTE PRODUIT ============
         function createProductCardHTML(product) {
             const categoryIcon = categories[product.category]?.icon || '📁';
             const categoryName = categories[product.category]?.name || product.category || 'Non catégorisé';
@@ -1253,10 +1227,11 @@
             `;
         }
         
-        // ============ GESTION DU PANIER ============
+        // ============ GESTION DU PANIER (SESSION ISOLÉE) ============
         function loadCart() {
-            if (currentTable) {
-                const cartPath = `table_${currentTable}`;
+            if (currentTable && sessionId) {
+                const cartPath = `carts/table_${currentTable}/session_${sessionId}`;
+                console.log('📥 Chargement du panier depuis:', cartPath);
                 
                 if (cartListenerRef) {
                     cartsRef.child(cartPath).off('value');
@@ -1283,8 +1258,8 @@
         }
         
         function saveCart() {
-            if (currentTable) {
-                const cartPath = `table_${currentTable}`;
+            if (currentTable && sessionId) {
+                const cartPath = `carts/table_${currentTable}/session_${sessionId}`;
                 return cartsRef.child(cartPath).set(cart)
                     .then(() => console.log('✅ Panier sauvegardé'))
                     .catch(error => console.error('❌ Erreur sauvegarde panier:', error));
@@ -1293,8 +1268,8 @@
         
         function clearCart() {
             cart = [];
-            if (currentTable) {
-                const cartPath = `table_${currentTable}`;
+            if (currentTable && sessionId) {
+                const cartPath = `carts/table_${currentTable}/session_${sessionId}`;
                 if (cartListenerRef) {
                     cartsRef.child(cartPath).off('value');
                     cartListenerRef = null;
@@ -1471,6 +1446,7 @@
                 const orderData = {
                     orderNumber: orderNumber,
                     table: parseInt(currentTable),
+                    sessionId: sessionId,
                     items: orderItems,
                     total: total,
                     timestamp: Date.now(),
@@ -1482,6 +1458,8 @@
                     notes: '',
                     restaurant: currentRestaurantId || 'default'
                 };
+                
+                console.log('📝 Création de la commande avec session:', sessionId);
                 
                 ordersRef.child('commandes').push(orderData)
                     .then((ref) => {
@@ -1502,8 +1480,6 @@
             const restaurantName = restaurantData?.name || 'Mon Restaurant';
             let whatsappNumber = restaurantData?.whatsapp || '1234567890';
             whatsappNumber = whatsappNumber.replace(/[\s\-+]/g, '');
-            
-            console.log('📱 Numéro WhatsApp utilisé:', whatsappNumber);
             
             let message = `🍽️ *${restaurantName}*\n`;
             message += `📋 Réf: ${order.orderNumber}\n`;
@@ -1693,6 +1669,7 @@
         window.reconnectMenu = reconnectMenu;
         
         console.log('✅ Menu initialisé - Table', currentTable);
+        console.log('🔑 Session ID:', sessionId);
         console.log('🏪 Restaurant:', currentRestaurantId);
         
     </script>
