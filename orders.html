@@ -642,15 +642,18 @@
             currentRestaurantId = restaurantId;
             localStorage.setItem('current_restaurant', restaurantId);
             
+            console.log('🏪 Restaurant demandé:', restaurantId);
+            
             restaurantsRef.child(restaurantId).on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
                     restaurantData = data;
                     console.log('✅ Restaurant chargé:', data.name);
-                    console.log('📱 WhatsApp:', data.whatsapp);
+                    console.log('📱 WhatsApp configuré:', data.whatsapp || 'Non configuré');
                 } else {
                     restaurantData = getDefaultRestaurant();
                     console.log('⚠️ Restaurant par défaut utilisé');
+                    console.log('📱 WhatsApp par défaut:', restaurantData.whatsapp);
                 }
             }, (error) => {
                 console.error('❌ Erreur chargement restaurant:', error);
@@ -685,7 +688,6 @@
         function listenToOrders() {
             const ordersRef = database.ref('orders/commandes');
             
-            // Écouter toutes les commandes sans limite
             ordersRef.orderByChild('timestamp').on('value', (snapshot) => {
                 const data = snapshot.val();
                 console.log('📦 Commandes reçues:', data);
@@ -696,7 +698,6 @@
                         ...data[key]
                     })).sort((a, b) => b.timestamp - a.timestamp);
                     
-                    // Vérifier les nouvelles commandes en attente
                     const newOrders = allOrders.filter(o => o.status === 'en_attente');
                     if (newOrders.length > lastOrderCount) {
                         showNotification(`🆕 ${newOrders.length - lastOrderCount} nouvelle(s) commande(s) !`);
@@ -753,7 +754,6 @@
             const container = document.getElementById('ordersContainer');
             if (!container) return;
             
-            // Filtrer les commandes selon le filtre actuel
             let filteredOrders = allOrders;
             if (currentFilter !== 'all') {
                 filteredOrders = filteredOrders.filter(o => o.status === currentFilter);
@@ -796,7 +796,6 @@
                 
                 const statusLabel = statusLabels[order.status] || order.status;
                 
-                // Actions selon le statut
                 let actionsHTML = '';
                 if (order.status === 'en_attente' || order.status === 'envoye_whatsapp') {
                     actionsHTML = `
@@ -838,7 +837,7 @@
                         ${order.items.map(item => `
                             <div class="order-item">
                                 <span class="item-name">${item.name} × ${item.quantity}</span>
-                                <span class="item-price">${item.subtotal.toFixed(2)}Dhs</span>
+                                <span class="item-price">${item.subtotal.toFixed(2)}€</span>
                             </div>
                         `).join('')}
                     </div>
@@ -846,7 +845,7 @@
                     ${order.notes ? `<div class="order-notes">📝 ${order.notes}</div>` : ''}
                     
                     <div class="order-total">
-                        Total: ${order.total.toFixed(2)}Dhs
+                        Total: ${order.total.toFixed(2)}€
                     </div>
                     
                     ${order.customerName ? `<div style="margin-top: 8px; color: #666; font-size: 14px;">👤 ${order.customerName}</div>` : ''}
@@ -897,27 +896,44 @@
                 return;
             }
             
+            console.log('📱 Renvoi de la commande sur WhatsApp:', order);
+            
             // Récupérer le numéro WhatsApp du restaurant
             let whatsappNumber = restaurantData?.whatsapp || '1234567890';
             whatsappNumber = whatsappNumber.replace(/[\s\-+]/g, '');
             
+            console.log('📱 Numéro WhatsApp utilisé:', whatsappNumber);
+            
+            if (!whatsappNumber || whatsappNumber.length < 6) {
+                whatsappNumber = '1234567890';
+                console.warn('⚠️ Numéro WhatsApp invalide, utilisation du numéro par défaut');
+            }
+            
             const restaurantName = restaurantData?.name || 'Mon Restaurant';
             
             let message = `🍽️ *${restaurantName}*\n`;
-            message += `📋 Réf: ${order.orderNumber || orderId.slice(-6)}\n`;
+            message += `📋 Réf: ${order.orderNumber || order.id.slice(-6)}\n`;
             message += `📌 Table: ${order.table}\n`;
             message += `⏰ ${new Date(order.timestamp).toLocaleString('fr-FR')}\n\n`;
             message += `*DÉTAILS:*\n`;
             
-            order.items.forEach(item => {
-                message += `• ${item.name} x${item.quantity} = ${item.subtotal.toFixed(2)}Dhs\n`;
-            });
+            if (order.items && order.items.length > 0) {
+                order.items.forEach(item => {
+                    message += `• ${item.name} x${item.quantity} = ${item.subtotal.toFixed(2)}€\n`;
+                });
+            } else {
+                message += `• Aucun article\n`;
+            }
             
-            message += `\n*Total: ${order.total.toFixed(2)}Dhs*`;
+            message += `\n*Total: ${order.total.toFixed(2)}€*`;
             message += `\n\nMerci de confirmer cette commande.`;
             
             const encodedMessage = encodeURIComponent(message);
-            window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
+            const url = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+            
+            console.log('🔗 URL WhatsApp:', url);
+            
+            window.open(url, '_blank');
             
             showToast(`📱 Message WhatsApp envoyé au ${whatsappNumber}`, 'success');
         }
@@ -987,7 +1003,7 @@
                 order.table,
                 order.date,
                 order.items,
-                order.total + ' Dhs',
+                order.total + ' €',
                 order.status,
                 order.customerName,
                 order.customerPhone,
