@@ -10,7 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
     <style>
-        /* ============ STYLES COMPLETS ============ */
+        /* ============ STYLES (IDENTIQUES À LA VERSION PRÉCÉDENTE) ============ */
         * {
             margin: 0;
             padding: 0;
@@ -1567,6 +1567,9 @@
                 showToast('❌ Votre panier est vide !', 'error');
                 return;
             }
+            
+            console.log('📦 Panier actuel:', cart);
+            console.log('📱 Données restaurant:', restaurantData);
             
             // Vérifier le numéro WhatsApp
             const whatsappNumber = restaurantData?.whatsapp || '1234567890';
