@@ -10,7 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
     <style>
-        /* ============ STYLES (IDENTIQUES À LA VERSION PRÉCÉDENTE) ============ */
+        /* ============ STYLES COMPLETS ============ */
         * {
             margin: 0;
             padding: 0;
@@ -29,6 +29,46 @@
             padding: 20px;
         }
         
+        /* ============ BANNIÈRE ============ */
+        .banner-container {
+            width: 100%;
+            height: 250px;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+        
+        .banner-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .banner-container .banner-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .banner-container .banner-placeholder .sub {
+            font-size: 16px;
+            font-weight: 400;
+            opacity: 0.8;
+        }
+        
+        /* ============ HEADER ============ */
         header {
             background: white;
             border-radius: 16px;
@@ -744,6 +784,9 @@
         
         @media (max-width: 768px) {
             .container { padding: 12px; }
+            
+            .banner-container { height: 150px; }
+            
             .header-top { flex-direction: column; text-align: center; padding: 15px 20px; }
             .header-left { flex-direction: column; text-align: center; }
             .header-left .logo, .header-left .logo-placeholder { width: 50px; height: 50px; }
@@ -765,6 +808,7 @@
         }
         
         @media (max-width: 480px) {
+            .banner-container { height: 120px; }
             .product-card .product-image-wrapper { height: 200px; }
             .action-bar { gap: 6px; }
             .action-btn { font-size: 11px; padding: 5px 12px; gap: 4px; }
@@ -773,6 +817,16 @@
 </head>
 <body>
     <div class="container">
+        
+        <!-- ============ BANNIÈRE ============ -->
+        <div class="banner-container" id="bannerContainer">
+            <img id="bannerImage" src="" alt="Bannière" style="display: none;">
+            <div class="banner-placeholder" id="bannerPlaceholder">
+                <span>🍽️ Bienvenue</span>
+                <span class="sub">Découvrez notre menu</span>
+            </div>
+        </div>
+        
         <!-- ============ HEADER ============ -->
         <header>
             <div class="header-top">
@@ -856,7 +910,7 @@
     
     <!-- ============ SCRIPT PRINCIPAL ============ -->
     <script>
-        // ============ MENU AVEC SESSION UNIQUE ============
+        // ============ MENU AVEC SESSION UNIQUE ET BANNIÈRE ============
         
         let products = [];
         let categories = {};
@@ -933,15 +987,18 @@
                     console.log('✅ Restaurant chargé:', data.name);
                     console.log('📱 WhatsApp configuré:', data.whatsapp || 'Non configuré');
                     updateRestaurantUI(data);
+                    updateBanner(data.banner);
                 } else {
                     console.warn('⚠️ Restaurant non trouvé, utilisation des valeurs par défaut');
                     restaurantData = getDefaultRestaurant();
                     updateRestaurantUI(restaurantData);
+                    updateBanner(null);
                 }
             }, (error) => {
                 console.error('❌ Erreur chargement restaurant:', error);
                 restaurantData = getDefaultRestaurant();
                 updateRestaurantUI(restaurantData);
+                updateBanner(null);
             });
         }
         
@@ -949,6 +1006,7 @@
             return {
                 name: "Mon Restaurant",
                 logo: "images/logo.png",
+                banner: null,
                 address: "123 Rue de la Paix, 75001 Paris",
                 phone: "01 23 45 67 89",
                 phoneLink: "+33123456789",
@@ -961,6 +1019,27 @@
                 mapsUrl: "https://maps.google.com/maps?q=123+Rue+de+la+Paix+75001+Paris",
                 active: true
             };
+        }
+        
+        // ============ METTRE À JOUR LA BANNIÈRE ============
+        function updateBanner(bannerUrl) {
+            const img = document.getElementById('bannerImage');
+            const placeholder = document.getElementById('bannerPlaceholder');
+            
+            if (bannerUrl && bannerUrl.trim()) {
+                img.src = bannerUrl;
+                img.style.display = 'block';
+                placeholder.style.display = 'none';
+                img.onerror = function() {
+                    this.style.display = 'none';
+                    placeholder.style.display = 'flex';
+                };
+                console.log('✅ Bannière chargée:', bannerUrl);
+            } else {
+                img.style.display = 'none';
+                placeholder.style.display = 'flex';
+                console.log('ℹ️ Aucune bannière configurée');
+            }
         }
         
         // ============ METTRE À JOUR L'UI DU RESTAURANT ============
@@ -1499,21 +1578,16 @@
             
             const restaurantName = restaurantData?.name || 'Mon Restaurant';
             
-            // Récupérer le numéro WhatsApp
             let whatsappNumber = restaurantData?.whatsapp || '1234567890';
-            
-            // Nettoyer le numéro
             whatsappNumber = whatsappNumber.replace(/[\s\-+]/g, '');
             
             console.log('📱 Numéro WhatsApp utilisé:', whatsappNumber);
             
-            // Vérifier le numéro
             if (!whatsappNumber || whatsappNumber.length < 6) {
                 whatsappNumber = '1234567890';
                 console.warn('⚠️ Numéro WhatsApp invalide, utilisation du numéro par défaut');
             }
             
-            // Construire le message
             let message = `🍽️ *${restaurantName}*\n`;
             message += `📋 Réf: ${order.orderNumber}\n`;
             message += `📌 Table: ${order.table}\n`;
@@ -1539,10 +1613,8 @@
             
             console.log('🔗 URL WhatsApp:', url);
             
-            // Ouvrir WhatsApp
             window.open(url, '_blank');
             
-            // Mettre à jour le statut
             ordersRef.child(`commandes/${order.id}`).update({
                 status: 'envoye_whatsapp',
                 whatsappSent: true,
@@ -1571,13 +1643,11 @@
             console.log('📦 Panier actuel:', cart);
             console.log('📱 Données restaurant:', restaurantData);
             
-            // Vérifier le numéro WhatsApp
             const whatsappNumber = restaurantData?.whatsapp || '1234567890';
             console.log('📱 Numéro WhatsApp configuré:', whatsappNumber);
             
             if (!whatsappNumber || whatsappNumber.length < 6) {
                 showToast('⚠️ Numéro WhatsApp non configuré dans l\'administration', 'warning');
-                // Continuer quand même avec le numéro par défaut
             }
             
             const sendBtn = document.getElementById('sendWhatsAppBtn');
@@ -1588,21 +1658,16 @@
             
             showToast('⏳ Création de la commande...', 'info');
             
-            // ÉTAPE 1: Créer la commande dans Firebase
             createOrder()
                 .then((order) => {
                     console.log('📦 Commande créée:', order);
                     showToast('✅ Commande créée !', 'success');
-                    
-                    // ÉTAPE 2: VIDER LE PANIER
                     return clearCart().then(() => order);
                 })
                 .then((order) => {
-                    // ÉTAPE 3: Envoyer sur WhatsApp
                     console.log('📱 Envoi sur WhatsApp...');
                     sendOrderToWhatsApp(order);
                     
-                    // ÉTAPE 4: Fermer le modal
                     const modal = document.getElementById('cartModal');
                     if (modal) {
                         modal.style.display = 'none';
