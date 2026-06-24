@@ -844,7 +844,7 @@
                 
                 <div class="header-right">
                     <div class="delivery-badge" id="deliveryBadge">
-                        🚚 Livraison <span class="price" id="deliveryPrice">5€</span>
+                        🚚 Livraison <span class="price" id="deliveryPrice">5Dhs</span>
                     </div>
                     <div class="cart-icon" id="cartIcon">
                         🛒 <span id="cartCount">0</span>
@@ -895,7 +895,7 @@
                     </div>
                 </div>
                 <div class="cart-total">
-                    Total: <span id="cartTotal">0</span> €
+                    Total: <span id="cartTotal">0</span> Dhs
                 </div>
                 <div class="cart-actions">
                     <button class="btn-clear" id="clearCartBtn">🗑 Vider</button>
@@ -1070,7 +1070,7 @@
             const deliveryBadge = document.getElementById('deliveryBadge');
             if (data.deliveryAvailable !== false && data.deliveryPrice !== undefined) {
                 deliveryBadge.className = 'delivery-badge';
-                deliveryBadge.innerHTML = `🚚 Livraison <span class="price">${data.deliveryPrice}€</span>`;
+                deliveryBadge.innerHTML = `🚚 Livraison <span class="price">${data.deliveryPrice}Dhs</span>`;
             } else {
                 deliveryBadge.className = 'delivery-badge disabled';
                 deliveryBadge.textContent = '🚫 Livraison non disponible';
@@ -1303,7 +1303,7 @@
                             <h3 class="product-name">${product.name}</h3>
                             <span class="product-category-badge">${categoryIcon} ${categoryName}</span>
                         </div>
-                        <div class="product-price">${product.price.toFixed(2)} €</div>
+                        <div class="product-price">${product.price.toFixed(2)} Dhs</div>
                         <div class="product-description">${product.description || 'Aucune description'}</div>
                         <button class="btn-add" onclick="addToCart('${product.id}')">
                             🛒 Ajouter au panier
@@ -1483,7 +1483,7 @@
                 itemDiv.innerHTML = `
                     <div class="item-info">
                         <div class="item-name">${item.name}</div>
-                        <div class="item-price">${(item.price * item.quantity).toFixed(2)} €</div>
+                        <div class="item-price">${(item.price * item.quantity).toFixed(2)} Dhs</div>
                     </div>
                     <div class="item-controls">
                         <button class="btn-minus" onclick="updateCartItem('${item.id}', -1)">−</button>
@@ -1596,7 +1596,7 @@
             
             if (order.items && order.items.length > 0) {
                 order.items.forEach(item => {
-                    message += `• ${item.name} x${item.quantity} = ${item.subtotal.toFixed(2)}€\n`;
+                    message += `• ${item.name} x${item.quantity} = ${item.subtotal.toFixed(2)}Dhs\n`;
                     if (item.notes) {
                         message += `  📝 ${item.notes}\n`;
                     }
@@ -1605,7 +1605,7 @@
                 message += `• Aucun article\n`;
             }
             
-            message += `\n*Total: ${order.total.toFixed(2)}€*`;
+            message += `\n*Total: ${order.total.toFixed(2)}Dhs*`;
             message += `\n\nMerci de confirmer cette commande.`;
             
             const encodedMessage = encodeURIComponent(message);
