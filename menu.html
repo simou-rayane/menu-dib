@@ -10,7 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
     <style>
-        /* ============ STYLES (IDENTIQUE À LA VERSION PRÉCÉDENTE) ============ */
+        /* ============ STYLES COMPLETS ============ */
         * {
             margin: 0;
             padding: 0;
@@ -790,7 +790,7 @@
                 
                 <div class="header-right">
                     <div class="delivery-badge" id="deliveryBadge">
-                        🚚 Livraison <span class="price" id="deliveryPrice">15 Dhs</span>
+                        🚚 Livraison <span class="price" id="deliveryPrice">5€</span>
                     </div>
                     <div class="cart-icon" id="cartIcon">
                         🛒 <span id="cartCount">0</span>
@@ -841,7 +841,7 @@
                     </div>
                 </div>
                 <div class="cart-total">
-                    Total: <span id="cartTotal">0</span> Dhs
+                    Total: <span id="cartTotal">0</span> €
                 </div>
                 <div class="cart-actions">
                     <button class="btn-clear" id="clearCartBtn">🗑 Vider</button>
@@ -871,14 +871,14 @@
         // ============ RÉFÉRENCES ============
         const restaurantsRef = database.ref('restaurants');
         
-        // ============ GÉNÉRER UN IDENTIFIANT DE SESSION ============
+        // ============ GÉNÉRER UN IDENTIFIANT DE SESSION UNIQUE ============
         function generateSessionId() {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
             let result = '';
             for (let i = 0; i < 8; i++) {
                 result += chars.charAt(Math.floor(Math.random() * chars.length));
             }
-            return result;
+            return result + '-' + Date.now().toString(36).slice(-4);
         }
         
         function getSessionId() {
@@ -924,12 +924,17 @@
             currentRestaurantId = restaurantId;
             localStorage.setItem('current_restaurant', restaurantId);
             
+            console.log('🏪 Restaurant demandé:', restaurantId);
+            
             restaurantsRef.child(restaurantId).on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
                     restaurantData = data;
+                    console.log('✅ Restaurant chargé:', data.name);
+                    console.log('📱 WhatsApp configuré:', data.whatsapp || 'Non configuré');
                     updateRestaurantUI(data);
                 } else {
+                    console.warn('⚠️ Restaurant non trouvé, utilisation des valeurs par défaut');
                     restaurantData = getDefaultRestaurant();
                     updateRestaurantUI(restaurantData);
                 }
@@ -958,6 +963,7 @@
             };
         }
         
+        // ============ METTRE À JOUR L'UI DU RESTAURANT ============
         function updateRestaurantUI(data) {
             document.getElementById('restaurantName').textContent = data.name || 'Mon Restaurant';
             
@@ -985,7 +991,7 @@
             const deliveryBadge = document.getElementById('deliveryBadge');
             if (data.deliveryAvailable !== false && data.deliveryPrice !== undefined) {
                 deliveryBadge.className = 'delivery-badge';
-                deliveryBadge.innerHTML = `🚚 Livraison <span class="price">${data.deliveryPrice}Dhs</span>`;
+                deliveryBadge.innerHTML = `🚚 Livraison <span class="price">${data.deliveryPrice}€</span>`;
             } else {
                 deliveryBadge.className = 'delivery-badge disabled';
                 deliveryBadge.textContent = '🚫 Livraison non disponible';
@@ -1024,6 +1030,7 @@
             database.ref('categories').on('value', (snapshot) => {
                 const data = snapshot.val();
                 categories = data || {};
+                console.log('📂 Catégories chargées:', Object.keys(categories).length);
                 generateFilters();
             });
         }
@@ -1217,7 +1224,7 @@
                             <h3 class="product-name">${product.name}</h3>
                             <span class="product-category-badge">${categoryIcon} ${categoryName}</span>
                         </div>
-                        <div class="product-price">${product.price.toFixed(2)} Dhs</div>
+                        <div class="product-price">${product.price.toFixed(2)} €</div>
                         <div class="product-description">${product.description || 'Aucune description'}</div>
                         <button class="btn-add" onclick="addToCart('${product.id}')">
                             🛒 Ajouter au panier
@@ -1227,7 +1234,7 @@
             `;
         }
         
-        // ============ GESTION DU PANIER (SESSION ISOLÉE) ============
+        // ============ GESTION DU PANIER ============
         function loadCart() {
             if (currentTable && sessionId) {
                 const cartPath = `carts/table_${currentTable}/session_${sessionId}`;
@@ -1267,9 +1274,12 @@
         }
         
         function clearCart() {
+            console.log('🗑️ VIDAGE DU PANIER...');
             cart = [];
+            
             if (currentTable && sessionId) {
                 const cartPath = `carts/table_${currentTable}/session_${sessionId}`;
+                
                 if (cartListenerRef) {
                     cartsRef.child(cartPath).off('value');
                     cartListenerRef = null;
@@ -1394,7 +1404,7 @@
                 itemDiv.innerHTML = `
                     <div class="item-info">
                         <div class="item-name">${item.name}</div>
-                        <div class="item-price">${(item.price * item.quantity).toFixed(2)} Dhs</div>
+                        <div class="item-price">${(item.price * item.quantity).toFixed(2)} €</div>
                     </div>
                     <div class="item-controls">
                         <button class="btn-minus" onclick="updateCartItem('${item.id}', -1)">−</button>
@@ -1456,61 +1466,115 @@
                     customerName: '',
                     customerPhone: '',
                     notes: '',
-                    restaurant: currentRestaurantId || 'default'
+                    restaurant: currentRestaurantId || 'default',
+                    restaurantName: restaurantData?.name || 'Mon Restaurant'
                 };
                 
-                console.log('📝 Création de la commande avec session:', sessionId);
+                console.log('📝 Création de la commande:', orderData);
                 
                 ordersRef.child('commandes').push(orderData)
                     .then((ref) => {
+                        console.log('✅ Commande créée avec ID:', ref.key);
                         resolve({
                             id: ref.key,
                             ...orderData
                         });
                     })
                     .catch(error => {
+                        console.error('❌ Erreur création commande:', error);
                         reject(error);
                     });
             });
         }
         
+        // ============ ENVOYER SUR WHATSAPP ============
         function sendOrderToWhatsApp(order) {
-            if (!order) return;
+            if (!order) {
+                showToast('❌ Aucune commande à envoyer', 'error');
+                return;
+            }
+            
+            console.log('📱 Envoi de la commande sur WhatsApp...');
+            console.log('📦 Commande:', order);
             
             const restaurantName = restaurantData?.name || 'Mon Restaurant';
+            
+            // Récupérer le numéro WhatsApp
             let whatsappNumber = restaurantData?.whatsapp || '1234567890';
+            
+            // Nettoyer le numéro
             whatsappNumber = whatsappNumber.replace(/[\s\-+]/g, '');
             
+            console.log('📱 Numéro WhatsApp utilisé:', whatsappNumber);
+            
+            // Vérifier le numéro
+            if (!whatsappNumber || whatsappNumber.length < 6) {
+                whatsappNumber = '1234567890';
+                console.warn('⚠️ Numéro WhatsApp invalide, utilisation du numéro par défaut');
+            }
+            
+            // Construire le message
             let message = `🍽️ *${restaurantName}*\n`;
             message += `📋 Réf: ${order.orderNumber}\n`;
             message += `📌 Table: ${order.table}\n`;
             message += `⏰ ${new Date(order.timestamp).toLocaleString('fr-FR')}\n\n`;
             message += `*DÉTAILS DE LA COMMANDE:*\n`;
             
-            order.items.forEach(item => {
-                message += `• ${item.name} x${item.quantity} = ${item.subtotal.toFixed(2)}Dhs\n`;
-                if (item.notes) {
-                    message += `  📝 ${item.notes}\n`;
-                }
-            });
+            if (order.items && order.items.length > 0) {
+                order.items.forEach(item => {
+                    message += `• ${item.name} x${item.quantity} = ${item.subtotal.toFixed(2)}€\n`;
+                    if (item.notes) {
+                        message += `  📝 ${item.notes}\n`;
+                    }
+                });
+            } else {
+                message += `• Aucun article\n`;
+            }
             
-            message += `\n*Total: ${order.total.toFixed(2)}Dhs*`;
+            message += `\n*Total: ${order.total.toFixed(2)}€*`;
             message += `\n\nMerci de confirmer cette commande.`;
             
             const encodedMessage = encodeURIComponent(message);
-            window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
+            const url = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
             
+            console.log('🔗 URL WhatsApp:', url);
+            
+            // Ouvrir WhatsApp
+            window.open(url, '_blank');
+            
+            // Mettre à jour le statut
             ordersRef.child(`commandes/${order.id}`).update({
                 status: 'envoye_whatsapp',
                 whatsappSent: true,
-                whatsappSentAt: Date.now()
+                whatsappSentAt: Date.now(),
+                whatsappNumber: whatsappNumber
+            })
+            .then(() => {
+                console.log('✅ Statut de la commande mis à jour');
+            })
+            .catch(error => {
+                console.error('❌ Erreur mise à jour statut:', error);
             });
+            
+            showToast(`📱 Commande envoyée sur WhatsApp`, 'success');
         }
         
+        // ============ PROCESSUS COMPLET DE COMMANDE ============
         function processOrder() {
+            console.log('🔥🔥🔥 DÉBUT PROCESSUS COMMANDE 🔥🔥🔥');
+            
             if (cart.length === 0) {
                 showToast('❌ Votre panier est vide !', 'error');
                 return;
+            }
+            
+            // Vérifier le numéro WhatsApp
+            const whatsappNumber = restaurantData?.whatsapp || '1234567890';
+            console.log('📱 Numéro WhatsApp configuré:', whatsappNumber);
+            
+            if (!whatsappNumber || whatsappNumber.length < 6) {
+                showToast('⚠️ Numéro WhatsApp non configuré dans l\'administration', 'warning');
+                // Continuer quand même avec le numéro par défaut
             }
             
             const sendBtn = document.getElementById('sendWhatsAppBtn');
@@ -1521,22 +1585,31 @@
             
             showToast('⏳ Création de la commande...', 'info');
             
+            // ÉTAPE 1: Créer la commande dans Firebase
             createOrder()
                 .then((order) => {
+                    console.log('📦 Commande créée:', order);
                     showToast('✅ Commande créée !', 'success');
+                    
+                    // ÉTAPE 2: VIDER LE PANIER
                     return clearCart().then(() => order);
                 })
                 .then((order) => {
+                    // ÉTAPE 3: Envoyer sur WhatsApp
+                    console.log('📱 Envoi sur WhatsApp...');
                     sendOrderToWhatsApp(order);
-                    showToast(`✅ Commande ${order.orderNumber} envoyée !`, 'success');
                     
+                    // ÉTAPE 4: Fermer le modal
                     const modal = document.getElementById('cartModal');
                     if (modal) {
                         modal.style.display = 'none';
                         document.body.style.overflow = '';
                     }
+                    
+                    console.log('🔥🔥🔥 FIN PROCESSUS COMMANDE 🔥🔥🔥');
                 })
                 .catch((error) => {
+                    console.error('❌ Erreur:', error);
                     showToast('❌ Erreur: ' + error.message, 'error');
                 })
                 .finally(() => {
@@ -1602,6 +1675,18 @@
             });
         }
         
+        // ============ FILTRES ============
+        function setupFilters() {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.dataset.category;
+                    displayMenu();
+                });
+            });
+        }
+        
         // ============ TOAST ============
         function showToast(message, type = 'info') {
             const colors = {
@@ -1653,6 +1738,7 @@
         
         // ============ INITIALISATION ============
         console.log('🚀 Démarrage du menu...');
+        console.log('📋 Firebase Database:', database.ref().toString());
         
         loadTableInfo();
         loadRestaurant();
@@ -1660,17 +1746,41 @@
         listenToCategories();
         loadCart();
         setupCartModal();
+        setupFilters();
         
         window.addToCart = addToCart;
         window.removeFromCart = removeFromCart;
         window.updateCartItem = updateCartItem;
         window.clearCart = clearCart;
         window.sendToWhatsApp = sendToWhatsApp;
+        window.processOrder = processOrder;
         window.reconnectMenu = reconnectMenu;
         
         console.log('✅ Menu initialisé - Table', currentTable);
         console.log('🔑 Session ID:', sessionId);
         console.log('🏪 Restaurant:', currentRestaurantId);
+        
+        // ============ ANIMATIONS CSS ============
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideUpToast {
+                from { transform: translateX(-50%) translateY(100px); opacity: 0; }
+                to { transform: translateX(-50%) translateY(0); opacity: 1; }
+            }
+            @keyframes slideDownToast {
+                from { transform: translateX(-50%) translateY(0); opacity: 1; }
+                to { transform: translateX(-50%) translateY(100px); opacity: 0; }
+            }
+            @keyframes bounce {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.3); }
+                70% { transform: scale(0.9); }
+                100% { transform: scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        console.log('✅ Script.js chargé avec succès');
         
     </script>
 </body>
