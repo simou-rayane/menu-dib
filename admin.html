@@ -8,9 +8,10 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     
     <style>
-        /* ============ STYLES COMPLETS (identique à la version précédente) ============ */
+        /* ============ STYLES COMPLETS ============ */
         * {
             margin: 0;
             padding: 0;
@@ -253,8 +254,8 @@
             color: white;
         }
         
-        /* ============ LOGO PREVIEW ============ */
-        .logo-preview {
+        /* ============ LOGO & BANNER PREVIEW ============ */
+        .image-preview-container {
             display: flex;
             align-items: center;
             gap: 20px;
@@ -265,49 +266,50 @@
             flex-wrap: wrap;
         }
         
-        .logo-preview img {
-            width: 80px;
+        .image-preview-container img {
+            width: 120px;
             height: 80px;
             object-fit: cover;
-            border-radius: 12px;
+            border-radius: 8px;
             border: 2px solid #667eea;
             background: white;
         }
         
-        .logo-preview .logo-placeholder {
-            width: 80px;
+        .image-preview-container .placeholder-image {
+            width: 120px;
             height: 80px;
-            border-radius: 12px;
+            border-radius: 8px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 32px;
-            font-weight: 700;
+            font-size: 14px;
+            font-weight: 600;
+            border: 2px solid #667eea;
         }
         
-        .logo-preview .logo-info {
+        .image-preview-container .image-info {
             flex: 1;
         }
         
-        .logo-preview .logo-info .name {
+        .image-preview-container .image-info .name {
             font-weight: 600;
             color: #333;
         }
         
-        .logo-preview .logo-info .url {
+        .image-preview-container .image-info .url {
             font-size: 12px;
             color: #999;
             word-break: break-all;
         }
         
-        .logo-preview .logo-actions {
+        .image-preview-container .image-actions {
             display: flex;
             gap: 8px;
         }
         
-        .logo-preview .logo-actions button {
+        .image-preview-container .image-actions button {
             padding: 6px 16px;
             border: none;
             border-radius: 20px;
@@ -317,21 +319,21 @@
             transition: all 0.3s;
         }
         
-        .logo-preview .logo-actions .btn-select-logo {
+        .image-preview-container .image-actions .btn-select {
             background: #667eea;
             color: white;
         }
         
-        .logo-preview .logo-actions .btn-select-logo:hover {
+        .image-preview-container .image-actions .btn-select:hover {
             background: #764ba2;
         }
         
-        .logo-preview .logo-actions .btn-remove-logo {
+        .image-preview-container .image-actions .btn-remove {
             background: #dc3545;
             color: white;
         }
         
-        .logo-preview .logo-actions .btn-remove-logo:hover {
+        .image-preview-container .image-actions .btn-remove:hover {
             background: #c62828;
         }
         
@@ -909,7 +911,7 @@
                 grid-template-columns: 1fr 1fr;
             }
             
-            .logo-preview {
+            .image-preview-container {
                 flex-direction: column;
                 text-align: center;
             }
@@ -967,22 +969,43 @@
                         
                         <div class="form-group full-width">
                             <label>Logo</label>
-                            <div class="logo-preview">
+                            <div class="image-preview-container">
                                 <div id="logoPreviewContainer">
                                     <img id="logoPreviewImg" src="" alt="Logo" style="display: none;">
-                                    <div class="logo-placeholder" id="logoPlaceholder">R</div>
+                                    <div class="placeholder-image" id="logoPlaceholder">Logo</div>
                                 </div>
-                                <div class="logo-info">
+                                <div class="image-info">
                                     <div class="name" id="logoName">Aucun logo</div>
                                     <div class="url" id="logoUrl">-</div>
                                 </div>
-                                <div class="logo-actions">
-                                    <button type="button" class="btn-select-logo" onclick="openLogoSelector()">📷 Choisir</button>
-                                    <button type="button" class="btn-remove-logo" onclick="removeLogo()">🗑 Supprimer</button>
+                                <div class="image-actions">
+                                    <button type="button" class="btn-select" onclick="openImageSelector('logo')">📷 Choisir</button>
+                                    <button type="button" class="btn-remove" onclick="removeImage('logo')">🗑 Supprimer</button>
                                 </div>
                             </div>
                             <input type="hidden" id="restaurantLogo" value="">
-                            <div class="help-text">Sélectionnez une image depuis PicX ou entrez l'URL manuellement</div>
+                            <div class="help-text">Sélectionnez une image depuis PicX pour le logo</div>
+                        </div>
+                        
+                        <!-- ===== BANNIÈRE ===== -->
+                        <div class="form-group full-width">
+                            <label>📸 Bannière du restaurant</label>
+                            <div class="image-preview-container">
+                                <div id="bannerPreviewContainer">
+                                    <img id="bannerPreviewImg" src="" alt="Bannière" style="display: none; width: 100%; height: 150px; object-fit: cover; border-radius: 8px;">
+                                    <div class="placeholder-image" id="bannerPlaceholder" style="width: 100%; height: 150px;">Bannière</div>
+                                </div>
+                                <div class="image-info">
+                                    <div class="name" id="bannerName">Aucune bannière</div>
+                                    <div class="url" id="bannerUrl">-</div>
+                                </div>
+                                <div class="image-actions">
+                                    <button type="button" class="btn-select" onclick="openImageSelector('banner')">📷 Choisir</button>
+                                    <button type="button" class="btn-remove" onclick="removeImage('banner')">🗑 Supprimer</button>
+                                </div>
+                            </div>
+                            <input type="hidden" id="restaurantBanner" value="">
+                            <div class="help-text">Sélectionnez une image depuis PicX pour la bannière</div>
                         </div>
                         
                         <div class="form-group">
@@ -1001,15 +1024,14 @@
                             <div class="help-text">Pour le bouton Appeler. Ex: +33123456789</div>
                         </div>
                         
-                        <!-- ===== NOUVEAU CHAMP WHATSAPP ===== -->
                         <div class="form-group">
                             <label>Numéro WhatsApp (pour les commandes)</label>
                             <input type="text" id="restaurantWhatsApp" placeholder="33123456789">
-                            <div class="help-text">Format international sans le +. Ex: 33123456789 pour la France</div>
+                            <div class="help-text">Format international sans le +. Ex: 33123456789</div>
                         </div>
                         
                         <div class="form-group">
-                            <label>Prix de livraison (Dhs)</label>
+                            <label>Prix de livraison (€)</label>
                             <input type="number" id="restaurantDeliveryPrice" placeholder="5" step="0.5">
                         </div>
                         
@@ -1088,7 +1110,7 @@
                             <input type="text" id="productName" placeholder="Nom du produit" required>
                         </div>
                         <div class="form-group">
-                            <label>Prix (Dhs) <span class="required">*</span></label>
+                            <label>Prix (€) <span class="required">*</span></label>
                             <input type="number" id="productPrice" placeholder="14.00" step="0.01" required>
                         </div>
                         <div class="form-group">
@@ -1181,7 +1203,7 @@
         let selectedImageName = null;
         let picxImages = [];
         let restaurantData = {};
-        let logoPickerMode = false;
+        let imageSelectorMode = null; // 'logo' ou 'banner'
         
         // Références
         const categoriesRef = database.ref('categories');
@@ -1224,11 +1246,13 @@
                     restaurantData = data;
                     populateRestaurantForm(data);
                     updateLogoPreview(data.logo);
+                    updateBannerPreview(data.banner);
                     console.log('✅ Restaurant chargé:', data.name);
                 } else {
                     restaurantData = getDefaultRestaurant();
                     populateRestaurantForm(restaurantData);
                     updateLogoPreview(null);
+                    updateBannerPreview(null);
                     restaurantsRef.child(currentRestaurantId).set(restaurantData);
                 }
             });
@@ -1238,10 +1262,11 @@
             return {
                 name: "Mon Restaurant",
                 logo: null,
+                banner: null,
                 address: "123 Rue de la Paix, 75001 Paris",
                 phone: "01 23 45 67 89",
                 phoneLink: "+33123456789",
-                whatsapp: "33123456789",  // Nouveau champ
+                whatsapp: "33123456789",
                 deliveryPrice: 5,
                 deliveryAvailable: true,
                 facebook: "https://facebook.com/votre-page",
@@ -1256,6 +1281,7 @@
             document.getElementById('restaurantId').value = currentRestaurantId;
             document.getElementById('restaurantName').value = data.name || '';
             document.getElementById('restaurantLogo').value = data.logo || '';
+            document.getElementById('restaurantBanner').value = data.banner || '';
             document.getElementById('restaurantAddress').value = data.address || '';
             document.getElementById('restaurantPhone').value = data.phone || '';
             document.getElementById('restaurantPhoneLink').value = data.phoneLink || '';
@@ -1268,6 +1294,7 @@
             document.getElementById('restaurantMapsUrl').value = data.mapsUrl || '';
             document.getElementById('restaurantActive').value = data.active !== false ? 'true' : 'false';
             updateLogoPreview(data.logo);
+            updateBannerPreview(data.banner);
         }
         
         function resetRestaurantForm() {
@@ -1309,14 +1336,45 @@
             }
         }
         
-        function openLogoSelector() {
-            logoPickerMode = true;
+        // ============ GESTION DE LA BANNIÈRE ============
+        function updateBannerPreview(bannerUrl) {
+            const img = document.getElementById('bannerPreviewImg');
+            const placeholder = document.getElementById('bannerPlaceholder');
+            const name = document.getElementById('bannerName');
+            const url = document.getElementById('bannerUrl');
+            const hiddenInput = document.getElementById('restaurantBanner');
+            
+            if (bannerUrl && bannerUrl.trim()) {
+                img.src = bannerUrl;
+                img.style.display = 'block';
+                placeholder.style.display = 'none';
+                name.textContent = 'Bannière actuelle';
+                url.textContent = bannerUrl;
+                hiddenInput.value = bannerUrl;
+                img.onerror = function() {
+                    this.style.display = 'none';
+                    placeholder.style.display = 'flex';
+                    name.textContent = 'Image invalide';
+                    url.textContent = 'L\'URL de la bannière est invalide';
+                };
+            } else {
+                img.style.display = 'none';
+                placeholder.style.display = 'flex';
+                name.textContent = 'Aucune bannière';
+                url.textContent = '-';
+                hiddenInput.value = '';
+            }
+        }
+        
+        function openImageSelector(mode) {
+            imageSelectorMode = mode;
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelector('[data-tab="tab-images"]').classList.add('active');
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.getElementById('tab-images').classList.add('active');
             
-            showToast('📷 Sélectionnez une image pour le logo', 'info');
+            const label = mode === 'logo' ? 'logo' : 'bannière';
+            showToast(`📷 Sélectionnez une image pour la ${label}`, 'info');
             
             if (picxImages.length === 0) {
                 loadImagesFromPicX();
@@ -1326,11 +1384,19 @@
             document.querySelectorAll('.image-item').forEach(el => el.classList.remove('selected'));
         }
         
-        function removeLogo() {
-            if (confirm('🗑️ Supprimer le logo actuel ?')) {
-                updateLogoPreview(null);
-                document.getElementById('restaurantLogo').value = '';
-                showToast('🗑️ Logo supprimé', 'info');
+        function removeImage(type) {
+            if (type === 'logo') {
+                if (confirm('🗑️ Supprimer le logo actuel ?')) {
+                    updateLogoPreview(null);
+                    document.getElementById('restaurantLogo').value = '';
+                    showToast('🗑️ Logo supprimé', 'info');
+                }
+            } else if (type === 'banner') {
+                if (confirm('🗑️ Supprimer la bannière actuelle ?')) {
+                    updateBannerPreview(null);
+                    document.getElementById('restaurantBanner').value = '';
+                    showToast('🗑️ Bannière supprimée', 'info');
+                }
             }
         }
         
@@ -1341,10 +1407,11 @@
             const data = {
                 name: document.getElementById('restaurantName').value.trim(),
                 logo: document.getElementById('restaurantLogo').value.trim() || null,
+                banner: document.getElementById('restaurantBanner').value.trim() || null,
                 address: document.getElementById('restaurantAddress').value.trim() || null,
                 phone: document.getElementById('restaurantPhone').value.trim() || null,
                 phoneLink: document.getElementById('restaurantPhoneLink').value.trim() || null,
-                whatsapp: document.getElementById('restaurantWhatsApp').value.trim() || null,  // Nouveau champ
+                whatsapp: document.getElementById('restaurantWhatsApp').value.trim() || null,
                 deliveryPrice: parseFloat(document.getElementById('restaurantDeliveryPrice').value) || 0,
                 deliveryAvailable: document.getElementById('restaurantDeliveryAvailable').value === 'true',
                 facebook: document.getElementById('restaurantFacebook').value.trim() || null,
@@ -1368,6 +1435,7 @@
                     showToast('✅ Restaurant mis à jour avec succès !', 'success');
                     restaurantData = data;
                     updateLogoPreview(data.logo);
+                    updateBannerPreview(data.banner);
                 })
                 .catch(error => {
                     showToast('❌ Erreur: ' + error.message, 'error');
@@ -1604,7 +1672,7 @@
                         <div class="product-details">
                             <div>
                                 <span class="name">${product.name}</span>
-                                <span class="price">${product.price.toFixed(2)} Dhs</span>
+                                <span class="price">${product.price.toFixed(2)} €</span>
                                 <span class="category">(${categoryIcon} ${categoryName})</span>
                             </div>
                             <div class="description">${product.description || ''}</div>
@@ -1672,7 +1740,7 @@
                     <h2>✏️ Modifier le produit</h2>
                     <form id="editForm">
                         <div style="margin-bottom:15px;"><label style="font-weight:600;">Nom</label><input type="text" id="editName" value="${product.name}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;" required></div>
-                        <div style="margin-bottom:15px;"><label style="font-weight:600;">Prix (Dhs)</label><input type="number" id="editPrice" value="${product.price}" step="0.01" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;" required></div>
+                        <div style="margin-bottom:15px;"><label style="font-weight:600;">Prix (€)</label><input type="number" id="editPrice" value="${product.price}" step="0.01" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;" required></div>
                         <div style="margin-bottom:15px;"><label style="font-weight:600;">Catégorie</label><select id="editCategory" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;">${catOptions}</select></div>
                         <div style="margin-bottom:15px;"><label style="font-weight:600;">Description</label><textarea id="editDesc" rows="3" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;">${product.description || ''}</textarea></div>
                         <div style="margin-bottom:15px;"><label style="font-weight:600;">Image URL</label><input type="text" id="editImageUrl" value="${product.image || ''}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;" placeholder="https://..."></div>
@@ -1823,29 +1891,35 @@
             document.getElementById('selectedName').textContent = item.name;
             document.getElementById('selectedUrl').textContent = item.download_url;
             
-            if (logoPickerMode) {
-                updateLogoPreview(item.download_url);
-                document.getElementById('restaurantLogo').value = item.download_url;
-                logoPickerMode = false;
+            if (imageSelectorMode) {
+                if (imageSelectorMode === 'logo') {
+                    updateLogoPreview(item.download_url);
+                    document.getElementById('restaurantLogo').value = item.download_url;
+                    showToast('✅ Logo sélectionné ! N\'oubliez pas d\'enregistrer.', 'success');
+                } else if (imageSelectorMode === 'banner') {
+                    updateBannerPreview(item.download_url);
+                    document.getElementById('restaurantBanner').value = item.download_url;
+                    showToast('✅ Bannière sélectionnée ! N\'oubliez pas d\'enregistrer.', 'success');
+                }
+                imageSelectorMode = null;
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
                 document.querySelector('[data-tab="tab-restaurant"]').classList.add('active');
                 document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                 document.getElementById('tab-restaurant').classList.add('active');
-                showToast('✅ Logo sélectionné ! N\'oubliez pas d\'enregistrer.', 'success');
             } else {
                 showToast(`✅ Image sélectionnée: ${item.name}`, 'success');
             }
         };
         
         function clearImageSelection() {
-            if (!logoPickerMode) {
+            if (!imageSelectorMode) {
                 selectedImageUrl = null;
                 selectedImageName = null;
                 document.querySelectorAll('.image-item').forEach(el => el.classList.remove('selected'));
                 document.getElementById('selectedInfo').style.display = 'none';
             } else {
-                logoPickerMode = false;
-                showToast('🔙 Sélection de logo annulée', 'info');
+                imageSelectorMode = null;
+                showToast('🔙 Sélection annulée', 'info');
             }
         }
         
@@ -1932,8 +2006,8 @@
         window.loadImagesFromPicX = loadImagesFromPicX;
         window.clearImageSelection = clearImageSelection;
         window.selectImage = selectImage;
-        window.openLogoSelector = openLogoSelector;
-        window.removeLogo = removeLogo;
+        window.openImageSelector = openImageSelector;
+        window.removeImage = removeImage;
         window.addCategory = addCategory;
         window.editCategory = editCategory;
         window.toggleCategory = toggleCategory;
