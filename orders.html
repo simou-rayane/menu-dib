@@ -837,7 +837,7 @@
                         ${order.items.map(item => `
                             <div class="order-item">
                                 <span class="item-name">${item.name} × ${item.quantity}</span>
-                                <span class="item-price">${item.subtotal.toFixed(2)}€</span>
+                                <span class="item-price">${item.subtotal.toFixed(2)}Dhs</span>
                             </div>
                         `).join('')}
                     </div>
@@ -845,7 +845,7 @@
                     ${order.notes ? `<div class="order-notes">📝 ${order.notes}</div>` : ''}
                     
                     <div class="order-total">
-                        Total: ${order.total.toFixed(2)}€
+                        Total: ${order.total.toFixed(2)}Dhs
                     </div>
                     
                     ${order.customerName ? `<div style="margin-top: 8px; color: #666; font-size: 14px;">👤 ${order.customerName}</div>` : ''}
@@ -919,13 +919,13 @@
             
             if (order.items && order.items.length > 0) {
                 order.items.forEach(item => {
-                    message += `• ${item.name} x${item.quantity} = ${item.subtotal.toFixed(2)}€\n`;
+                    message += `• ${item.name} x${item.quantity} = ${item.subtotal.toFixed(2)}Dhs\n`;
                 });
             } else {
                 message += `• Aucun article\n`;
             }
             
-            message += `\n*Total: ${order.total.toFixed(2)}€*`;
+            message += `\n*Total: ${order.total.toFixed(2)}Dhs*`;
             message += `\n\nMerci de confirmer cette commande.`;
             
             const encodedMessage = encodeURIComponent(message);
@@ -1003,7 +1003,7 @@
                 order.table,
                 order.date,
                 order.items,
-                order.total + ' €',
+                order.total + ' Dhs',
                 order.status,
                 order.customerName,
                 order.customerPhone,
