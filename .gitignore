@@ -1,0 +1,229 @@
+# ============================================
+# 🔒 FICHIERS DE CONFIGURATION SENSIBLES
+# ============================================
+
+# Firebase (NE JAMAIS COMMITER !)
+firebase-config.js
+config.js
+*.env
+*.env.local
+*.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Clés et secrets
+*.pem
+*.key
+*.crt
+*.cert
+*.p12
+*.csr
+*.p8
+secrets.json
+secrets.yaml
+credentials.json
+service-account.json
+
+# ============================================
+# 📦 DÉPENDANCES ET PACKAGES
+# ============================================
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ============================================
+# 🛠️ FICHIERS D'ÉDITEUR / IDE
+# ============================================
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# IntelliJ / WebStorm / PHPStorm
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+*.sublime-*
+
+# Atom
+.atom/
+
+# ============================================
+# 🖥️ FICHIERS SYSTÈME
+# ============================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+*.swp
+*.swo
+*.tmp
+*.temp
+
+# ============================================
+# 📁 FICHIERS DE LOGS ET CACHES
+# ============================================
+
+*.log
+*.logs
+.cache/
+.temp/
+tmp/
+logs/
+*.pid
+*.seed
+*.pid.lock
+
+# ============================================
+# 📦 FICHIERS DE BUILD / DISTRIBUTION
+# ============================================
+
+dist/
+build/
+*.min.js
+*.min.css
+*.bundle.js
+*.bundle.css
+coverage/
+.nyc_output/
+
+# ============================================
+# 🔧 FICHIERS DE DÉPLOIEMENT
+# ============================================
+
+# GitHub Actions (le workflow est à garder)
+# .github/workflows/ ne doit PAS être ignoré
+
+# Fichiers générés par le déploiement
+.deploy/
+.deploy_git/
+.deploy_key
+
+# ============================================
+# 📂 FICHIERS DE PROJET (optionnels)
+# ============================================
+
+# Si vous ne voulez pas versionner les images
+# images/*.jpg
+# images/*.png
+# images/*.gif
+
+# Fichiers de configuration locaux
+*.local.js
+*.local.json
+*.local.yaml
+
+# ============================================
+# 🔄 FICHIERS TEMPORAIRES GIT
+# ============================================
+
+*.orig
+*.rej
+*.patch
+*.merge
+
+# ============================================
+# 📱 FICHIERS MOBILE (si vous travaillez sur mobile)
+# ============================================
+
+# Android
+*.apk
+*.aab
+*.dex
+*.class
+
+# iOS
+*.ipa
+*.app
+*.dSYM.zip
+*.dSYM
+
+# ============================================
+# 🧪 FICHIERS DE TEST
+# ============================================
+
+test-results/
+*.test.js
+*.spec.js
+__tests__/
+__mocks__/
+
+# ============================================
+# 📄 FICHIERS DE DOCUMENTATION GÉNÉRÉS
+# ============================================
+
+docs/
+*.pdf
+*.docx
+*.pptx
+
+# ============================================
+# 🔐 FICHIERS DE DATABASE
+# ============================================
+
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# ============================================
+# 📦 FICHIERS DE BACKUP
+# ============================================
+
+*.bak
+*.backup
+*.old
+*.orig
+
+# ============================================
+# ⚙️ FICHIERS DE CONFIGURATION PERSONNELLE
+# ============================================
+
+.vscode/
+.tern-port
+.lock-wscript
+.yarn-integrity
+.eslintcache
+.prettiercache
+
+# ============================================
+# 🎯 FICHIERS SPÉCIFIQUES À CE PROJET
+# ============================================
+
+# Fichier généré par GitHub Actions
+config.js
+
+# Fichier de configuration Firebase (ne JAMAIS commiter)
+firebase-config.js
+
+# Fichiers de variables d'environnement
+.env
+.env.local
+
+# Fichiers de test
+test.html
+test.js
