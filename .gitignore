@@ -4,13 +4,16 @@
 
 # Firebase (NE JAMAIS COMMITER !)
 firebase-config.js
-config.js
 *.env
 *.env.local
 *.env.*.local
 .env.development.local
 .env.test.local
 .env.production.local
+
+# ⚠️ config.js N'EST PLUS IGNORÉ
+# Il est généré par le workflow avec les secrets
+# config.js est maintenant GARDÉ pour le déploiement
 
 # Clés et secrets
 *.pem
@@ -214,8 +217,9 @@ docs/
 # 🎯 FICHIERS SPÉCIFIQUES À CE PROJET
 # ============================================
 
-# Fichier généré par GitHub Actions
-config.js
+# ⚠️ config.js N'EST PLUS IGNORÉ
+# Il est maintenant GARDÉ pour le déploiement
+# config.js
 
 # Fichier de configuration Firebase (ne JAMAIS commiter)
 firebase-config.js
