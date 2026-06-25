@@ -1,5 +1,3 @@
-# ============ .github/workflows/deploy.yml ============
-
 name: Deploy to GitHub Pages
 
 on:
@@ -25,31 +23,48 @@ jobs:
       
       - name: Build with environment variables
         run: |
-          # Créer un fichier config.js avec les variables d'environnement
-          echo "// Auto-generated config" > config.js
-          echo "const firebaseConfig = {" >> config.js
-          echo "    apiKey: '${{ secrets.FIREBASE_API_KEY }}'," >> config.js
-          echo "    authDomain: '${{ secrets.FIREBASE_AUTH_DOMAIN }}'," >> config.js
-          echo "    databaseURL: '${{ secrets.FIREBASE_DATABASE_URL }}'," >> config.js
-          echo "    projectId: '${{ secrets.FIREBASE_PROJECT_ID }}'," >> config.js
-          echo "    storageBucket: '${{ secrets.FIREBASE_STORAGE_BUCKET }}'," >> config.js
-          echo "    messagingSenderId: '${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}'," >> config.js
-          echo "    appId: '${{ secrets.FIREBASE_APP_ID }}'" >> config.js
-          echo "};" >> config.js
-          echo "firebase.initializeApp(firebaseConfig);" >> config.js
-          echo "const database = firebase.database();" >> config.js
-          echo "const productsRef = database.ref('products');" >> config.js
-          echo "const ordersRef = database.ref('orders');" >> config.js
-          echo "const cartsRef = database.ref('carts');" >> config.js
-          echo "const tablesRef = database.ref('tables');" >> config.js
-          echo "const categoriesRef = database.ref('categories');" >> config.js
-          echo "const restaurantsRef = database.ref('restaurants');" >> config.js
-          echo "console.log('✅ Firebase initialisé');" >> config.js
+          # Créer le dossier de build
+          mkdir -p ./build
+          
+          # Copier tous les fichiers HTML, CSS, JS
+          cp -r *.html *.css *.js images ./build/ 2>/dev/null || true
+          
+          # Générer config.js avec les secrets GitHub
+          echo "// Auto-generated config - DO NOT EDIT" > ./build/config.js
+          echo "const firebaseConfig = {" >> ./build/config.js
+          echo "    apiKey: '${{ secrets.FIREBASE_API_KEY }}'," >> ./build/config.js
+          echo "    authDomain: '${{ secrets.FIREBASE_AUTH_DOMAIN }}'," >> ./build/config.js
+          echo "    databaseURL: '${{ secrets.FIREBASE_DATABASE_URL }}'," >> ./build/config.js
+          echo "    projectId: '${{ secrets.FIREBASE_PROJECT_ID }}'," >> ./build/config.js
+          echo "    storageBucket: '${{ secrets.FIREBASE_STORAGE_BUCKET }}'," >> ./build/config.js
+          echo "    messagingSenderId: '${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}'," >> ./build/config.js
+          echo "    appId: '${{ secrets.FIREBASE_APP_ID }}'" >> ./build/config.js
+          echo "};" >> ./build/config.js
+          echo "" >> ./build/config.js
+          echo "// Initialiser Firebase" >> ./build/config.js
+          echo "firebase.initializeApp(firebaseConfig);" >> ./build/config.js
+          echo "const database = firebase.database();" >> ./build/config.js
+          echo "" >> ./build/config.js
+          echo "// Références" >> ./build/config.js
+          echo "const productsRef = database.ref('products');" >> ./build/config.js
+          echo "const ordersRef = database.ref('orders');" >> ./build/config.js
+          echo "const cartsRef = database.ref('carts');" >> ./build/config.js
+          echo "const tablesRef = database.ref('tables');" >> ./build/config.js
+          echo "const categoriesRef = database.ref('categories');" >> ./build/config.js
+          echo "const restaurantsRef = database.ref('restaurants');" >> ./build/config.js
+          echo "" >> ./build/config.js
+          echo "console.log('✅ Firebase initialisé');" >> ./build/config.js
+          
+          # Copier config.js à la racine du build
+          cp ./build/config.js ./build/firebase-config.js
+          
+          echo "✅ Fichiers générés avec succès"
+          ls -la ./build/
       
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: './build'
 
   deploy:
     environment:
