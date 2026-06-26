@@ -844,7 +844,7 @@
                 
                 <div class="header-right">
                     <div class="delivery-badge" id="deliveryBadge">
-                        🚚 Livraison <span class="price" id="deliveryPrice">5Dhs</span>
+                        🚚 Livraison <span class="price" id="deliveryPrice">5 Dhs</span>
                     </div>
                     <div class="cart-icon" id="cartIcon">
                         🛒 <span id="cartCount">0</span>
@@ -1070,7 +1070,7 @@
             const deliveryBadge = document.getElementById('deliveryBadge');
             if (data.deliveryAvailable !== false && data.deliveryPrice !== undefined) {
                 deliveryBadge.className = 'delivery-badge';
-                deliveryBadge.innerHTML = `🚚 Livraison <span class="price">${data.deliveryPrice}Dhs</span>`;
+                deliveryBadge.innerHTML = `🚚 Livraison <span class="price">${data.deliveryPrice} Dhs</span>`;
             } else {
                 deliveryBadge.className = 'delivery-badge disabled';
                 deliveryBadge.textContent = '🚫 Livraison non disponible';
