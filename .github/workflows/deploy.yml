@@ -26,37 +26,39 @@ jobs:
           # Créer le dossier de build
           mkdir -p ./build
           
-          # Copier tous les fichiers HTML, CSS, JS
+          # Copier tous les fichiers HTML, CSS, JS et images
           cp -r *.html *.css *.js images ./build/ 2>/dev/null || true
           
           # Générer firebase-config.js avec les secrets GitHub
-          echo "// Auto-generated config - DO NOT EDIT" > ./build/firebase-config.js
-          echo "const firebaseConfig = {" >> ./build/firebase-config.js
-          echo "    apiKey: '${{ secrets.FIREBASE_API_KEY }}'," >> ./build/firebase-config.js
-          echo "    authDomain: '${{ secrets.FIREBASE_AUTH_DOMAIN }}'," >> ./build/firebase-config.js
-          echo "    databaseURL: '${{ secrets.FIREBASE_DATABASE_URL }}'," >> ./build/firebase-config.js
-          echo "    projectId: '${{ secrets.FIREBASE_PROJECT_ID }}'," >> ./build/firebase-config.js
-          echo "    storageBucket: '${{ secrets.FIREBASE_STORAGE_BUCKET }}'," >> ./build/firebase-config.js
-          echo "    messagingSenderId: '${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}'," >> ./build/firebase-config.js
-          echo "    appId: '${{ secrets.FIREBASE_APP_ID }}'" >> ./build/firebase-config.js
-          echo "};" >> ./build/firebase-config.js
-          echo "" >> ./build/firebase-config.js
-          echo "// Initialiser Firebase" >> ./build/firebase-config.js
-          echo "firebase.initializeApp(firebaseConfig);" >> ./build/firebase-config.js
-          echo "const database = firebase.database();" >> ./build/firebase-config.js
-          echo "" >> ./build/firebase-config.js
-          echo "// Références" >> ./build/firebase-config.js
-          echo "const productsRef = database.ref('products');" >> ./build/firebase-config.js
-          echo "const ordersRef = database.ref('orders');" >> ./build/firebase-config.js
-          echo "const cartsRef = database.ref('carts');" >> ./build/firebase-config.js
-          echo "const tablesRef = database.ref('tables');" >> ./build/firebase-config.js
-          echo "const categoriesRef = database.ref('categories');" >> ./build/firebase-config.js
-          echo "const restaurantsRef = database.ref('restaurants');" >> ./build/firebase-config.js
-          echo "" >> ./build/firebase-config.js
-          echo "console.log('✅ Firebase initialisé');" >> ./build/firebase-config.js
+          cat > ./build/firebase-config.js << 'EOF'
+          // Auto-generated config - DO NOT EDIT
+          const firebaseConfig = {
+              apiKey: '${{ secrets.FIREBASE_API_KEY }}',
+              authDomain: '${{ secrets.FIREBASE_AUTH_DOMAIN }}',
+              databaseURL: '${{ secrets.FIREBASE_DATABASE_URL }}',
+              projectId: '${{ secrets.FIREBASE_PROJECT_ID }}',
+              storageBucket: '${{ secrets.FIREBASE_STORAGE_BUCKET }}',
+              messagingSenderId: '${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}',
+              appId: '${{ secrets.FIREBASE_APP_ID }}'
+          };
+
+          // Initialiser Firebase
+          firebase.initializeApp(firebaseConfig);
+          const database = firebase.database();
+
+          // Références
+          const productsRef = database.ref('products');
+          const ordersRef = database.ref('orders');
+          const cartsRef = database.ref('carts');
+          const tablesRef = database.ref('tables');
+          const categoriesRef = database.ref('categories');
+          const restaurantsRef = database.ref('restaurants');
+
+          console.log('✅ Firebase initialisé');
+          EOF
           
-          # Copier firebase-config.js à la racine du build
-          cp ./build/firebase-config.js ./build/firebase-config.js
+          # Créer aussi une copie sous le nom config.js pour compatibilité
+          cp ./build/firebase-config.js ./build/config.js
           
           echo "✅ Fichiers générés avec succès"
           ls -la ./build/
