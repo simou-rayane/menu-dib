@@ -3,7 +3,7 @@
 # ============================================
 
 # Firebase (NE JAMAIS COMMITER !)
-firebase-config.js
+config.js
 *.env
 *.env.local
 *.env.*.local
@@ -13,7 +13,7 @@ firebase-config.js
 
 # ⚠️ config.js N'EST PLUS IGNORÉ
 # Il est généré par le workflow avec les secrets
-# config.js est maintenant GARDÉ pour le déploiement
+# firebase-config.js est maintenant GARDÉ pour le déploiement
 
 # Clés et secrets
 *.pem
