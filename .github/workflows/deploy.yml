@@ -29,34 +29,34 @@ jobs:
           # Copier tous les fichiers HTML, CSS, JS
           cp -r *.html *.css *.js images ./build/ 2>/dev/null || true
           
-          # Générer config.js avec les secrets GitHub
-          echo "// Auto-generated config - DO NOT EDIT" > ./build/config.js
-          echo "const firebaseConfig = {" >> ./build/config.js
-          echo "    apiKey: '${{ secrets.FIREBASE_API_KEY }}'," >> ./build/config.js
-          echo "    authDomain: '${{ secrets.FIREBASE_AUTH_DOMAIN }}'," >> ./build/config.js
-          echo "    databaseURL: '${{ secrets.FIREBASE_DATABASE_URL }}'," >> ./build/config.js
-          echo "    projectId: '${{ secrets.FIREBASE_PROJECT_ID }}'," >> ./build/config.js
-          echo "    storageBucket: '${{ secrets.FIREBASE_STORAGE_BUCKET }}'," >> ./build/config.js
-          echo "    messagingSenderId: '${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}'," >> ./build/config.js
-          echo "    appId: '${{ secrets.FIREBASE_APP_ID }}'" >> ./build/config.js
-          echo "};" >> ./build/config.js
-          echo "" >> ./build/config.js
-          echo "// Initialiser Firebase" >> ./build/config.js
-          echo "firebase.initializeApp(firebaseConfig);" >> ./build/config.js
-          echo "const database = firebase.database();" >> ./build/config.js
-          echo "" >> ./build/config.js
-          echo "// Références" >> ./build/config.js
-          echo "const productsRef = database.ref('products');" >> ./build/config.js
-          echo "const ordersRef = database.ref('orders');" >> ./build/config.js
-          echo "const cartsRef = database.ref('carts');" >> ./build/config.js
-          echo "const tablesRef = database.ref('tables');" >> ./build/config.js
-          echo "const categoriesRef = database.ref('categories');" >> ./build/config.js
-          echo "const restaurantsRef = database.ref('restaurants');" >> ./build/config.js
-          echo "" >> ./build/config.js
-          echo "console.log('✅ Firebase initialisé');" >> ./build/config.js
+          # Générer firebase-config.js avec les secrets GitHub
+          echo "// Auto-generated config - DO NOT EDIT" > ./build/firebase-config.js
+          echo "const firebaseConfig = {" >> ./build/firebase-config.js
+          echo "    apiKey: '${{ secrets.FIREBASE_API_KEY }}'," >> ./build/firebase-config.js
+          echo "    authDomain: '${{ secrets.FIREBASE_AUTH_DOMAIN }}'," >> ./build/firebase-config.js
+          echo "    databaseURL: '${{ secrets.FIREBASE_DATABASE_URL }}'," >> ./build/firebase-config.js
+          echo "    projectId: '${{ secrets.FIREBASE_PROJECT_ID }}'," >> ./build/firebase-config.js
+          echo "    storageBucket: '${{ secrets.FIREBASE_STORAGE_BUCKET }}'," >> ./build/firebase-config.js
+          echo "    messagingSenderId: '${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}'," >> ./build/firebase-config.js
+          echo "    appId: '${{ secrets.FIREBASE_APP_ID }}'" >> ./build/firebase-config.js
+          echo "};" >> ./build/firebase-config.js
+          echo "" >> ./build/firebase-config.js
+          echo "// Initialiser Firebase" >> ./build/firebase-config.js
+          echo "firebase.initializeApp(firebaseConfig);" >> ./build/firebase-config.js
+          echo "const database = firebase.database();" >> ./build/firebase-config.js
+          echo "" >> ./build/firebase-config.js
+          echo "// Références" >> ./build/firebase-config.js
+          echo "const productsRef = database.ref('products');" >> ./build/firebase-config.js
+          echo "const ordersRef = database.ref('orders');" >> ./build/firebase-config.js
+          echo "const cartsRef = database.ref('carts');" >> ./build/firebase-config.js
+          echo "const tablesRef = database.ref('tables');" >> ./build/firebase-config.js
+          echo "const categoriesRef = database.ref('categories');" >> ./build/firebase-config.js
+          echo "const restaurantsRef = database.ref('restaurants');" >> ./build/firebase-config.js
+          echo "" >> ./build/firebase-config.js
+          echo "console.log('✅ Firebase initialisé');" >> ./build/firebase-config.js
           
-          # Copier config.js à la racine du build
-          cp ./build/config.js ./build/firebase-config.js
+          # Copier firebase-config.js à la racine du build
+          cp ./build/firebase-config.js ./build/firebase-config.js
           
           echo "✅ Fichiers générés avec succès"
           ls -la ./build/
