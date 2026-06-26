@@ -8,7 +8,6 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="config.js"></script>
     
     <style>
         * {
@@ -16,18 +15,15 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f5f7fa;
             padding: 20px;
         }
-        
         .container {
             max-width: 1200px;
             margin: 0 auto;
         }
-        
         header {
             display: flex;
             justify-content: space-between;
@@ -40,24 +36,20 @@
             flex-wrap: wrap;
             gap: 15px;
         }
-        
         header h1 {
             color: #333;
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        
         header h1 span {
             color: #667eea;
         }
-        
         .header-actions {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
         }
-        
         .header-actions button {
             padding: 10px 20px;
             border: none;
@@ -67,57 +59,37 @@
             transition: all 0.3s;
             font-size: 14px;
         }
-        
         .header-actions button:hover {
             transform: scale(1.05);
         }
-        
         .btn-export {
             background: #2196F3;
             color: white;
         }
-        
-        .btn-export:hover {
-            background: #1976D2;
-        }
-        
         .btn-reset {
             background: #dc3545;
             color: white;
         }
-        
-        .btn-reset:hover {
-            background: #c62828;
-        }
-        
         .btn-refresh-orders {
             background: #6c757d;
             color: white;
         }
-        
-        .btn-refresh-orders:hover {
-            background: #5a6268;
-        }
-        
         #connectionStatus {
             padding: 10px 20px;
             border-radius: 8px;
             margin-bottom: 20px;
             font-weight: 500;
         }
-        
         #connectionStatus.connected {
             background: #d4edda;
             color: #155724;
             border: 1px solid #c3e6cb;
         }
-        
         #connectionStatus.disconnected {
             background: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
-        
         .stats-bar {
             display: flex;
             gap: 15px;
@@ -128,61 +100,50 @@
             border-radius: 12px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.08);
         }
-        
         .stat-item {
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        
         .stat-item .number {
             font-weight: 700;
             font-size: 20px;
             color: #667eea;
         }
-        
         .stat-item .label {
             color: #666;
             font-size: 14px;
         }
-        
         .stat-item .badge {
             padding: 2px 12px;
             border-radius: 12px;
             font-size: 12px;
             font-weight: 600;
         }
-        
         .stat-item .badge.pending {
             background: #ff6b6b;
             color: white;
         }
-        
         .stat-item .badge.prepare {
             background: #ffa94d;
             color: white;
         }
-        
         .stat-item .badge.prepared {
             background: #4caf50;
             color: white;
         }
-        
         .stat-item .badge.served {
             background: #6c757d;
             color: white;
         }
-        
         .stat-item .badge.cancelled {
             background: #dc3545;
             color: white;
         }
-        
         .stat-item .badge.whatsapp {
             background: #25D366;
             color: white;
         }
-        
         .filters {
             display: flex;
             gap: 10px;
@@ -193,7 +154,6 @@
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
-        
         .filter-btn {
             padding: 8px 20px;
             border: 2px solid #667eea;
@@ -204,23 +164,19 @@
             font-weight: 600;
             transition: all 0.3s;
         }
-        
         .filter-btn:hover {
             background: #667eea;
             color: white;
         }
-        
         .filter-btn.active {
             background: #667eea;
             color: white;
         }
-        
         .orders-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
             gap: 20px;
         }
-        
         .order-card {
             background: white;
             border-radius: 12px;
@@ -229,75 +185,60 @@
             border-left: 5px solid #667eea;
             transition: transform 0.3s, box-shadow 0.3s;
         }
-        
         .order-card:hover {
             transform: translateY(-3px);
             box-shadow: 0 5px 20px rgba(0,0,0,0.12);
         }
-        
         .order-card.status-en_attente {
             border-left-color: #ff6b6b;
             animation: pulse 2s infinite;
         }
-        
         .order-card.status-en_attente .order-status {
             background: #ff6b6b;
             color: white;
         }
-        
         .order-card.status-prepare {
             border-left-color: #ffa94d;
         }
-        
         .order-card.status-prepare .order-status {
             background: #ffa94d;
             color: white;
         }
-        
         .order-card.status-prepared {
             border-left-color: #4caf50;
         }
-        
         .order-card.status-prepared .order-status {
             background: #4caf50;
             color: white;
         }
-        
         .order-card.status-served {
             border-left-color: #6c757d;
             opacity: 0.8;
         }
-        
         .order-card.status-served .order-status {
             background: #6c757d;
             color: white;
         }
-        
         .order-card.status-cancelled {
             border-left-color: #dc3545;
             opacity: 0.6;
         }
-        
         .order-card.status-cancelled .order-status {
             background: #dc3545;
             color: white;
         }
-        
         .order-card.status-envoye_whatsapp {
             border-left-color: #25D366;
         }
-        
         .order-card.status-envoye_whatsapp .order-status {
             background: #25D366;
             color: white;
         }
-        
         @keyframes pulse {
             0% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4); }
             70% { box-shadow: 0 0 0 10px rgba(255, 107, 107, 0); }
             100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0); }
         }
-        
         .order-header {
             display: flex;
             justify-content: space-between;
@@ -306,23 +247,19 @@
             flex-wrap: wrap;
             gap: 8px;
         }
-        
         .order-number {
             font-weight: 700;
             color: #667eea;
             font-size: 14px;
         }
-        
         .order-table {
             font-weight: 600;
             color: #333;
         }
-        
         .order-time {
             font-size: 12px;
             color: #999;
         }
-        
         .order-status {
             padding: 4px 14px;
             border-radius: 12px;
@@ -331,14 +268,12 @@
             text-transform: uppercase;
             display: inline-block;
         }
-        
         .order-items {
             margin: 12px 0;
             padding: 10px 12px;
             background: #f8f9fa;
             border-radius: 8px;
         }
-        
         .order-item {
             display: flex;
             justify-content: space-between;
@@ -346,20 +281,16 @@
             border-bottom: 1px solid #eee;
             font-size: 14px;
         }
-        
         .order-item:last-child {
             border-bottom: none;
         }
-        
         .order-item .item-name {
             color: #333;
         }
-        
         .order-item .item-price {
             color: #667eea;
             font-weight: 600;
         }
-        
         .order-total {
             font-size: 18px;
             font-weight: 700;
@@ -367,7 +298,6 @@
             color: #667eea;
             margin-top: 10px;
         }
-        
         .order-notes {
             margin-top: 8px;
             padding: 8px 12px;
@@ -376,14 +306,12 @@
             font-size: 13px;
             color: #856404;
         }
-        
         .order-actions {
             display: flex;
             gap: 8px;
             margin-top: 15px;
             flex-wrap: wrap;
         }
-        
         .order-actions button {
             padding: 8px 16px;
             border: none;
@@ -395,56 +323,44 @@
             flex: 1;
             min-width: 80px;
         }
-        
         .order-actions button:hover {
             transform: scale(1.02);
         }
-        
         .btn-prepare {
             background: #ffa94d;
             color: white;
         }
-        
         .btn-prepare:hover {
             background: #ff8c00;
         }
-        
         .btn-prepared {
             background: #4caf50;
             color: white;
         }
-        
         .btn-prepared:hover {
             background: #388e3c;
         }
-        
         .btn-served {
             background: #2196F3;
             color: white;
         }
-        
         .btn-served:hover {
             background: #1976D2;
         }
-        
         .btn-cancel {
             background: #dc3545;
             color: white;
         }
-        
         .btn-cancel:hover {
             background: #c62828;
         }
-        
         .btn-whatsapp {
             background: #25D366;
             color: white;
         }
-        
         .btn-whatsapp:hover {
             background: #128C7E;
         }
-        
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -452,22 +368,18 @@
             border-radius: 12px;
             grid-column: 1 / -1;
         }
-        
         .empty-state .icon {
             font-size: 64px;
             margin-bottom: 15px;
         }
-        
         .empty-state h2 {
             color: #999;
             font-size: 24px;
         }
-        
         .empty-state p {
             color: #bbb;
             margin-top: 10px;
         }
-        
         .notification-badge {
             position: fixed;
             top: 20px;
@@ -482,12 +394,10 @@
             display: none;
             font-weight: 500;
         }
-        
         @keyframes slideIn {
             from { transform: translateX(100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
-        
         .toast {
             position: fixed;
             bottom: 30px;
@@ -503,42 +413,21 @@
             text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
-        
         .toast.success { background: #4caf50; }
         .toast.error { background: #dc3545; }
         .toast.info { background: #2196F3; }
         .toast.warning { background: #ff9800; }
-        
         @keyframes slideUpToast {
             from { transform: translateX(-50%) translateY(100px); opacity: 0; }
             to { transform: translateX(-50%) translateY(0); opacity: 1; }
         }
-        
         @media (max-width: 768px) {
-            .orders-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            header {
-                flex-direction: column;
-                text-align: center;
-            }
-            
-            .stats-bar {
-                justify-content: center;
-            }
-            
-            .filters {
-                justify-content: center;
-            }
-            
-            .order-actions {
-                flex-direction: column;
-            }
-            
-            .order-actions button {
-                min-width: unset;
-            }
+            .orders-grid { grid-template-columns: 1fr; }
+            header { flex-direction: column; text-align: center; }
+            .stats-bar { justify-content: center; }
+            .filters { justify-content: center; }
+            .order-actions { flex-direction: column; }
+            .order-actions button { min-width: unset; }
         }
     </style>
 </head>
@@ -555,45 +444,16 @@
         
         <div id="connectionStatus" class="connected">✅ Connecté à Firebase</div>
         
-        <!-- Statistiques -->
         <div class="stats-bar">
-            <div class="stat-item">
-                <span class="badge pending">🆕</span>
-                <span class="number" id="pendingCount">0</span>
-                <span class="label">En attente</span>
-            </div>
-            <div class="stat-item">
-                <span class="badge prepare">⏳</span>
-                <span class="number" id="prepareCount">0</span>
-                <span class="label">En préparation</span>
-            </div>
-            <div class="stat-item">
-                <span class="badge prepared">✅</span>
-                <span class="number" id="preparedCount">0</span>
-                <span class="label">Préparées</span>
-            </div>
-            <div class="stat-item">
-                <span class="badge served">📤</span>
-                <span class="number" id="servedCount">0</span>
-                <span class="label">Servies</span>
-            </div>
-            <div class="stat-item">
-                <span class="badge cancelled">❌</span>
-                <span class="number" id="cancelledCount">0</span>
-                <span class="label">Annulées</span>
-            </div>
-            <div class="stat-item">
-                <span class="badge whatsapp">📱</span>
-                <span class="number" id="whatsappCount">0</span>
-                <span class="label">WhatsApp</span>
-            </div>
-            <div class="stat-item">
-                <span class="number" id="totalCount">0</span>
-                <span class="label">Total</span>
-            </div>
+            <div class="stat-item"><span class="badge pending">🆕</span><span class="number" id="pendingCount">0</span><span class="label">En attente</span></div>
+            <div class="stat-item"><span class="badge prepare">⏳</span><span class="number" id="prepareCount">0</span><span class="label">En préparation</span></div>
+            <div class="stat-item"><span class="badge prepared">✅</span><span class="number" id="preparedCount">0</span><span class="label">Préparées</span></div>
+            <div class="stat-item"><span class="badge served">📤</span><span class="number" id="servedCount">0</span><span class="label">Servies</span></div>
+            <div class="stat-item"><span class="badge cancelled">❌</span><span class="number" id="cancelledCount">0</span><span class="label">Annulées</span></div>
+            <div class="stat-item"><span class="badge whatsapp">📱</span><span class="number" id="whatsappCount">0</span><span class="label">WhatsApp</span></div>
+            <div class="stat-item"><span class="number" id="totalCount">0</span><span class="label">Total</span></div>
         </div>
         
-        <!-- Filtres -->
         <div class="filters">
             <button class="filter-btn active" data-filter="all">📊 Toutes</button>
             <button class="filter-btn" data-filter="en_attente">🆕 En attente</button>
@@ -605,68 +465,21 @@
         </div>
         
         <div id="ordersContainer" class="orders-grid">
-            <div class="empty-state">
-                <div class="icon">🔄</div>
-                <h2>Chargement des commandes...</h2>
-            </div>
+            <div class="empty-state"><div class="icon">🔄</div><h2>Chargement des commandes...</h2></div>
         </div>
     </div>
     
-    <!-- Notification Toast -->
-    <div id="notification" class="notification-badge">
-        🔔 Nouvelle commande !
-    </div>
+    <div id="notification" class="notification-badge">🔔 Nouvelle commande !</div>
     
+    <!-- ============ FIREBASE CONFIG ============ -->
+    <script src="config.js"></script>
+    
+    <!-- ============ SCRIPT PRINCIPAL ============ -->
     <script>
         // ============ ORDERS.JS ============
-        
         let allOrders = [];
         let currentFilter = 'all';
         let lastOrderCount = 0;
-        let restaurantData = {};
-        let currentRestaurantId = 'default';
-        
-        // ============ RÉFÉRENCES ============
-        const restaurantsRef = database.ref('restaurants');
-        
-        // ============ CHARGER LE RESTAURANT ============
-        function loadRestaurant() {
-            const urlParams = new URLSearchParams(window.location.search);
-            let restaurantId = urlParams.get('restaurant') || 'default';
-            
-            if (restaurantId === 'default' && !urlParams.get('restaurant')) {
-                const saved = localStorage.getItem('current_restaurant');
-                if (saved) restaurantId = saved;
-            }
-            
-            currentRestaurantId = restaurantId;
-            localStorage.setItem('current_restaurant', restaurantId);
-            
-            console.log('🏪 Restaurant demandé:', restaurantId);
-            
-            restaurantsRef.child(restaurantId).on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    restaurantData = data;
-                    console.log('✅ Restaurant chargé:', data.name);
-                    console.log('📱 WhatsApp configuré:', data.whatsapp || 'Non configuré');
-                } else {
-                    restaurantData = getDefaultRestaurant();
-                    console.log('⚠️ Restaurant par défaut utilisé');
-                    console.log('📱 WhatsApp par défaut:', restaurantData.whatsapp);
-                }
-            }, (error) => {
-                console.error('❌ Erreur chargement restaurant:', error);
-                restaurantData = getDefaultRestaurant();
-            });
-        }
-        
-        function getDefaultRestaurant() {
-            return {
-                name: "Mon Restaurant",
-                whatsapp: "1234567890"
-            };
-        }
         
         // ============ ÉTAT DE CONNEXION ============
         function updateConnectionStatus(connected) {
@@ -687,115 +500,66 @@
         // ============ ÉCOUTER LES COMMANDES ============
         function listenToOrders() {
             const ordersRef = database.ref('orders/commandes');
-            
             ordersRef.orderByChild('timestamp').on('value', (snapshot) => {
                 const data = snapshot.val();
                 console.log('📦 Commandes reçues:', data);
-                
                 if (data) {
-                    allOrders = Object.keys(data).map(key => ({
-                        id: key,
-                        ...data[key]
-                    })).sort((a, b) => b.timestamp - a.timestamp);
-                    
+                    allOrders = Object.keys(data).map(key => ({ id: key, ...data[key] })).sort((a, b) => b.timestamp - a.timestamp);
                     const newOrders = allOrders.filter(o => o.status === 'en_attente');
                     if (newOrders.length > lastOrderCount) {
                         showNotification(`🆕 ${newOrders.length - lastOrderCount} nouvelle(s) commande(s) !`);
                         playNotificationSound();
                     }
                     lastOrderCount = newOrders.length;
-                    
                     console.log(`📊 ${allOrders.length} commandes totales, ${newOrders.length} en attente`);
                 } else {
                     allOrders = [];
                     console.log('📭 Aucune commande dans Firebase');
                 }
-                
                 displayOrders();
                 updateStats();
                 updateTitle();
             }, (error) => {
                 console.error('❌ Erreur Firebase:', error);
-                document.getElementById('ordersContainer').innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">❌</div>
-                        <h2>Erreur de connexion</h2>
-                        <p>${error.message}</p>
-                    </div>
-                `;
+                document.getElementById('ordersContainer').innerHTML = `<div class="empty-state"><div class="icon">❌</div><h2>Erreur de connexion</h2><p>${error.message}</p></div>`;
             });
         }
         
-        // ============ JOUER LE SON ============
         function playNotificationSound() {
             try {
                 const audio = new Audio('https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3');
                 audio.volume = 0.5;
                 audio.play().catch(() => {});
-            } catch (e) {
-                // Son non disponible
-            }
+            } catch (e) {}
         }
         
-        // ============ AFFICHER LA NOTIFICATION ============
         function showNotification(message) {
             const notification = document.getElementById('notification');
             notification.textContent = message || '🔔 Nouvelle commande !';
             notification.style.display = 'block';
-            
             clearTimeout(notification._timeout);
-            notification._timeout = setTimeout(() => {
-                notification.style.display = 'none';
-            }, 5000);
+            notification._timeout = setTimeout(() => { notification.style.display = 'none'; }, 5000);
         }
         
-        // ============ AFFICHER LES COMMANDES ============
         function displayOrders() {
             const container = document.getElementById('ordersContainer');
             if (!container) return;
-            
             let filteredOrders = allOrders;
             if (currentFilter !== 'all') {
                 filteredOrders = filteredOrders.filter(o => o.status === currentFilter);
-                console.log(`🔍 Filtre "${currentFilter}": ${filteredOrders.length} commandes`);
             }
-            
             if (filteredOrders.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">📭</div>
-                        <h2>Aucune commande</h2>
-                        <p>${currentFilter === 'all' ? 'En attente de la première commande...' : 'Aucune commande avec ce statut'}</p>
-                    </div>
-                `;
+                container.innerHTML = `<div class="empty-state"><div class="icon">📭</div><h2>Aucune commande</h2><p>${currentFilter === 'all' ? 'En attente de la première commande...' : 'Aucune commande avec ce statut'}</p></div>`;
                 return;
             }
-            
             container.innerHTML = '';
             filteredOrders.forEach(order => {
                 const card = document.createElement('div');
                 card.className = `order-card status-${order.status}`;
-                
                 const date = new Date(order.timestamp);
-                const timeStr = date.toLocaleString('fr-FR', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-                
-                const statusLabels = {
-                    'en_attente': '🆕 En attente',
-                    'prepare': '⏳ En préparation',
-                    'prepared': '✅ Prête',
-                    'served': '📤 Servie',
-                    'cancelled': '❌ Annulée',
-                    'envoye_whatsapp': '📱 WhatsApp'
-                };
-                
+                const timeStr = date.toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                const statusLabels = { 'en_attente': '🆕 En attente', 'prepare': '⏳ En préparation', 'prepared': '✅ Prête', 'served': '📤 Servie', 'cancelled': '❌ Annulée', 'envoye_whatsapp': '📱 WhatsApp' };
                 const statusLabel = statusLabels[order.status] || order.status;
-                
                 let actionsHTML = '';
                 if (order.status === 'en_attente' || order.status === 'envoye_whatsapp') {
                     actionsHTML = `
@@ -815,130 +579,54 @@
                         <button class="btn-whatsapp" onclick="resendWhatsApp('${order.id}')">📱 WhatsApp</button>
                     `;
                 } else {
-                    actionsHTML = `
-                        <button class="btn-whatsapp" onclick="resendWhatsApp('${order.id}')">📱 WhatsApp</button>
-                    `;
+                    actionsHTML = `<button class="btn-whatsapp" onclick="resendWhatsApp('${order.id}')">📱 WhatsApp</button>`;
                 }
-                
-                const restaurantName = order.restaurantName || restaurantData?.name || 'Mon Restaurant';
-                
                 card.innerHTML = `
                     <div class="order-header">
                         <div>
                             <div class="order-number">📋 ${order.orderNumber || order.id.slice(-6)}</div>
                             <div class="order-table">🪑 Table ${order.table}</div>
                             <div class="order-time">${timeStr}</div>
-                            <div class="order-time" style="color: #667eea;">🏪 ${restaurantName}</div>
                         </div>
                         <span class="order-status">${statusLabel}</span>
                     </div>
-                    
                     <div class="order-items">
-                        ${order.items.map(item => `
-                            <div class="order-item">
-                                <span class="item-name">${item.name} × ${item.quantity}</span>
-                                <span class="item-price">${item.subtotal.toFixed(2)}Dhs</span>
-                            </div>
-                        `).join('')}
+                        ${order.items.map(item => `<div class="order-item"><span class="item-name">${item.name} × ${item.quantity}</span><span class="item-price">${item.subtotal.toFixed(2)}€</span></div>`).join('')}
                     </div>
-                    
                     ${order.notes ? `<div class="order-notes">📝 ${order.notes}</div>` : ''}
-                    
-                    <div class="order-total">
-                        Total: ${order.total.toFixed(2)}Dhs
-                    </div>
-                    
+                    <div class="order-total">Total: ${order.total.toFixed(2)}€</div>
                     ${order.customerName ? `<div style="margin-top: 8px; color: #666; font-size: 14px;">👤 ${order.customerName}</div>` : ''}
                     ${order.customerPhone ? `<div style="color: #666; font-size: 14px;">📞 ${order.customerPhone}</div>` : ''}
-                    
-                    <div class="order-actions">
-                        ${actionsHTML}
-                    </div>
+                    <div class="order-actions">${actionsHTML}</div>
                 `;
-                
                 container.appendChild(card);
             });
-            
             console.log(`✅ ${filteredOrders.length} commandes affichées`);
         }
         
-        // ============ METTRE À JOUR LE STATUT ============
         function updateOrderStatus(orderId, status) {
             const ordersRef = database.ref(`orders/commandes/${orderId}`);
-            
-            ordersRef.update({
-                status: status,
-                updatedAt: Date.now()
-            })
-            .then(() => {
-                console.log(`✅ Commande ${orderId} → ${status}`);
-                const statusLabels = {
-                    'en_attente': '🆕 en attente',
-                    'prepare': '⏳ en préparation',
-                    'prepared': '✅ préparée',
-                    'served': '📤 servie',
-                    'cancelled': '❌ annulée',
-                    'envoye_whatsapp': '📱 WhatsApp'
-                };
-                showToast(`✅ Commande mise à jour : ${statusLabels[status] || status}`, 'success');
-            })
-            .catch(error => {
-                console.error('❌ Erreur:', error);
-                showToast('❌ Erreur: ' + error.message, 'error');
-            });
+            ordersRef.update({ status: status, updatedAt: Date.now() })
+                .then(() => {
+                    console.log(`✅ Commande ${orderId} → ${status}`);
+                    const statusLabels = { 'en_attente': '🆕 en attente', 'prepare': '⏳ en préparation', 'prepared': '✅ préparée', 'served': '📤 servie', 'cancelled': '❌ annulée', 'envoye_whatsapp': '📱 WhatsApp' };
+                    showToast(`✅ Commande mise à jour : ${statusLabels[status] || status}`, 'success');
+                })
+                .catch(error => { console.error('❌ Erreur:', error); showToast('❌ Erreur: ' + error.message, 'error'); });
         }
         
-        // ============ RENVOYER SUR WHATSAPP ============
         function resendWhatsApp(orderId) {
             const order = allOrders.find(o => o.id === orderId);
-            if (!order) {
-                showToast('❌ Commande non trouvée', 'error');
-                return;
-            }
-            
-            console.log('📱 Renvoi de la commande sur WhatsApp:', order);
-            
-            // Récupérer le numéro WhatsApp du restaurant
-            let whatsappNumber = restaurantData?.whatsapp || '1234567890';
-            whatsappNumber = whatsappNumber.replace(/[\s\-+]/g, '');
-            
-            console.log('📱 Numéro WhatsApp utilisé:', whatsappNumber);
-            
-            if (!whatsappNumber || whatsappNumber.length < 6) {
-                whatsappNumber = '1234567890';
-                console.warn('⚠️ Numéro WhatsApp invalide, utilisation du numéro par défaut');
-            }
-            
-            const restaurantName = restaurantData?.name || 'Mon Restaurant';
-            
-            let message = `🍽️ *${restaurantName}*\n`;
-            message += `📋 Réf: ${order.orderNumber || order.id.slice(-6)}\n`;
-            message += `📌 Table: ${order.table}\n`;
-            message += `⏰ ${new Date(order.timestamp).toLocaleString('fr-FR')}\n\n`;
-            message += `*DÉTAILS:*\n`;
-            
-            if (order.items && order.items.length > 0) {
-                order.items.forEach(item => {
-                    message += `• ${item.name} x${item.quantity} = ${item.subtotal.toFixed(2)}Dhs\n`;
-                });
-            } else {
-                message += `• Aucun article\n`;
-            }
-            
-            message += `\n*Total: ${order.total.toFixed(2)}Dhs*`;
-            message += `\n\nMerci de confirmer cette commande.`;
-            
+            if (!order) { showToast('❌ Commande non trouvée', 'error'); return; }
+            let whatsappNumber = "1234567890";
+            let message = `🍽️ *Commande*\n📋 Réf: ${order.orderNumber || orderId.slice(-6)}\n📌 Table: ${order.table}\n⏰ ${new Date(order.timestamp).toLocaleString('fr-FR')}\n\n*Détails:*\n`;
+            order.items.forEach(item => { message += `• ${item.name} x${item.quantity} = ${item.subtotal.toFixed(2)}€\n`; });
+            message += `\n*Total: ${order.total.toFixed(2)}€*`;
             const encodedMessage = encodeURIComponent(message);
-            const url = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
-            
-            console.log('🔗 URL WhatsApp:', url);
-            
-            window.open(url, '_blank');
-            
-            showToast(`📱 Message WhatsApp envoyé au ${whatsappNumber}`, 'success');
+            window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
+            showToast(`📱 Message WhatsApp envoyé`, 'success');
         }
         
-        // ============ METTRE À JOUR LES STATISTIQUES ============
         function updateStats() {
             const pending = allOrders.filter(o => o.status === 'en_attente').length;
             const prepare = allOrders.filter(o => o.status === 'prepare').length;
@@ -947,7 +635,6 @@
             const cancelled = allOrders.filter(o => o.status === 'cancelled').length;
             const whatsapp = allOrders.filter(o => o.status === 'envoye_whatsapp').length;
             const total = allOrders.length;
-            
             document.getElementById('pendingCount').textContent = pending;
             document.getElementById('prepareCount').textContent = prepare;
             document.getElementById('preparedCount').textContent = prepared;
@@ -955,36 +642,17 @@
             document.getElementById('cancelledCount').textContent = cancelled;
             document.getElementById('whatsappCount').textContent = whatsapp;
             document.getElementById('totalCount').textContent = total;
-            
             console.log(`📊 Stats: En attente=${pending}, Préparation=${prepare}, Prêtes=${prepared}, Servies=${served}, Annulées=${cancelled}, WhatsApp=${whatsapp}, Total=${total}`);
         }
         
-        // ============ METTRE À JOUR LE TITRE ============
         function updateTitle() {
             const pending = allOrders.filter(o => o.status === 'en_attente').length;
-            if (pending > 0) {
-                document.title = `📋 ${pending} nouvelle(s) commande(s)`;
-            } else {
-                document.title = '📋 Commandes en temps réel';
-            }
+            document.title = pending > 0 ? `📋 ${pending} nouvelle(s) commande(s)` : '📋 Commandes en temps réel';
         }
         
-        // ============ EXPORTER LES COMMANDES ============
         function exportOrders() {
-            if (allOrders.length === 0) {
-                showToast('❌ Aucune commande à exporter', 'error');
-                return;
-            }
-            
-            const statusLabels = {
-                'en_attente': 'En attente',
-                'prepare': 'En préparation',
-                'prepared': 'Préparée',
-                'served': 'Servie',
-                'cancelled': 'Annulée',
-                'envoye_whatsapp': 'WhatsApp'
-            };
-            
+            if (allOrders.length === 0) { showToast('❌ Aucune commande à exporter', 'error'); return; }
+            const statusLabels = { 'en_attente': 'En attente', 'prepare': 'En préparation', 'prepared': 'Préparée', 'served': 'Servie', 'cancelled': 'Annulée', 'envoye_whatsapp': 'WhatsApp' };
             const exportData = allOrders.map(order => ({
                 orderNumber: order.orderNumber || order.id,
                 table: order.table,
@@ -996,20 +664,8 @@
                 customerPhone: order.customerPhone || '',
                 notes: order.notes || ''
             }));
-            
             const headers = ['Numéro', 'Table', 'Date', 'Articles', 'Total', 'Statut', 'Client', 'Téléphone', 'Notes'];
-            const rows = exportData.map(order => [
-                order.orderNumber,
-                order.table,
-                order.date,
-                order.items,
-                order.total + ' Dhs',
-                order.status,
-                order.customerName,
-                order.customerPhone,
-                order.notes
-            ]);
-            
+            const rows = exportData.map(order => [order.orderNumber, order.table, order.date, order.items, order.total + ' €', order.status, order.customerName, order.customerPhone, order.notes]);
             const csvContent = [headers.join(';'), ...rows.map(row => row.join(';'))].join('\n');
             const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
@@ -1020,47 +676,26 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            
             showToast(`✅ ${allOrders.length} commandes exportées !`, 'success');
         }
         
-        // ============ RÉINITIALISER LES COMMANDES ============
         function resetOrders() {
             const pendingOrders = allOrders.filter(o => o.status === 'en_attente' || o.status === 'prepare');
-            
             let confirmMessage = '⚠️ Réinitialiser toutes les commandes ?\n\nCette action est irréversible.';
-            if (pendingOrders.length > 0) {
-                confirmMessage += `\n⚠️ ${pendingOrders.length} commande(s) en attente seront supprimées.`;
-            }
-            
+            if (pendingOrders.length > 0) { confirmMessage += `\n⚠️ ${pendingOrders.length} commande(s) en attente seront supprimées.`; }
             if (!confirm(confirmMessage)) return;
-            
             const ordersRef = database.ref('orders/commandes');
-            const promises = allOrders.map(order => {
-                return ordersRef.child(order.id).remove();
-            });
-            
+            const promises = allOrders.map(order => ordersRef.child(order.id).remove());
             Promise.all(promises)
-                .then(() => {
-                    showToast(`✅ ${allOrders.length} commandes supprimées !`, 'success');
-                    allOrders = [];
-                    displayOrders();
-                    updateStats();
-                    updateTitle();
-                })
-                .catch(error => {
-                    console.error('❌ Erreur:', error);
-                    showToast('❌ Erreur: ' + error.message, 'error');
-                });
+                .then(() => { showToast(`✅ ${allOrders.length} commandes supprimées !`, 'success'); allOrders = []; displayOrders(); updateStats(); updateTitle(); })
+                .catch(error => { console.error('❌ Erreur:', error); showToast('❌ Erreur: ' + error.message, 'error'); });
         }
         
-        // ============ ACTUALISER ============
         function refreshOrders() {
             showToast('🔄 Actualisation en cours...', 'info');
             listenToOrders();
         }
         
-        // ============ FILTRES ============
         function setupFilters() {
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
@@ -1072,30 +707,17 @@
             });
         }
         
-        // ============ TOAST ============
         function showToast(message, type = 'info') {
-            const colors = {
-                'success': '#4caf50',
-                'error': '#dc3545',
-                'warning': '#ff9800',
-                'info': '#2196F3'
-            };
-            
+            const colors = { 'success': '#4caf50', 'error': '#dc3545', 'warning': '#ff9800', 'info': '#2196F3' };
             const toast = document.createElement('div');
             toast.className = 'toast ' + type;
             toast.style.background = colors[type] || '#667eea';
             toast.textContent = message;
             document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.style.animation = 'slideUpToast 0.5s ease reverse';
-                setTimeout(() => toast.remove(), 500);
-            }, 3000);
+            setTimeout(() => { toast.style.animation = 'slideUpToast 0.5s ease reverse'; setTimeout(() => toast.remove(), 500); }, 3000);
         }
         
-        // ============ INITIALISATION ============
         console.log('🚀 Démarrage du gestionnaire de commandes...');
-        loadRestaurant();
         listenToOrders();
         setupFilters();
         
@@ -1104,10 +726,7 @@
         window.exportOrders = exportOrders;
         window.resetOrders = resetOrders;
         window.refreshOrders = refreshOrders;
-        
         console.log('✅ Commandes initialisées');
-        console.log('📱 WhatsApp:', restaurantData?.whatsapp || 'Non configuré');
-        
     </script>
 </body>
 </html>
