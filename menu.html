@@ -805,8 +805,11 @@
     <!-- ============ SCRIPT PRINCIPAL ============ -->
     <script>
         // ============================================
-        // MENU.JS - VERSION COMPLÈTE AVEC IMAGES PICX
+        // MENU.JS - VERSION CORRIGÉE (SANS DOUBLONS)
         // ============================================
+        
+        // ⚠️ TOUTES LES RÉFÉRENCES SONT DANS config.js
+        // Ne pas déclarer à nouveau : productsRef, ordersRef, cartsRef, tablesRef, categoriesRef, restaurantsRef
         
         let products = [];
         let categories = {};
@@ -817,9 +820,6 @@
         let currentRestaurantId = null;
         let restaurantData = null;
         let sessionId = null;
-        
-        // ============ RÉFÉRENCES ============
-        const restaurantsRef = database.ref('restaurants');
         
         // ============ GÉNÉRER UN IDENTIFIANT DE SESSION UNIQUE ============
         function generateSessionId() {
@@ -876,6 +876,7 @@
             
             console.log('🏪 Restaurant demandé:', restaurantId);
             
+            // ✅ Utilisation de restaurantsRef (déclaré dans config.js)
             restaurantsRef.child(restaurantId).on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
@@ -1002,7 +1003,8 @@
         
         // ============ ÉCOUTER LES CATÉGORIES ============
         function listenToCategories() {
-            database.ref('categories').on('value', (snapshot) => {
+            // ✅ Utilisation de categoriesRef (déclaré dans config.js)
+            categoriesRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 categories = data || {};
                 console.log('📂 Catégories chargées:', Object.keys(categories).length);
@@ -1053,6 +1055,7 @@
         
         // ============ ÉCOUTER LES PRODUITS ============
         function listenToProducts() {
+            // ✅ Utilisation de productsRef (déclaré dans config.js)
             productsRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 
@@ -1170,12 +1173,11 @@
             }
         }
         
-        // ============ CRÉER LE HTML D'UNE CARTE PRODUIT (AVEC IMAGE) ============
+        // ============ CRÉER LE HTML D'UNE CARTE PRODUIT ============
         function createProductCardHTML(product) {
             const categoryIcon = categories[product.category]?.icon || '📁';
             const categoryName = categories[product.category]?.name || product.category || 'Non catégorisé';
             
-            // ============ AFFICHAGE DE L'IMAGE PICX ============
             let imageHTML = '';
             if (product.image) {
                 imageHTML = `
