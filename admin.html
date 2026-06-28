@@ -228,7 +228,7 @@
             <h2>➕ Ajouter un produit</h2>
             <form id="productForm">
                 <input type="text" id="productName" placeholder="Nom du produit" required>
-                <input type="number" id="productPrice" placeholder="Prix (€)" step="0.01" required>
+                <input type="number" id="productPrice" placeholder="Prix (Dhs)" step="0.01" required>
                 <select id="productCategory" required>
                     <option value="">Choisir une catégorie...</option>
                     <option value="entrees">Entrées</option>
@@ -347,7 +347,7 @@
                         <div class="product-details">
                             <div>
                                 <span class="name">${product.name}</span>
-                                <span class="price">${product.price.toFixed(2)} €</span>
+                                <span class="price">${product.price.toFixed(2)} Dhs</span>
                                 <span class="category">(${categoryIcon} ${categoryName})</span>
                             </div>
                             <div class="description">${product.description || ''}</div>
