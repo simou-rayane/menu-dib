@@ -370,6 +370,7 @@
             margin-top: 15px;
         }
         
+        /* ============ CARTE PRODUIT AVEC IMAGE ============ */
         .product-card {
             background: white;
             border-radius: 14px;
@@ -576,6 +577,7 @@
             border-bottom: 2px solid #f0f2f5;
         }
         
+        /* ============ PANIER ============ */
         .cart-item {
             display: flex;
             justify-content: space-between;
@@ -583,83 +585,23 @@
             padding: 12px 0;
             border-bottom: 1px solid #f0f0f0;
         }
-        
-        .cart-item:last-child {
-            border-bottom: none;
-        }
-        
-        .cart-item .item-info {
-            flex: 1;
-        }
-        
-        .cart-item .item-name {
-            font-weight: 600;
-            color: #333;
-            font-size: 15px;
-        }
-        
-        .cart-item .item-price {
-            color: #667eea;
-            font-weight: 600;
-            font-size: 14px;
-            margin-top: 2px;
-        }
-        
-        .cart-item .item-controls {
-            display: flex;
-            gap: 5px;
-            align-items: center;
-        }
-        
+        .cart-item:last-child { border-bottom: none; }
+        .cart-item .item-info { flex: 1; }
+        .cart-item .item-name { font-weight: 600; color: #333; font-size: 15px; }
+        .cart-item .item-price { color: #667eea; font-weight: 600; font-size: 14px; margin-top: 2px; }
+        .cart-item .item-controls { display: flex; gap: 5px; align-items: center; }
         .cart-item .item-controls button {
-            width: 32px;
-            height: 32px;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 16px;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 32px; height: 32px; border: none; border-radius: 50%;
+            cursor: pointer; font-weight: 700; font-size: 16px;
+            transition: all 0.2s; display: flex; align-items: center; justify-content: center;
         }
-        
-        .cart-item .item-controls .btn-minus {
-            background: #f0f0f0;
-            color: #666;
-        }
-        
-        .cart-item .item-controls .btn-minus:hover {
-            background: #e0e0e0;
-        }
-        
-        .cart-item .item-controls .btn-plus {
-            background: #667eea;
-            color: white;
-        }
-        
-        .cart-item .item-controls .btn-plus:hover {
-            background: #764ba2;
-        }
-        
-        .cart-item .item-controls .btn-remove {
-            background: #ff6b6b;
-            color: white;
-            font-size: 14px;
-        }
-        
-        .cart-item .item-controls .btn-remove:hover {
-            background: #e53935;
-        }
-        
-        .cart-item .item-quantity {
-            min-width: 28px;
-            text-align: center;
-            font-weight: 600;
-            font-size: 15px;
-            color: #333;
-        }
+        .cart-item .item-controls .btn-minus { background: #f0f0f0; color: #666; }
+        .cart-item .item-controls .btn-minus:hover { background: #e0e0e0; }
+        .cart-item .item-controls .btn-plus { background: #667eea; color: white; }
+        .cart-item .item-controls .btn-plus:hover { background: #764ba2; }
+        .cart-item .item-controls .btn-remove { background: #ff6b6b; color: white; font-size: 14px; }
+        .cart-item .item-controls .btn-remove:hover { background: #e53935; }
+        .cart-item .item-quantity { min-width: 28px; text-align: center; font-weight: 600; font-size: 15px; color: #333; }
         
         .cart-total {
             margin: 20px 0 15px;
@@ -670,75 +612,32 @@
             text-align: right;
             color: #333;
         }
-        
-        .cart-total span {
-            color: #667eea;
-        }
+        .cart-total span { color: #667eea; }
         
         .cart-actions {
             display: flex;
             gap: 10px;
             margin-top: 15px;
         }
-        
         .cart-actions button {
-            flex: 1;
-            padding: 14px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 16px;
+            flex: 1; padding: 14px; border: none; border-radius: 10px;
+            cursor: pointer; font-weight: 600; font-size: 16px;
             transition: all 0.3s;
         }
-        
-        .cart-actions button:active {
-            transform: scale(0.97);
-        }
-        
-        .cart-actions .btn-whatsapp {
-            background: #25D366;
-            color: white;
-        }
-        
-        .cart-actions .btn-whatsapp:hover {
-            background: #128C7E;
-        }
-        
-        .cart-actions .btn-whatsapp:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-        
-        .cart-actions .btn-clear {
-            background: #f44336;
-            color: white;
-        }
-        
-        .cart-actions .btn-clear:hover {
-            background: #c62828;
-        }
+        .cart-actions button:active { transform: scale(0.97); }
+        .cart-actions .btn-whatsapp { background: #25D366; color: white; }
+        .cart-actions .btn-whatsapp:hover { background: #128C7E; }
+        .cart-actions .btn-whatsapp:disabled { opacity: 0.6; cursor: not-allowed; }
+        .cart-actions .btn-clear { background: #f44336; color: white; }
+        .cart-actions .btn-clear:hover { background: #c62828; }
         
         .cart-empty {
             text-align: center;
             padding: 30px 20px;
         }
-        
-        .cart-empty .icon {
-            font-size: 56px;
-            margin-bottom: 15px;
-        }
-        
-        .cart-empty p {
-            color: #999;
-            font-size: 16px;
-        }
-        
-        .cart-empty .sub {
-            color: #bbb;
-            font-size: 14px;
-            margin-top: 5px;
-        }
+        .cart-empty .icon { font-size: 56px; margin-bottom: 15px; }
+        .cart-empty p { color: #999; font-size: 16px; }
+        .cart-empty .sub { color: #bbb; font-size: 14px; margin-top: 5px; }
         
         .menu-toast {
             position: fixed;
@@ -759,7 +658,6 @@
             gap: 10px;
             font-size: 15px;
         }
-        
         .menu-toast.success { background: #4caf50; }
         .menu-toast.error { background: #f44336; }
         .menu-toast.info { background: #2196F3; }
@@ -769,12 +667,10 @@
             from { transform: translateX(-50%) translateY(100px); opacity: 0; }
             to { transform: translateX(-50%) translateY(0); opacity: 1; }
         }
-        
         @keyframes slideDownToast {
             from { transform: translateX(-50%) translateY(0); opacity: 1; }
             to { transform: translateX(-50%) translateY(100px); opacity: 0; }
         }
-        
         @keyframes bounce {
             0% { transform: scale(1); }
             50% { transform: scale(1.3); }
@@ -784,9 +680,7 @@
         
         @media (max-width: 768px) {
             .container { padding: 12px; }
-            
             .banner-container { height: 150px; }
-            
             .header-top { flex-direction: column; text-align: center; padding: 15px 20px; }
             .header-left { flex-direction: column; text-align: center; }
             .header-left .logo, .header-left .logo-placeholder { width: 50px; height: 50px; }
@@ -907,10 +801,12 @@
     
     <!-- ============ FIREBASE CONFIG ============ -->
     <script src="config.js"></script>
-   
+    
     <!-- ============ SCRIPT PRINCIPAL ============ -->
     <script>
-        // ============ MENU AVEC SESSION UNIQUE ET BANNIÈRE ============
+        // ============================================
+        // MENU.JS - VERSION COMPLÈTE AVEC IMAGES PICX
+        // ============================================
         
         let products = [];
         let categories = {};
@@ -923,7 +819,7 @@
         let sessionId = null;
         
         // ============ RÉFÉRENCES ============
-     
+        const restaurantsRef = database.ref('restaurants');
         
         // ============ GÉNÉRER UN IDENTIFIANT DE SESSION UNIQUE ============
         function generateSessionId() {
@@ -1274,10 +1170,12 @@
             }
         }
         
+        // ============ CRÉER LE HTML D'UNE CARTE PRODUIT (AVEC IMAGE) ============
         function createProductCardHTML(product) {
             const categoryIcon = categories[product.category]?.icon || '📁';
             const categoryName = categories[product.category]?.name || product.category || 'Non catégorisé';
             
+            // ============ AFFICHAGE DE L'IMAGE PICX ============
             let imageHTML = '';
             if (product.image) {
                 imageHTML = `
