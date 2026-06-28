@@ -2,13 +2,12 @@
 # 🔒 FICHIERS DE CONFIGURATION SENSIBLES
 # ============================================
 
-# Variables d'environnement (NE JAMAIS COMMITER)
+# Fichiers générés localement (NE JAMAIS COMMITER)
+config.js
+firebase-config.js
 *.env
 *.env.local
 *.env.*.local
-.env.development.local
-.env.test.local
-.env.production.local
 
 # Clés et secrets
 *.pem
@@ -91,10 +90,10 @@ test-results/
 # 🎯 FICHIERS SPÉCIFIQUES
 # ============================================
 
-# ✅ config.js est GARDÉ (généré par le workflow)
-# firebase-config.js est GARDÉ (généré par le workflow)
+# ✅ config.js est maintenant IGNORÉ (généré par le workflow)
+config.js
+firebase-config.js
 
 # Fichiers de test locaux
 test.html
 test.js
-
