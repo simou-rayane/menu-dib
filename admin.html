@@ -118,6 +118,146 @@
             transform: none;
         }
         
+        /* ============ PICX GALLERY MODAL ============ */
+        .picx-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .picx-modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .picx-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .picx-modal-header h3 { margin: 0; }
+        .picx-modal-header .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .picx-modal-grid {
+            padding: 15px;
+            overflow-y: auto;
+            max-height: 60vh;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
+        
+        .picx-modal-grid .picx-item {
+            cursor: pointer;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            padding: 5px;
+            transition: all 0.3s;
+            background: #f8f9fa;
+            text-align: center;
+        }
+        
+        .picx-modal-grid .picx-item:hover {
+            border-color: #667eea;
+            transform: scale(1.05);
+        }
+        
+        .picx-modal-grid .picx-item img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        
+        .picx-modal-grid .picx-item .picx-name {
+            font-size: 10px;
+            color: #666;
+            display: block;
+            margin-top: 3px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .picx-modal-footer {
+            padding: 15px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .picx-preview {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9ff;
+            border-radius: 8px;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .picx-preview img {
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 5px;
+            border: 2px solid #4caf50;
+        }
+        
+        .picx-preview .selected-label {
+            color: #155724;
+            font-size: 13px;
+        }
+        
+        .image-input-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .image-input-group input {
+            flex: 1;
+            margin-bottom: 0 !important;
+        }
+        
+        .image-input-group button {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            white-space: nowrap;
+            font-weight: 600;
+        }
+        
+        .image-input-group button:hover {
+            background: #764ba2;
+        }
+        
         /* ============ PRODUCT LIST ============ */
         .product-item {
             display: flex;
@@ -198,6 +338,11 @@
         .toast.info { background: #2196F3; }
         .toast.warning { background: #ff9800; }
         
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
         @keyframes slideUp {
             from { transform: translateX(-50%) translateY(100px); opacity: 0; }
             to { transform: translateX(-50%) translateY(0); opacity: 1; }
@@ -207,6 +352,8 @@
             header { flex-direction: column; text-align: center; }
             .product-item { flex-direction: column; align-items: stretch; gap: 10px; }
             .product-item .product-actions { justify-content: center; }
+            .image-input-group { flex-direction: column; }
+            .picx-modal-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
         }
     </style>
 </head>
@@ -228,7 +375,7 @@
             <h2>➕ Ajouter un produit</h2>
             <form id="productForm">
                 <input type="text" id="productName" placeholder="Nom du produit" required>
-                <input type="number" id="productPrice" placeholder="Prix (Dhs)" step="0.01" required>
+                <input type="number" id="productPrice" placeholder="Prix (€)" step="0.01" required>
                 <select id="productCategory" required>
                     <option value="">Choisir une catégorie...</option>
                     <option value="entrees">Entrées</option>
@@ -237,6 +384,21 @@
                     <option value="boissons">Boissons</option>
                 </select>
                 <textarea id="productDesc" placeholder="Description"></textarea>
+                
+                <!-- ============ CHAMP IMAGE PICX ============ -->
+                <div style="margin: 10px 0;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 5px;">📷 Image (PicX)</label>
+                    <div class="image-input-group">
+                        <input type="text" id="productImage" placeholder="https://raw.githubusercontent.com/.../image.jpg">
+                        <button type="button" onclick="loadPicXImages()">📂 Parcourir</button>
+                    </div>
+                    <div class="picx-preview" id="picxPreview">
+                        <img id="picxPreviewImg" src="" alt="Aperçu">
+                        <span class="selected-label">✅ Image sélectionnée</span>
+                        <button type="button" onclick="clearPicXImage()" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">✕</button>
+                    </div>
+                </div>
+                
                 <button type="button" class="btn-primary" id="addBtn">➕ Ajouter le produit</button>
             </form>
         </div>
@@ -254,14 +416,21 @@
     <!-- ============ SCRIPT PRINCIPAL ============ -->
     <script>
         // ============================================
-        // ADMIN.JS - VERSION CORRIGÉE
+        // ADMIN.JS - VERSION COMPLÈTE AVEC PICX
         // ============================================
         
         // ⚠️ Les références Firebase sont déjà dans config.js
-        // categoriesRef, productsRef, database sont déjà disponibles
-        
         let products = [];
         let categories = {};
+        let picxImages = [];
+        let selectedPicxImage = null;
+        
+        // ============ CONFIGURATION PICX ============
+        const PICX_CONFIG = {
+            username: 'simou-rayane',
+            repo: 'picx-images-hosting',
+            branch: 'master'
+        };
         
         // ============ ÉTAT DE CONNEXION ============
         function updateConnectionStatus(connected) {
@@ -338,7 +507,7 @@
                 const categoryName = categories[product.category]?.name || product.category || 'Non catégorisé';
                 const categoryIcon = categories[product.category]?.icon || '';
                 let imageHtml = product.image 
-                    ? `<img src="${product.image}" class="product-thumbnail">` 
+                    ? `<img src="${product.image}" class="product-thumbnail" onerror="this.style.display='none'; this.parentElement.querySelector('.product-thumbnail-placeholder').style.display='flex';">` 
                     : `<div class="product-thumbnail-placeholder">📷</div>`;
                 
                 div.innerHTML = `
@@ -347,7 +516,7 @@
                         <div class="product-details">
                             <div>
                                 <span class="name">${product.name}</span>
-                                <span class="price">${product.price.toFixed(2)} Dhs</span>
+                                <span class="price">${product.price.toFixed(2)} €</span>
                                 <span class="category">(${categoryIcon} ${categoryName})</span>
                             </div>
                             <div class="description">${product.description || ''}</div>
@@ -364,6 +533,100 @@
                 `;
                 container.appendChild(div);
             });
+        }
+        
+        // ============ PICX - CHARGER LES IMAGES ============
+        async function loadPicXImages() {
+            try {
+                const url = `https://api.github.com/repos/${PICX_CONFIG.username}/${PICX_CONFIG.repo}/contents?ref=${PICX_CONFIG.branch}`;
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error('Erreur de chargement des images');
+                }
+                
+                const data = await response.json();
+                
+                const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
+                picxImages = data.filter(item => 
+                    item.type === 'file' && 
+                    imageExtensions.some(ext => item.name.toLowerCase().endsWith(ext))
+                );
+                
+                if (picxImages.length === 0) {
+                    showToast('❌ Aucune image trouvée dans le dépôt PicX', 'error');
+                    return;
+                }
+                
+                showPicXGallery();
+                
+            } catch (error) {
+                console.error('Erreur chargement PicX:', error);
+                showToast('❌ Erreur: ' + error.message, 'error');
+            }
+        }
+        
+        // ============ PICX - AFFICHER LA GALERIE ============
+        function showPicXGallery() {
+            const modal = document.createElement('div');
+            modal.className = 'picx-modal';
+            modal.id = 'picxModal';
+            
+            modal.innerHTML = `
+                <div class="picx-modal-content">
+                    <div class="picx-modal-header">
+                        <h3>📷 Choisir une image</h3>
+                        <button class="close-btn" onclick="closePicXGallery()">✕</button>
+                    </div>
+                    <div class="picx-modal-grid">
+                        ${picxImages.map((item, index) => `
+                            <div class="picx-item" onclick="selectPicXImage(${index})" data-index="${index}">
+                                <img src="${item.download_url}" alt="${item.name}" onerror="this.parentElement.style.display='none'">
+                                <span class="picx-name">${item.name}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="picx-modal-footer">
+                        💡 Cliquez sur une image pour la sélectionner
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        
+        function closePicXGallery() {
+            const modal = document.getElementById('picxModal');
+            if (modal) modal.remove();
+        }
+        
+        // ============ PICX - SÉLECTIONNER UNE IMAGE ============
+        function selectPicXImage(index) {
+            const item = picxImages[index];
+            if (!item) return;
+            
+            selectedPicxImage = item.download_url;
+            
+            // Mettre à jour le champ image
+            document.getElementById('productImage').value = selectedPicxImage;
+            
+            // Afficher l'aperçu
+            const preview = document.getElementById('picxPreview');
+            const previewImg = document.getElementById('picxPreviewImg');
+            if (preview && previewImg) {
+                previewImg.src = selectedPicxImage;
+                preview.style.display = 'flex';
+            }
+            
+            closePicXGallery();
+            showToast('✅ Image sélectionnée', 'success');
+        }
+        
+        function clearPicXImage() {
+            selectedPicxImage = null;
+            document.getElementById('productImage').value = '';
+            const preview = document.getElementById('picxPreview');
+            if (preview) preview.style.display = 'none';
         }
         
         // ============ VALIDATION ============
@@ -383,10 +646,8 @@
             return true;
         }
         
-        // ============ AJOUTER UN PRODUIT (CORRIGÉ) ============
+        // ============ AJOUTER UN PRODUIT ============
         function addProduct(data) {
-            console.log('📝 addProduct appelé avec:', data);
-            
             if (!validateProduct(data)) {
                 return Promise.reject(new Error('Validation échouée'));
             }
@@ -397,12 +658,10 @@
                 category: data.category,
                 description: data.description?.trim() || '',
                 visible: true,
+                image: document.getElementById('productImage').value.trim() || null,
                 createdAt: Date.now()
             };
             
-            console.log('📦 Nouveau produit:', newProduct);
-            
-            // ✅ CORRECTION: Créer la référence AVANT de faire set()
             const newRef = productsRef.push();
             
             return newRef.set(newProduct)
@@ -432,10 +691,14 @@
             const newDesc = prompt('Nouvelle description:', product.description || '');
             if (newDesc === null) return;
             
+            const newImage = prompt('URL de l\'image (PicX):', product.image || '');
+            if (newImage === null) return;
+            
             const updates = {
                 name: newName.trim(),
                 price: parseFloat(newPrice),
                 description: newDesc.trim(),
+                image: newImage.trim() || null,
                 updatedAt: Date.now()
             };
             
@@ -484,35 +747,11 @@
         
         // ============ CHANGER L'IMAGE ============
         function changeImage(productId) {
-            const product = products.find(p => p.id === productId);
-            if (!product) return;
+            // Charger les images PicX et sélectionner
+            loadPicXImages();
             
-            const url = prompt('Entrez l\'URL de la nouvelle image:', product.image || '');
-            if (url === null) return;
-            
-            if (url.trim()) {
-                productsRef.child(productId).update({
-                    image: url.trim(),
-                    updatedAt: Date.now()
-                })
-                .then(() => {
-                    showToast('✅ Image mise à jour !', 'success');
-                })
-                .catch(error => {
-                    showToast('❌ Erreur: ' + error.message, 'error');
-                });
-            } else {
-                productsRef.child(productId).update({
-                    image: null,
-                    updatedAt: Date.now()
-                })
-                .then(() => {
-                    showToast('✅ Image supprimée !', 'success');
-                })
-                .catch(error => {
-                    showToast('❌ Erreur: ' + error.message, 'error');
-                });
-            }
+            // Stocker le productId pour la sélection
+            window._pendingProductId = productId;
         }
         
         // ============ EXPORT ============
@@ -553,6 +792,7 @@
                                 price: p.price,
                                 category: p.category || 'plats',
                                 description: p.description || '',
+                                image: p.image || null,
                                 visible: true,
                                 createdAt: Date.now()
                             };
@@ -629,17 +869,16 @@
             
             console.log('📊 Données du formulaire:', productData);
             
-            // Désactiver le bouton
             this.disabled = true;
             this.textContent = '⏳ Ajout en cours...';
             
             addProduct(productData)
                 .then(() => {
-                    // Réinitialiser le formulaire
                     document.getElementById('productName').value = '';
                     document.getElementById('productPrice').value = '';
                     document.getElementById('productCategory').value = '';
                     document.getElementById('productDesc').value = '';
+                    clearPicXImage();
                 })
                 .catch((error) => {
                     console.error('❌ Erreur:', error);
@@ -656,6 +895,10 @@
         loadProducts();
         
         // Exposer les fonctions globalement
+        window.loadPicXImages = loadPicXImages;
+        window.selectPicXImage = selectPicXImage;
+        window.closePicXGallery = closePicXGallery;
+        window.clearPicXImage = clearPicXImage;
         window.toggleVisibility = toggleVisibility;
         window.editProduct = editProduct;
         window.deleteProduct = deleteProduct;
