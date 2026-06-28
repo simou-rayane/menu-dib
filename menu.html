@@ -803,8 +803,11 @@
     <!-- ============ SCRIPT PRINCIPAL ============ -->
     <script>
         // ============================================
-        // MENU.JS - AVEC CHARGEMENT DES DONNÉES DU RESTAURANT
+        // MENU.JS - VERSION CORRIGÉE (SANS DOUBLONS)
         // ============================================
+        
+        // ⚠️ TOUTES LES RÉFÉRENCES SONT DANS config.js
+        // NE PAS déclarer : productsRef, ordersRef, cartsRef, tablesRef, categoriesRef, restaurantsRef
         
         let products = [];
         let categories = {};
@@ -815,9 +818,6 @@
         let currentRestaurantId = null;
         let restaurantData = null;
         let sessionId = null;
-        
-        // ============ RÉFÉRENCES ============
-        const restaurantsRef = database.ref('restaurants');
         
         // ============ GÉNÉRER UN IDENTIFIANT DE SESSION UNIQUE ============
         function generateSessionId() {
@@ -874,6 +874,7 @@
             
             console.log('🏪 Restaurant demandé:', restaurantId);
             
+            // ✅ Utilisation de restaurantsRef (déclaré dans config.js)
             restaurantsRef.child(restaurantId).on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
@@ -1033,6 +1034,7 @@
         
         // ============ ÉCOUTER LES CATÉGORIES ============
         function listenToCategories() {
+            // ✅ Utilisation de categoriesRef (déclaré dans config.js)
             categoriesRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 categories = data || {};
@@ -1084,6 +1086,7 @@
         
         // ============ ÉCOUTER LES PRODUITS ============
         function listenToProducts() {
+            // ✅ Utilisation de productsRef (déclaré dans config.js)
             productsRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 
