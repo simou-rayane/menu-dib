@@ -1,7 +1,7 @@
 # ============================================
 # 🔒 FICHIERS DE CONFIGURATION SENSIBLES
 # ============================================
-config.js
+
 # Variables d'environnement (NE JAMAIS COMMITER)
 *.env
 *.env.local
