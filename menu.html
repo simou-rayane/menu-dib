@@ -723,7 +723,7 @@
         <header>
             <div class="header-top">
                 <div class="header-left">
-                    <!-- ✅ Logo dynamique : l'image sera chargée depuis Firebase -->
+                    <!-- Logo dynamique -->
                     <img id="logoImage" class="logo" src="" alt="Logo" 
                          onerror="this.style.display='none'; this.parentElement.querySelector('.logo-placeholder').style.display='flex';">
                     <div class="logo-placeholder" id="logoPlaceholder">R</div>
@@ -804,7 +804,7 @@
     <!-- ============ SCRIPT PRINCIPAL ============ -->
     <script>
         // ============================================
-        // MENU.JS - VERSION AVEC LOGO DYNAMIQUE
+        // MENU.JS - VERSION AVEC TABLE DYNAMIQUE
         // ============================================
         
         // ⚠️ TOUTES LES RÉFÉRENCES SONT DANS config.js
@@ -839,13 +839,21 @@
             return session;
         }
         
-        // ============ CHARGER LA TABLE ============
+        // ============ CHARGER LA TABLE (CORRIGÉ) ============
         function loadTableInfo() {
-            currentTable = localStorage.getItem('current_table');
-            if (!currentTable) {
-                const urlParams = new URLSearchParams(window.location.search);
-                currentTable = urlParams.get('table') || '1';
+            // 1. Vérifier l'URL d'abord
+            const urlParams = new URLSearchParams(window.location.search);
+            let tableFromUrl = urlParams.get('table');
+            
+            // 2. Si la table est dans l'URL, l'utiliser et la sauvegarder
+            if (tableFromUrl) {
+                currentTable = tableFromUrl;
                 localStorage.setItem('current_table', currentTable);
+                console.log('🪑 Table chargée depuis l\'URL:', currentTable);
+            } else {
+                // 3. Sinon, utiliser localStorage ou la table par défaut
+                currentTable = localStorage.getItem('current_table') || '1';
+                console.log('🪑 Table chargée depuis localStorage:', currentTable);
             }
             
             sessionId = getSessionId();
@@ -918,7 +926,7 @@
             };
         }
         
-        // ============ METTRE À JOUR LE LOGO (DYNAMIQUE) ============
+        // ============ METTRE À JOUR LE LOGO ============
         function updateLogo(logoUrl) {
             const logoImg = document.getElementById('logoImage');
             const logoPlaceholder = document.getElementById('logoPlaceholder');
@@ -965,16 +973,10 @@
         
         // ============ METTRE À JOUR L'UI DU RESTAURANT ============
         function updateRestaurantUI(data) {
-            // Nom
             document.getElementById('restaurantName').textContent = data.name || 'Mon Restaurant';
-            
-            // Adresse
             document.getElementById('restaurantAddress').textContent = data.address ? '📍 ' + data.address : '';
-            
-            // Téléphone
             document.getElementById('restaurantPhone').textContent = data.phone ? '📞 ' + data.phone : '';
             
-            // Livraison
             const deliveryBadge = document.getElementById('deliveryBadge');
             if (data.deliveryAvailable !== false && data.deliveryPrice !== undefined) {
                 deliveryBadge.className = 'delivery-badge';
@@ -984,7 +986,6 @@
                 deliveryBadge.textContent = '🚫 Livraison non disponible';
             }
             
-            // Bouton Appeler
             const callBtn = document.getElementById('callBtn');
             if (data.phoneLink) {
                 callBtn.href = 'tel:' + data.phoneLink;
@@ -996,7 +997,6 @@
                 callBtn.style.display = 'none';
             }
             
-            // Bouton Itinéraire
             const directionsBtn = document.getElementById('directionsBtn');
             if (data.mapsUrl) {
                 directionsBtn.href = data.mapsUrl;
@@ -1008,34 +1008,9 @@
                 directionsBtn.style.display = 'none';
             }
             
-            // Facebook
-            const facebookBtn = document.getElementById('facebookBtn');
-            if (data.facebook) {
-                facebookBtn.href = data.facebook;
-                facebookBtn.style.display = 'inline-flex';
-            } else {
-                facebookBtn.style.display = 'none';
-            }
-            
-            // Instagram
-            const instagramBtn = document.getElementById('instagramBtn');
-            if (data.instagram) {
-                instagramBtn.href = data.instagram;
-                instagramBtn.style.display = 'inline-flex';
-            } else {
-                instagramBtn.style.display = 'none';
-            }
-            
-            // Site web
-            const websiteBtn = document.getElementById('websiteBtn');
-            if (data.website) {
-                websiteBtn.href = data.website;
-                websiteBtn.style.display = 'inline-flex';
-            } else {
-                websiteBtn.style.display = 'none';
-            }
-            
-            // Footer
+            document.getElementById('facebookBtn').style.display = data.facebook ? 'inline-flex' : 'none';
+            document.getElementById('instagramBtn').style.display = data.instagram ? 'inline-flex' : 'none';
+            document.getElementById('websiteBtn').style.display = data.website ? 'inline-flex' : 'none';
             document.getElementById('footerName').textContent = data.name || 'Mon Restaurant';
         }
         
