@@ -723,7 +723,8 @@
         <header>
             <div class="header-top">
                 <div class="header-left">
-                    <img src="images/logo.png" class="logo" alt="Logo" 
+                    <!-- ✅ Logo dynamique : l'image sera chargée depuis Firebase -->
+                    <img id="logoImage" class="logo" src="" alt="Logo" 
                          onerror="this.style.display='none'; this.parentElement.querySelector('.logo-placeholder').style.display='flex';">
                     <div class="logo-placeholder" id="logoPlaceholder">R</div>
                     
@@ -803,11 +804,10 @@
     <!-- ============ SCRIPT PRINCIPAL ============ -->
     <script>
         // ============================================
-        // MENU.JS - VERSION CORRIGÉE (SANS DOUBLONS)
+        // MENU.JS - VERSION AVEC LOGO DYNAMIQUE
         // ============================================
         
         // ⚠️ TOUTES LES RÉFÉRENCES SONT DANS config.js
-        // NE PAS déclarer : productsRef, ordersRef, cartsRef, tablesRef, categoriesRef, restaurantsRef
         
         let products = [];
         let categories = {};
@@ -874,7 +874,6 @@
             
             console.log('🏪 Restaurant demandé:', restaurantId);
             
-            // ✅ Utilisation de restaurantsRef (déclaré dans config.js)
             restaurantsRef.child(restaurantId).on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
@@ -883,24 +882,27 @@
                     console.log('📱 WhatsApp configuré:', data.whatsapp || 'Non configuré');
                     updateRestaurantUI(data);
                     updateBanner(data.banner);
+                    updateLogo(data.logo);
                 } else {
                     console.warn('⚠️ Restaurant non trouvé, utilisation des valeurs par défaut');
                     restaurantData = getDefaultRestaurant();
                     updateRestaurantUI(restaurantData);
                     updateBanner(null);
+                    updateLogo(null);
                 }
             }, (error) => {
                 console.error('❌ Erreur chargement restaurant:', error);
                 restaurantData = getDefaultRestaurant();
                 updateRestaurantUI(restaurantData);
                 updateBanner(null);
+                updateLogo(null);
             });
         }
         
         function getDefaultRestaurant() {
             return {
                 name: "Mon Restaurant",
-                logo: "images/logo.png",
+                logo: null,
                 banner: null,
                 address: "123 Rue de la Paix, 75001 Paris",
                 phone: "01 23 45 67 89",
@@ -914,6 +916,30 @@
                 mapsUrl: "https://maps.google.com/maps?q=123+Rue+de+la+Paix+75001+Paris",
                 active: true
             };
+        }
+        
+        // ============ METTRE À JOUR LE LOGO (DYNAMIQUE) ============
+        function updateLogo(logoUrl) {
+            const logoImg = document.getElementById('logoImage');
+            const logoPlaceholder = document.getElementById('logoPlaceholder');
+            const restaurantName = restaurantData?.name || 'Mon Restaurant';
+            
+            if (logoUrl && logoUrl.trim()) {
+                logoImg.src = logoUrl;
+                logoImg.style.display = 'block';
+                logoPlaceholder.style.display = 'none';
+                logoImg.onerror = function() {
+                    this.style.display = 'none';
+                    logoPlaceholder.style.display = 'flex';
+                    logoPlaceholder.textContent = restaurantName.charAt(0).toUpperCase();
+                };
+                console.log('✅ Logo chargé:', logoUrl);
+            } else {
+                logoImg.style.display = 'none';
+                logoPlaceholder.style.display = 'flex';
+                logoPlaceholder.textContent = restaurantName.charAt(0).toUpperCase();
+                console.log('ℹ️ Aucun logo configuré');
+            }
         }
         
         // ============ METTRE À JOUR LA BANNIÈRE ============
@@ -941,25 +967,6 @@
         function updateRestaurantUI(data) {
             // Nom
             document.getElementById('restaurantName').textContent = data.name || 'Mon Restaurant';
-            
-            // Logo
-            const logoImg = document.querySelector('.header-left .logo');
-            const logoPlaceholder = document.getElementById('logoPlaceholder');
-            
-            if (data.logo) {
-                logoImg.src = data.logo;
-                logoImg.style.display = 'block';
-                logoPlaceholder.style.display = 'none';
-                logoImg.onerror = function() {
-                    this.style.display = 'none';
-                    logoPlaceholder.style.display = 'flex';
-                    logoPlaceholder.textContent = (data.name || 'R').charAt(0).toUpperCase();
-                };
-            } else {
-                logoImg.style.display = 'none';
-                logoPlaceholder.style.display = 'flex';
-                logoPlaceholder.textContent = (data.name || 'R').charAt(0).toUpperCase();
-            }
             
             // Adresse
             document.getElementById('restaurantAddress').textContent = data.address ? '📍 ' + data.address : '';
@@ -1034,7 +1041,6 @@
         
         // ============ ÉCOUTER LES CATÉGORIES ============
         function listenToCategories() {
-            // ✅ Utilisation de categoriesRef (déclaré dans config.js)
             categoriesRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 categories = data || {};
@@ -1086,7 +1092,6 @@
         
         // ============ ÉCOUTER LES PRODUITS ============
         function listenToProducts() {
-            // ✅ Utilisation de productsRef (déclaré dans config.js)
             productsRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 
