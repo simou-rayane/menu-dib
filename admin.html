@@ -10,23 +10,10 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
     <style>
-        /* ============ STYLES COMPLETS ============ */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f2f5;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+        /* ============ STYLES ============ */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
         
         header {
             background: white;
@@ -41,23 +28,10 @@
             gap: 15px;
         }
         
-        header h1 {
-            color: #333;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        header h1 { color: #333; display: flex; align-items: center; gap: 10px; }
+        header h1 span { color: #667eea; }
         
-        header h1 span {
-            color: #667eea;
-        }
-        
-        .header-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
+        .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
         .header-actions button {
             padding: 8px 20px;
             border: none;
@@ -66,25 +40,11 @@
             font-weight: 600;
             transition: all 0.3s;
         }
+        .header-actions button:hover { transform: scale(1.05); }
         
-        .header-actions button:hover {
-            transform: scale(1.05);
-        }
-        
-        .btn-export {
-            background: #2196F3;
-            color: white;
-        }
-        
-        .btn-import {
-            background: #ff9800;
-            color: white;
-        }
-        
-        .btn-reset {
-            background: #dc3545;
-            color: white;
-        }
+        .btn-export { background: #2196F3; color: white; }
+        .btn-import { background: #ff9800; color: white; }
+        .btn-reset { background: #dc3545; color: white; }
         
         #connectionStatus {
             padding: 10px 20px;
@@ -92,13 +52,11 @@
             margin-bottom: 20px;
             font-weight: 500;
         }
-        
         #connectionStatus.connected {
             background: #d4edda;
             color: #155724;
             border: 1px solid #c3e6cb;
         }
-        
         #connectionStatus.disconnected {
             background: #f8d7da;
             color: #721c24;
@@ -112,7 +70,6 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.08);
             margin-bottom: 25px;
         }
-        
         .admin-section h2 {
             color: #333;
             margin-bottom: 20px;
@@ -131,18 +88,13 @@
             margin-bottom: 10px;
             transition: border-color 0.3s;
         }
-        
         .admin-section input:focus,
         .admin-section select:focus,
         .admin-section textarea:focus {
             border-color: #667eea;
             outline: none;
         }
-        
-        .admin-section textarea {
-            resize: vertical;
-            min-height: 60px;
-        }
+        .admin-section textarea { resize: vertical; min-height: 60px; }
         
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -156,201 +108,14 @@
             transition: all 0.3s;
             width: 100%;
         }
-        
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
         }
-        
         .btn-primary:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
-        }
-        
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        
-        .form-group {
-            margin-bottom: 5px;
-        }
-        
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #555;
-            font-size: 14px;
-        }
-        
-        .form-group label .required {
-            color: #dc3545;
-        }
-        
-        .form-actions {
-            grid-column: 1 / -1;
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .form-actions button {
-            padding: 12px 30px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 16px;
-            transition: all 0.3s;
-            flex: 1;
-        }
-        
-        .form-actions .btn-save {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .form-actions .btn-reset {
-            background: #6c757d;
-            color: white;
-        }
-        
-        /* ============ CATEGORIES ============ */
-        .categories-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-        
-        .category-item {
-            background: #f8f9ff;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-            transition: all 0.3s;
-        }
-        
-        .category-item:hover {
-            border-color: #667eea;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
-        }
-        
-        .category-item .category-icon {
-            font-size: 32px;
-            display: block;
-            margin-bottom: 5px;
-        }
-        
-        .category-item .category-name {
-            font-weight: 600;
-            color: #333;
-            font-size: 14px;
-        }
-        
-        .category-item .category-key {
-            font-size: 11px;
-            color: #999;
-            display: block;
-            margin-top: 3px;
-        }
-        
-        .category-item .category-status {
-            font-size: 11px;
-            font-weight: 600;
-            margin-top: 5px;
-            display: inline-block;
-            padding: 2px 12px;
-            border-radius: 12px;
-        }
-        
-        .category-item .category-status.active {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .category-item .category-status.inactive {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
-        .category-item .category-actions {
-            margin-top: 10px;
-            display: flex;
-            gap: 5px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
-        .category-item .category-actions button {
-            padding: 4px 12px;
-            border: none;
-            border-radius: 15px;
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        
-        .category-item .category-actions .btn-edit-cat {
-            background: #2196F3;
-            color: white;
-        }
-        
-        .category-item .category-actions .btn-toggle-cat {
-            background: #ff9800;
-            color: white;
-        }
-        
-        .category-item .category-actions .btn-delete-cat {
-            background: #dc3545;
-            color: white;
-        }
-        
-        .add-category-form {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 15px;
-        }
-        
-        .add-category-form input {
-            flex: 1;
-            min-width: 120px;
-            padding: 10px 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-        
-        .add-category-form input:focus {
-            border-color: #667eea;
-            outline: none;
-        }
-        
-        .add-category-form button {
-            padding: 10px 24px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            white-space: nowrap;
-        }
-        
-        .add-category-form button:hover {
-            background: #764ba2;
         }
         
         /* ============ PRODUCT LIST ============ */
@@ -362,18 +127,13 @@
             border-bottom: 1px solid #eee;
             transition: background 0.3s;
         }
-        
-        .product-item:hover {
-            background: #f8f9ff;
-        }
-        
+        .product-item:hover { background: #f8f9ff; }
         .product-item .product-info {
             display: flex;
             align-items: center;
             gap: 15px;
             flex: 1;
         }
-        
         .product-item .product-thumbnail {
             width: 50px;
             height: 50px;
@@ -382,7 +142,6 @@
             border: 1px solid #eee;
             background: #f8f9fa;
         }
-        
         .product-item .product-thumbnail-placeholder {
             width: 50px;
             height: 50px;
@@ -395,37 +154,13 @@
             font-size: 24px;
             border: 1px solid #eee;
         }
+        .product-item .product-details { flex: 1; }
+        .product-item .product-details .name { font-weight: 600; color: #333; }
+        .product-item .product-details .price { color: #667eea; font-weight: 600; }
+        .product-item .product-details .category { color: #666; font-size: 13px; }
+        .product-item .product-details .description { color: #999; font-size: 13px; }
         
-        .product-item .product-details {
-            flex: 1;
-        }
-        
-        .product-item .product-details .name {
-            font-weight: 600;
-            color: #333;
-        }
-        
-        .product-item .product-details .price {
-            color: #667eea;
-            font-weight: 600;
-        }
-        
-        .product-item .product-details .category {
-            color: #666;
-            font-size: 13px;
-        }
-        
-        .product-item .product-details .description {
-            color: #999;
-            font-size: 13px;
-        }
-        
-        .product-item .product-actions {
-            display: flex;
-            gap: 5px;
-            flex-wrap: wrap;
-        }
-        
+        .product-item .product-actions { display: flex; gap: 5px; flex-wrap: wrap; }
         .product-item .product-actions button {
             padding: 5px 12px;
             border: none;
@@ -435,35 +170,12 @@
             font-weight: 600;
             transition: all 0.3s;
         }
-        
-        .product-item .product-actions button:hover {
-            transform: scale(1.05);
-        }
-        
-        .status-visible {
-            background: #4caf50;
-            color: white;
-        }
-        
-        .status-hidden {
-            background: #dc3545;
-            color: white;
-        }
-        
-        .btn-edit {
-            background: #2196F3;
-            color: white;
-        }
-        
-        .btn-photo {
-            background: #4CAF50;
-            color: white;
-        }
-        
-        .btn-delete {
-            background: #dc3545;
-            color: white;
-        }
+        .product-item .product-actions button:hover { transform: scale(1.05); }
+        .status-visible { background: #4caf50; color: white; }
+        .status-hidden { background: #dc3545; color: white; }
+        .btn-edit { background: #2196F3; color: white; }
+        .btn-photo { background: #4CAF50; color: white; }
+        .btn-delete { background: #dc3545; color: white; }
         
         /* ============ TOAST ============ */
         .toast {
@@ -481,7 +193,6 @@
             text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
-        
         .toast.success { background: #4caf50; }
         .toast.error { background: #dc3545; }
         .toast.info { background: #2196F3; }
@@ -492,95 +203,10 @@
             to { transform: translateX(-50%) translateY(0); opacity: 1; }
         }
         
-        /* ============ MODAL ============ */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .modal-overlay .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 90%;
-            overflow-y: auto;
-        }
-        
-        .modal-overlay .modal-content h2 {
-            margin-bottom: 20px;
-            color: #333;
-        }
-        
-        .modal-overlay .modal-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
-        .modal-overlay .modal-actions button {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-        
-        .modal-overlay .modal-actions .btn-save {
-            background: #667eea;
-            color: white;
-        }
-        
-        .modal-overlay .modal-actions .btn-cancel {
-            background: #dc3545;
-            color: white;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
         @media (max-width: 768px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .form-actions {
-                flex-direction: column;
-            }
-            
-            header {
-                flex-direction: column;
-                text-align: center;
-            }
-            
-            .categories-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .categories-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .add-category-form {
-                flex-direction: column;
-            }
+            header { flex-direction: column; text-align: center; }
+            .product-item { flex-direction: column; align-items: stretch; gap: 10px; }
+            .product-item .product-actions { justify-content: center; }
         }
     </style>
 </head>
@@ -597,11 +223,12 @@
         
         <div id="connectionStatus" class="connected">✅ Connecté à Firebase</div>
         
+        <!-- ============ FORMULAIRE D'AJOUT ============ -->
         <div class="admin-section">
             <h2>➕ Ajouter un produit</h2>
             <form id="productForm">
                 <input type="text" id="productName" placeholder="Nom du produit" required>
-                <input type="number" id="productPrice" placeholder="Prix (Dhs)" step="0.01" required>
+                <input type="number" id="productPrice" placeholder="Prix (€)" step="0.01" required>
                 <select id="productCategory" required>
                     <option value="">Choisir une catégorie...</option>
                     <option value="entrees">Entrées</option>
@@ -610,10 +237,11 @@
                     <option value="boissons">Boissons</option>
                 </select>
                 <textarea id="productDesc" placeholder="Description"></textarea>
-                <button type="submit" class="btn-primary" id="addBtn">➕ Ajouter le produit</button>
+                <button type="button" class="btn-primary" id="addBtn">➕ Ajouter le produit</button>
             </form>
         </div>
         
+        <!-- ============ LISTE DES PRODUITS ============ -->
         <div class="admin-section">
             <h2>📋 Gestion des produits (<span id="productCount">0</span>)</h2>
             <div id="productsList" class="products-list"></div>
@@ -625,25 +253,25 @@
     
     <!-- ============ SCRIPT PRINCIPAL ============ -->
     <script>
-        // ============ ADMIN.JS ============
-        // ⚠️ Toutes les références Firebase sont déjà dans config.js
-        // Ne pas déclarer à nouveau categoriesRef, productsRef, etc.
+        // ============================================
+        // ADMIN.JS - VERSION CORRIGÉE
+        // ============================================
+        
+        // ⚠️ Les références Firebase sont déjà dans config.js
+        // categoriesRef, productsRef, database sont déjà disponibles
         
         let products = [];
         let categories = {};
-        let isConnected = false;
         
         // ============ ÉTAT DE CONNEXION ============
         function updateConnectionStatus(connected) {
             const statusEl = document.getElementById('connectionStatus');
             if (connected) {
                 statusEl.className = 'connected';
-                statusEl.innerHTML = '✅ Connecté à Firebase';
-                isConnected = true;
+                statusEl.innerHTML = '✅ Connecté à Firebase - Synchronisation active';
             } else {
                 statusEl.className = 'disconnected';
-                statusEl.innerHTML = '❌ Déconnecté de Firebase';
-                isConnected = false;
+                statusEl.innerHTML = '❌ Déconnecté - Vérifiez votre configuration';
             }
         }
         
@@ -651,161 +279,15 @@
             updateConnectionStatus(snapshot.val());
         });
         
-        // ============ GESTION DES CATÉGORIES ============
+        // ============ CHARGER LES CATÉGORIES ============
         function loadCategories() {
             categoriesRef.on('value', (snapshot) => {
                 const data = snapshot.val();
-                categories = data || {};
-                if (Object.keys(categories).length === 0) {
-                    createDefaultCategories();
-                } else {
-                    displayCategories();
+                if (data) {
+                    categories = data;
                     updateCategorySelect();
                 }
             });
-        }
-        
-        function createDefaultCategories() {
-            const defaultCategories = {
-                'entrees': { name: 'Entrées', icon: '🥗', order: 1, active: true },
-                'plats': { name: 'Plats', icon: '🍽️', order: 2, active: true },
-                'desserts': { name: 'Desserts', icon: '🍰', order: 3, active: true },
-                'boissons': { name: 'Boissons', icon: '🥤', order: 4, active: true }
-            };
-            categoriesRef.set(defaultCategories);
-        }
-        
-        function displayCategories() {
-            const container = document.getElementById('categoriesList');
-            if (!container) return;
-            
-            const sortedKeys = Object.keys(categories).sort((a, b) => 
-                (categories[a].order || 0) - (categories[b].order || 0)
-            );
-            
-            if (sortedKeys.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #999; grid-column: 1/-1;">Aucune catégorie</p>';
-                return;
-            }
-            
-            container.innerHTML = '';
-            sortedKeys.forEach(key => {
-                const cat = categories[key];
-                const div = document.createElement('div');
-                div.className = 'category-item';
-                div.innerHTML = `
-                    <span class="category-icon">${cat.icon || '📁'}</span>
-                    <span class="category-name">${cat.name}</span>
-                    <span class="category-key">${key}</span>
-                    <span class="category-status ${cat.active !== false ? 'active' : 'inactive'}">
-                        ${cat.active !== false ? '✅ Actif' : '⛔ Inactif'}
-                    </span>
-                    <div class="category-actions">
-                        <button class="btn-edit-cat" onclick="editCategory('${key}')">✏️</button>
-                        <button class="btn-toggle-cat" onclick="toggleCategory('${key}')">
-                            ${cat.active !== false ? '⛔' : '✅'}
-                        </button>
-                        <button class="btn-delete-cat" onclick="deleteCategory('${key}')">🗑</button>
-                    </div>
-                `;
-                container.appendChild(div);
-            });
-        }
-        
-        function addCategory() {
-            const key = document.getElementById('newCategoryKey').value.trim();
-            const name = document.getElementById('newCategoryName').value.trim();
-            const icon = document.getElementById('newCategoryIcon').value.trim() || '📁';
-            
-            if (!key || !name) {
-                showToast('❌ Veuillez entrer une clé et un nom', 'error');
-                return;
-            }
-            if (!/^[a-z0-9_]+$/.test(key)) {
-                showToast('❌ Clé invalide (minuscules, chiffres, underscores)', 'error');
-                return;
-            }
-            if (categories[key]) {
-                showToast('❌ Cette catégorie existe déjà', 'error');
-                return;
-            }
-            
-            categoriesRef.child(key).set({ name, icon, order: Object.keys(categories).length + 1, active: true })
-                .then(() => {
-                    showToast(`✅ Catégorie "${name}" ajoutée !`, 'success');
-                    document.getElementById('newCategoryKey').value = '';
-                    document.getElementById('newCategoryName').value = '';
-                    document.getElementById('newCategoryIcon').value = '';
-                })
-                .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
-        }
-        
-        function editCategory(key) {
-            const cat = categories[key];
-            if (!cat) return;
-            
-            const overlay = document.createElement('div');
-            overlay.className = 'modal-overlay';
-            overlay.innerHTML = `
-                <div class="modal-content">
-                    <h2>✏️ Modifier la catégorie</h2>
-                    <form id="editCategoryForm">
-                        <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Nom</label>
-                            <input type="text" id="editCatName" value="${cat.name}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;" required>
-                        </div>
-                        <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Icône</label>
-                            <input type="text" id="editCatIcon" value="${cat.icon || '📁'}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;">
-                        </div>
-                        <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Ordre</label>
-                            <input type="number" id="editCatOrder" value="${cat.order || 0}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;">
-                        </div>
-                        <div class="modal-actions">
-                            <button type="submit" class="btn-save">✅ Sauvegarder</button>
-                            <button type="button" class="btn-cancel" onclick="this.closest('.modal-overlay').remove()">❌ Annuler</button>
-                        </div>
-                    </form>
-                </div>
-            `;
-            document.body.appendChild(overlay);
-            
-            document.getElementById('editCategoryForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                const updates = {
-                    name: document.getElementById('editCatName').value.trim(),
-                    icon: document.getElementById('editCatIcon').value.trim() || '📁',
-                    order: parseInt(document.getElementById('editCatOrder').value) || 0
-                };
-                categoriesRef.child(key).update(updates)
-                    .then(() => { showToast('✅ Catégorie modifiée !', 'success'); overlay.remove(); })
-                    .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
-            });
-        }
-        
-        function toggleCategory(key) {
-            const cat = categories[key];
-            if (!cat) return;
-            const newStatus = cat.active === false ? true : false;
-            categoriesRef.child(key).update({ active: newStatus })
-                .then(() => showToast(`✅ Catégorie ${newStatus ? 'activée' : 'désactivée'}`, 'success'))
-                .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
-        }
-        
-        function deleteCategory(key) {
-            const cat = categories[key];
-            if (!cat) return;
-            const productsInCategory = products.filter(p => p.category === key);
-            if (productsInCategory.length > 0) {
-                showToast(`❌ ${productsInCategory.length} produit(s) utilisent cette catégorie`, 'error');
-                return;
-            }
-            if (confirm(`Supprimer "${cat.name}" ?`)) {
-                categoriesRef.child(key).remove()
-                    .then(() => showToast('✅ Catégorie supprimée !', 'success'))
-                    .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
-            }
         }
         
         function updateCategorySelect() {
@@ -824,52 +306,48 @@
             });
         }
         
-        // ============ GESTION DES PRODUITS ============
-        function listenToProducts() {
+        // ============ CHARGER LES PRODUITS ============
+        function loadProducts() {
             productsRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
                     products = Object.keys(data).map(key => ({ id: key, ...data[key] }));
                 } else {
                     products = [];
-                    createDefaultProducts();
                 }
                 displayProducts();
                 document.getElementById('productCount').textContent = products.length;
             });
         }
         
-        function createDefaultProducts() {
-            const defaultProducts = {
-                'prod1': { name: "Salade César", price: 12, category: "entrees", description: "Salade, poulet, parmesan", visible: true, createdAt: Date.now() },
-                'prod2': { name: "Steak Frites", price: 18, category: "plats", description: "Steak grillé, frites maison", visible: true, createdAt: Date.now() },
-                'prod3': { name: "Tiramisu", price: 7, category: "desserts", description: "Café, mascarpone", visible: true, createdAt: Date.now() },
-                'prod4': { name: "Coca-Cola", price: 3, category: "boissons", description: "33cl", visible: true, createdAt: Date.now() }
-            };
-            productsRef.set(defaultProducts);
-        }
-        
+        // ============ AFFICHER LES PRODUITS ============
         function displayProducts() {
             const container = document.getElementById('productsList');
             if (!container) return;
+            
             if (products.length === 0) {
                 container.innerHTML = '<p style="text-align:center; color:#999;">Aucun produit</p>';
                 return;
             }
+            
             container.innerHTML = '';
             products.forEach((product) => {
                 const div = document.createElement('div');
                 div.className = 'product-item';
+                
                 const categoryName = categories[product.category]?.name || product.category || 'Non catégorisé';
                 const categoryIcon = categories[product.category]?.icon || '';
-                let imageHtml = product.image ? `<img src="${product.image}" class="product-thumbnail">` : `<div class="product-thumbnail-placeholder">📷</div>`;
+                let imageHtml = product.image 
+                    ? `<img src="${product.image}" class="product-thumbnail">` 
+                    : `<div class="product-thumbnail-placeholder">📷</div>`;
+                
                 div.innerHTML = `
                     <div class="product-info">
                         ${imageHtml}
                         <div class="product-details">
                             <div>
                                 <span class="name">${product.name}</span>
-                                <span class="price">${product.price.toFixed(2)} Dhs</span>
+                                <span class="price">${product.price.toFixed(2)} €</span>
                                 <span class="category">(${categoryIcon} ${categoryName})</span>
                             </div>
                             <div class="description">${product.description || ''}</div>
@@ -888,111 +366,158 @@
             });
         }
         
-        function validateProduct(p) {
-            if (!p.name?.trim()) { showToast('❌ Le nom est requis', 'error'); return false; }
-            if (!p.price || isNaN(p.price) || p.price <= 0) { showToast('❌ Prix invalide', 'error'); return false; }
-            if (!p.category) { showToast('❌ La catégorie est requise', 'error'); return false; }
+        // ============ VALIDATION ============
+        function validateProduct(data) {
+            if (!data.name?.trim()) {
+                showToast('❌ Le nom est requis', 'error');
+                return false;
+            }
+            if (!data.price || isNaN(data.price) || data.price <= 0) {
+                showToast('❌ Le prix doit être un nombre positif', 'error');
+                return false;
+            }
+            if (!data.category) {
+                showToast('❌ La catégorie est requise', 'error');
+                return false;
+            }
             return true;
         }
         
-        function addProduct(productData) {
-            return new Promise((resolve, reject) => {
-                if (!validateProduct(productData)) { reject(new Error('Validation')); return; }
-                const newProduct = {
-                    name: productData.name.trim(),
-                    price: parseFloat(productData.price),
-                    category: productData.category,
-                    description: productData.description?.trim() || '',
-                    visible: true,
-                    createdAt: Date.now()
-                };
-                const ref = productsRef.push();
-                ref.set(newProduct)
-                    .then(() => {
-                        showToast('✅ Produit ajouté !', 'success');
-                        document.getElementById('productForm').reset();
-                        resolve(true);
-                    })
-                    .catch(error => { showToast('❌ Erreur: ' + error.message, 'error'); reject(error); });
-            });
+        // ============ AJOUTER UN PRODUIT ============
+        function addProduct(data) {
+            console.log('📝 addProduct appelé avec:', data);
+            
+            if (!validateProduct(data)) {
+                return Promise.reject(new Error('Validation échouée'));
+            }
+            
+            const newProduct = {
+                name: data.name.trim(),
+                price: parseFloat(data.price),
+                category: data.category,
+                description: data.description?.trim() || '',
+                visible: true,
+                createdAt: Date.now()
+            };
+            
+            console.log('📦 Nouveau produit:', newProduct);
+            
+            return productsRef.push().set(newProduct)
+                .then((ref) => {
+                    console.log('✅ Produit ajouté avec ID:', ref.key);
+                    showToast('✅ Produit ajouté avec succès !', 'success');
+                    return ref;
+                })
+                .catch((error) => {
+                    console.error('❌ Erreur Firebase:', error);
+                    showToast('❌ Erreur: ' + error.message, 'error');
+                    throw error;
+                });
         }
         
+        // ============ MODIFIER UN PRODUIT ============
         function editProduct(productId) {
             const product = products.find(p => p.id === productId);
             if (!product) return;
-            let catOptions = '';
-            const sortedKeys = Object.keys(categories).sort((a, b) => (categories[a].order || 0) - (categories[b].order || 0));
-            sortedKeys.forEach(key => {
-                const cat = categories[key];
-                if (cat.active !== false) {
-                    catOptions += `<option value="${key}" ${key === product.category ? 'selected' : ''}>${cat.icon || '📁'} ${cat.name}</option>`;
-                }
-            });
-            const overlay = document.createElement('div');
-            overlay.className = 'modal-overlay';
-            overlay.innerHTML = `
-                <div class="modal-content">
-                    <h2>✏️ Modifier le produit</h2>
-                    <form id="editForm">
-                        <div style="margin-bottom:15px;"><label style="font-weight:600;">Nom</label><input type="text" id="editName" value="${product.name}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;" required></div>
-                        <div style="margin-bottom:15px;"><label style="font-weight:600;">Prix (Dhs)</label><input type="number" id="editPrice" value="${product.price}" step="0.01" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;" required></div>
-                        <div style="margin-bottom:15px;"><label style="font-weight:600;">Catégorie</label><select id="editCategory" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;">${catOptions}</select></div>
-                        <div style="margin-bottom:15px;"><label style="font-weight:600;">Description</label><textarea id="editDesc" rows="3" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;">${product.description || ''}</textarea></div>
-                        <div style="margin-bottom:15px;"><label style="font-weight:600;">Image URL</label><input type="text" id="editImageUrl" value="${product.image || ''}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;" placeholder="https://..."></div>
-                        <div class="modal-actions">
-                            <button type="submit" class="btn-save">✅ Sauvegarder</button>
-                            <button type="button" class="btn-cancel" onclick="this.closest('.modal-overlay').remove()">❌ Annuler</button>
-                        </div>
-                    </form>
-                </div>
-            `;
-            document.body.appendChild(overlay);
-            document.getElementById('editForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                const updates = {
-                    name: document.getElementById('editName').value.trim(),
-                    price: parseFloat(document.getElementById('editPrice').value),
-                    category: document.getElementById('editCategory').value,
-                    description: document.getElementById('editDesc').value.trim(),
-                    image: document.getElementById('editImageUrl').value.trim() || null,
-                    updatedAt: Date.now()
-                };
-                if (!validateProduct(updates)) return;
-                productsRef.child(productId).update(updates)
-                    .then(() => { showToast('✅ Produit modifié !', 'success'); overlay.remove(); })
-                    .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
-            });
+            
+            const newName = prompt('Nouveau nom:', product.name);
+            if (newName === null) return;
+            
+            const newPrice = prompt('Nouveau prix:', product.price);
+            if (newPrice === null) return;
+            
+            const newDesc = prompt('Nouvelle description:', product.description || '');
+            if (newDesc === null) return;
+            
+            const updates = {
+                name: newName.trim(),
+                price: parseFloat(newPrice),
+                description: newDesc.trim(),
+                updatedAt: Date.now()
+            };
+            
+            if (isNaN(updates.price) || updates.price <= 0) {
+                showToast('❌ Prix invalide', 'error');
+                return;
+            }
+            
+            productsRef.child(productId).update(updates)
+                .then(() => {
+                    showToast('✅ Produit modifié !', 'success');
+                })
+                .catch(error => {
+                    showToast('❌ Erreur: ' + error.message, 'error');
+                });
         }
         
+        // ============ SUPPRIMER UN PRODUIT ============
         function deleteProduct(productId) {
             const product = products.find(p => p.id === productId);
             if (!product) return;
-            if (confirm(`Supprimer "${product.name}" ?`)) {
-                productsRef.child(productId).remove()
-                    .then(() => showToast('✅ Produit supprimé !', 'success'))
-                    .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
-            }
+            if (!confirm(`Supprimer "${product.name}" définitivement ?`)) return;
+            
+            productsRef.child(productId).remove()
+                .then(() => {
+                    showToast('✅ Produit supprimé !', 'success');
+                })
+                .catch(error => {
+                    showToast('❌ Erreur: ' + error.message, 'error');
+                });
         }
         
+        // ============ MASQUER/AFFICHER ============
         function toggleVisibility(productId) {
             const product = products.find(p => p.id === productId);
             if (!product) return;
-            productsRef.child(productId).update({ visible: !product.visible, updatedAt: Date.now() })
-                .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
+            
+            productsRef.child(productId).update({
+                visible: !product.visible,
+                updatedAt: Date.now()
+            })
+            .catch(error => {
+                showToast('❌ Erreur: ' + error.message, 'error');
+            });
         }
         
+        // ============ CHANGER L'IMAGE ============
         function changeImage(productId) {
-            const url = prompt('Entrez l\'URL de la nouvelle image:', products.find(p => p.id === productId)?.image || '');
-            if (url !== null && url.trim()) {
-                productsRef.child(productId).update({ image: url.trim(), updatedAt: Date.now() })
-                    .then(() => showToast('✅ Image mise à jour !', 'success'))
-                    .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            const url = prompt('Entrez l\'URL de la nouvelle image:', product.image || '');
+            if (url === null) return;
+            
+            if (url.trim()) {
+                productsRef.child(productId).update({
+                    image: url.trim(),
+                    updatedAt: Date.now()
+                })
+                .then(() => {
+                    showToast('✅ Image mise à jour !', 'success');
+                })
+                .catch(error => {
+                    showToast('❌ Erreur: ' + error.message, 'error');
+                });
+            } else {
+                productsRef.child(productId).update({
+                    image: null,
+                    updatedAt: Date.now()
+                })
+                .then(() => {
+                    showToast('✅ Image supprimée !', 'success');
+                })
+                .catch(error => {
+                    showToast('❌ Erreur: ' + error.message, 'error');
+                });
             }
         }
         
-        // ============ EXPORT / IMPORT ============
+        // ============ EXPORT ============
         function exportProducts() {
-            if (products.length === 0) { showToast('❌ Aucun produit', 'error'); return; }
+            if (products.length === 0) {
+                showToast('❌ Aucun produit à exporter', 'error');
+                return;
+            }
             const blob = new Blob([JSON.stringify(products, null, 2)], { type: 'application/json' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
@@ -1001,6 +526,7 @@
             showToast('✅ Export terminé !', 'success');
         }
         
+        // ============ IMPORT ============
         function importProducts() {
             const input = document.createElement('input');
             input.type = 'file';
@@ -1008,64 +534,125 @@
             input.onchange = function(e) {
                 const file = e.target.files[0];
                 if (!file) return;
+                
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     try {
                         const imported = JSON.parse(event.target.result);
-                        if (!Array.isArray(imported)) throw new Error('Format invalide');
+                        if (!Array.isArray(imported)) {
+                            throw new Error('Format invalide');
+                        }
                         if (!confirm(`Importer ${imported.length} produits ?`)) return;
+                        
                         const promises = imported.map(p => {
-                            const np = { name: p.name, price: p.price, category: p.category || 'plats', description: p.description || '', visible: true, createdAt: Date.now() };
+                            const np = {
+                                name: p.name,
+                                price: p.price,
+                                category: p.category || 'plats',
+                                description: p.description || '',
+                                visible: true,
+                                createdAt: Date.now()
+                            };
                             return productsRef.push().set(np);
                         });
-                        Promise.all(promises).then(() => showToast(`✅ ${imported.length} produits importés !`, 'success'));
-                    } catch (error) { showToast('❌ Fichier invalide', 'error'); }
+                        
+                        Promise.all(promises)
+                            .then(() => {
+                                showToast(`✅ ${imported.length} produits importés !`, 'success');
+                            })
+                            .catch(error => {
+                                showToast('❌ Erreur: ' + error.message, 'error');
+                            });
+                    } catch (error) {
+                        showToast('❌ Fichier invalide: ' + error.message, 'error');
+                    }
                 };
                 reader.readAsText(file);
             };
             input.click();
         }
         
+        // ============ RÉINITIALISER ============
         function resetFirebaseProducts() {
-            if (confirm('⚠️ Réinitialiser tous les produits ?')) {
-                createDefaultProducts();
-                showToast('✅ Produits réinitialisés !', 'success');
-            }
+            if (!confirm('⚠️ Supprimer tous les produits et les réinitialiser ?')) return;
+            
+            const defaultProducts = {
+                'prod1': { name: "Salade César", price: 12, category: "entrees", description: "Salade, poulet, parmesan", visible: true, createdAt: Date.now() },
+                'prod2': { name: "Steak Frites", price: 18, category: "plats", description: "Steak grillé, frites maison", visible: true, createdAt: Date.now() },
+                'prod3': { name: "Tiramisu", price: 7, category: "desserts", description: "Café, mascarpone", visible: true, createdAt: Date.now() },
+                'prod4': { name: "Coca-Cola", price: 3, category: "boissons", description: "33cl", visible: true, createdAt: Date.now() }
+            };
+            
+            productsRef.set(defaultProducts)
+                .then(() => {
+                    showToast('✅ Produits réinitialisés !', 'success');
+                })
+                .catch(error => {
+                    showToast('❌ Erreur: ' + error.message, 'error');
+                });
         }
         
         // ============ TOAST ============
         function showToast(message, type = 'info') {
-            const colors = { 'success': '#4caf50', 'error': '#dc3545', 'warning': '#ff9800', 'info': '#2196F3' };
+            const colors = {
+                'success': '#4caf50',
+                'error': '#dc3545',
+                'warning': '#ff9800',
+                'info': '#2196F3'
+            };
+            
             const toast = document.createElement('div');
             toast.className = 'toast ' + type;
             toast.style.background = colors[type] || '#667eea';
             toast.textContent = message;
             document.body.appendChild(toast);
+            
             setTimeout(() => {
                 toast.style.animation = 'slideUp 0.5s ease reverse';
                 setTimeout(() => toast.remove(), 500);
             }, 3000);
         }
         
+        // ============ FORMULAIRE D'AJOUT - VERSION AVEC BOUTON (type="button") ============
+        document.getElementById('addBtn').addEventListener('click', function() {
+            console.log('📝 Bouton cliqué !');
+            
+            const productData = {
+                name: document.getElementById('productName').value,
+                price: document.getElementById('productPrice').value,
+                category: document.getElementById('productCategory').value,
+                description: document.getElementById('productDesc').value
+            };
+            
+            console.log('📊 Données du formulaire:', productData);
+            
+            // Désactiver le bouton
+            this.disabled = true;
+            this.textContent = '⏳ Ajout en cours...';
+            
+            addProduct(productData)
+                .then(() => {
+                    // Réinitialiser le formulaire
+                    document.getElementById('productName').value = '';
+                    document.getElementById('productPrice').value = '';
+                    document.getElementById('productCategory').value = '';
+                    document.getElementById('productDesc').value = '';
+                })
+                .catch((error) => {
+                    console.error('❌ Erreur:', error);
+                })
+                .finally(() => {
+                    this.disabled = false;
+                    this.textContent = '➕ Ajouter le produit';
+                });
+        });
+        
         // ============ INITIALISATION ============
         console.log('🚀 Démarrage de l\'administration...');
-        
-        // Vérifier que Firebase est bien initialisé
-        if (typeof database === 'undefined') {
-            console.error('❌ Firebase non initialisé ! Vérifiez config.js');
-            document.getElementById('connectionStatus').className = 'disconnected';
-            document.getElementById('connectionStatus').innerHTML = '❌ Firebase non initialisé - Vérifiez config.js';
-        } else {
-            console.log('✅ Firebase initialisé');
-        }
-        
         loadCategories();
-        listenToProducts();
+        loadProducts();
         
-        window.addCategory = addCategory;
-        window.editCategory = editCategory;
-        window.toggleCategory = toggleCategory;
-        window.deleteCategory = deleteCategory;
+        // Exposer les fonctions globalement
         window.toggleVisibility = toggleVisibility;
         window.editProduct = editProduct;
         window.deleteProduct = deleteProduct;
@@ -1075,6 +662,7 @@
         window.resetFirebaseProducts = resetFirebaseProducts;
         
         console.log('✅ Admin initialisé');
+        
     </script>
 </body>
 </html>
