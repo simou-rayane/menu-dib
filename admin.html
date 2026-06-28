@@ -118,7 +118,7 @@
             transform: none;
         }
         
-        /* ============ PICX GALLERY MODAL ============ */
+        /* ============ PICX - STYLES ============ */
         .picx-modal {
             position: fixed;
             top: 0;
@@ -252,6 +252,7 @@
             cursor: pointer;
             white-space: nowrap;
             font-weight: 600;
+            transition: background 0.3s;
         }
         
         .image-input-group button:hover {
@@ -390,7 +391,7 @@
                     <label style="display: block; font-weight: 600; margin-bottom: 5px;">📷 Image (PicX)</label>
                     <div class="image-input-group">
                         <input type="text" id="productImage" placeholder="https://raw.githubusercontent.com/.../image.jpg">
-                        <button type="button" onclick="loadPicXImages()">📂 Parcourir</button>
+                        <button type="button" onclick="loadPicXImagesForAdd()">📂 Parcourir</button>
                     </div>
                     <div class="picx-preview" id="picxPreview">
                         <img id="picxPreviewImg" src="" alt="Aperçu">
@@ -424,6 +425,8 @@
         let categories = {};
         let picxImages = [];
         let selectedPicxImage = null;
+        let picxMode = 'add'; // 'add' ou 'edit'
+        let pendingProductId = null;
         
         // ============ CONFIGURATION PICX ============
         const PICX_CONFIG = {
@@ -566,6 +569,20 @@
             }
         }
         
+        // ============ PICX - CHARGER POUR AJOUT ============
+        function loadPicXImagesForAdd() {
+            picxMode = 'add';
+            pendingProductId = null;
+            loadPicXImages();
+        }
+        
+        // ============ PICX - CHARGER POUR MODIFICATION ============
+        function loadPicXImagesForEdit(productId) {
+            picxMode = 'edit';
+            pendingProductId = productId;
+            loadPicXImages();
+        }
+        
         // ============ PICX - AFFICHER LA GALERIE ============
         function showPicXGallery() {
             const modal = document.createElement('div');
@@ -607,19 +624,39 @@
             
             selectedPicxImage = item.download_url;
             
-            // Mettre à jour le champ image
-            document.getElementById('productImage').value = selectedPicxImage;
-            
-            // Afficher l'aperçu
-            const preview = document.getElementById('picxPreview');
-            const previewImg = document.getElementById('picxPreviewImg');
-            if (preview && previewImg) {
-                previewImg.src = selectedPicxImage;
-                preview.style.display = 'flex';
+            if (picxMode === 'add') {
+                // Mode Ajout : mettre à jour le champ du formulaire
+                document.getElementById('productImage').value = selectedPicxImage;
+                
+                const preview = document.getElementById('picxPreview');
+                const previewImg = document.getElementById('picxPreviewImg');
+                if (preview && previewImg) {
+                    previewImg.src = selectedPicxImage;
+                    preview.style.display = 'flex';
+                }
+                showToast('✅ Image sélectionnée pour le nouveau produit', 'success');
+            } else if (picxMode === 'edit' && pendingProductId) {
+                // Mode Modification : mettre à jour directement le produit
+                const product = products.find(p => p.id === pendingProductId);
+                if (product) {
+                    // Mettre à jour dans Firebase
+                    productsRef.child(pendingProductId).update({
+                        image: selectedPicxImage,
+                        updatedAt: Date.now()
+                    })
+                    .then(() => {
+                        showToast(`✅ Image mise à jour pour "${product.name}"`, 'success');
+                        // Rafraîchir l'affichage
+                        loadProducts();
+                    })
+                    .catch(error => {
+                        showToast('❌ Erreur: ' + error.message, 'error');
+                    });
+                }
+                pendingProductId = null;
             }
             
             closePicXGallery();
-            showToast('✅ Image sélectionnée', 'success');
         }
         
         function clearPicXImage() {
@@ -627,6 +664,12 @@
             document.getElementById('productImage').value = '';
             const preview = document.getElementById('picxPreview');
             if (preview) preview.style.display = 'none';
+        }
+        
+        // ============ CHANGER L'IMAGE D'UN PRODUIT ============
+        function changeImage(productId) {
+            // Charger les images PicX en mode modification
+            loadPicXImagesForEdit(productId);
         }
         
         // ============ VALIDATION ============
@@ -652,13 +695,15 @@
                 return Promise.reject(new Error('Validation échouée'));
             }
             
+            const imageUrl = document.getElementById('productImage').value.trim() || null;
+            
             const newProduct = {
                 name: data.name.trim(),
                 price: parseFloat(data.price),
                 category: data.category,
                 description: data.description?.trim() || '',
                 visible: true,
-                image: document.getElementById('productImage').value.trim() || null,
+                image: imageUrl,
                 createdAt: Date.now()
             };
             
@@ -691,14 +736,10 @@
             const newDesc = prompt('Nouvelle description:', product.description || '');
             if (newDesc === null) return;
             
-            const newImage = prompt('URL de l\'image (PicX):', product.image || '');
-            if (newImage === null) return;
-            
             const updates = {
                 name: newName.trim(),
                 price: parseFloat(newPrice),
                 description: newDesc.trim(),
-                image: newImage.trim() || null,
                 updatedAt: Date.now()
             };
             
@@ -743,15 +784,6 @@
             .catch(error => {
                 showToast('❌ Erreur: ' + error.message, 'error');
             });
-        }
-        
-        // ============ CHANGER L'IMAGE ============
-        function changeImage(productId) {
-            // Charger les images PicX et sélectionner
-            loadPicXImages();
-            
-            // Stocker le productId pour la sélection
-            window._pendingProductId = productId;
         }
         
         // ============ EXPORT ============
@@ -895,14 +927,15 @@
         loadProducts();
         
         // Exposer les fonctions globalement
-        window.loadPicXImages = loadPicXImages;
+        window.loadPicXImagesForAdd = loadPicXImagesForAdd;
+        window.loadPicXImagesForEdit = loadPicXImagesForEdit;
         window.selectPicXImage = selectPicXImage;
         window.closePicXGallery = closePicXGallery;
         window.clearPicXImage = clearPicXImage;
+        window.changeImage = changeImage;
         window.toggleVisibility = toggleVisibility;
         window.editProduct = editProduct;
         window.deleteProduct = deleteProduct;
-        window.changeImage = changeImage;
         window.exportProducts = exportProducts;
         window.importProducts = importProducts;
         window.resetFirebaseProducts = resetFirebaseProducts;
