@@ -370,7 +370,6 @@
             margin-top: 15px;
         }
         
-        /* ============ CARTE PRODUIT AVEC IMAGE ============ */
         .product-card {
             background: white;
             border-radius: 14px;
@@ -577,7 +576,6 @@
             border-bottom: 2px solid #f0f2f5;
         }
         
-        /* ============ PANIER ============ */
         .cart-item {
             display: flex;
             justify-content: space-between;
@@ -805,11 +803,8 @@
     <!-- ============ SCRIPT PRINCIPAL ============ -->
     <script>
         // ============================================
-        // MENU.JS - VERSION CORRIGÉE (SANS DOUBLONS)
+        // MENU.JS - AVEC CHARGEMENT DES DONNÉES DU RESTAURANT
         // ============================================
-        
-        // ⚠️ TOUTES LES RÉFÉRENCES SONT DANS config.js
-        // Ne pas déclarer à nouveau : productsRef, ordersRef, cartsRef, tablesRef, categoriesRef, restaurantsRef
         
         let products = [];
         let categories = {};
@@ -820,6 +815,9 @@
         let currentRestaurantId = null;
         let restaurantData = null;
         let sessionId = null;
+        
+        // ============ RÉFÉRENCES ============
+        const restaurantsRef = database.ref('restaurants');
         
         // ============ GÉNÉRER UN IDENTIFIANT DE SESSION UNIQUE ============
         function generateSessionId() {
@@ -876,7 +874,6 @@
             
             console.log('🏪 Restaurant demandé:', restaurantId);
             
-            // ✅ Utilisation de restaurantsRef (déclaré dans config.js)
             restaurantsRef.child(restaurantId).on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
@@ -941,8 +938,10 @@
         
         // ============ METTRE À JOUR L'UI DU RESTAURANT ============
         function updateRestaurantUI(data) {
+            // Nom
             document.getElementById('restaurantName').textContent = data.name || 'Mon Restaurant';
             
+            // Logo
             const logoImg = document.querySelector('.header-left .logo');
             const logoPlaceholder = document.getElementById('logoPlaceholder');
             
@@ -961,9 +960,13 @@
                 logoPlaceholder.textContent = (data.name || 'R').charAt(0).toUpperCase();
             }
             
+            // Adresse
             document.getElementById('restaurantAddress').textContent = data.address ? '📍 ' + data.address : '';
+            
+            // Téléphone
             document.getElementById('restaurantPhone').textContent = data.phone ? '📞 ' + data.phone : '';
             
+            // Livraison
             const deliveryBadge = document.getElementById('deliveryBadge');
             if (data.deliveryAvailable !== false && data.deliveryPrice !== undefined) {
                 deliveryBadge.className = 'delivery-badge';
@@ -973,6 +976,7 @@
                 deliveryBadge.textContent = '🚫 Livraison non disponible';
             }
             
+            // Bouton Appeler
             const callBtn = document.getElementById('callBtn');
             if (data.phoneLink) {
                 callBtn.href = 'tel:' + data.phoneLink;
@@ -984,6 +988,7 @@
                 callBtn.style.display = 'none';
             }
             
+            // Bouton Itinéraire
             const directionsBtn = document.getElementById('directionsBtn');
             if (data.mapsUrl) {
                 directionsBtn.href = data.mapsUrl;
@@ -995,15 +1000,39 @@
                 directionsBtn.style.display = 'none';
             }
             
-            document.getElementById('facebookBtn').style.display = data.facebook ? 'inline-flex' : 'none';
-            document.getElementById('instagramBtn').style.display = data.instagram ? 'inline-flex' : 'none';
-            document.getElementById('websiteBtn').style.display = data.website ? 'inline-flex' : 'none';
+            // Facebook
+            const facebookBtn = document.getElementById('facebookBtn');
+            if (data.facebook) {
+                facebookBtn.href = data.facebook;
+                facebookBtn.style.display = 'inline-flex';
+            } else {
+                facebookBtn.style.display = 'none';
+            }
+            
+            // Instagram
+            const instagramBtn = document.getElementById('instagramBtn');
+            if (data.instagram) {
+                instagramBtn.href = data.instagram;
+                instagramBtn.style.display = 'inline-flex';
+            } else {
+                instagramBtn.style.display = 'none';
+            }
+            
+            // Site web
+            const websiteBtn = document.getElementById('websiteBtn');
+            if (data.website) {
+                websiteBtn.href = data.website;
+                websiteBtn.style.display = 'inline-flex';
+            } else {
+                websiteBtn.style.display = 'none';
+            }
+            
+            // Footer
             document.getElementById('footerName').textContent = data.name || 'Mon Restaurant';
         }
         
         // ============ ÉCOUTER LES CATÉGORIES ============
         function listenToCategories() {
-            // ✅ Utilisation de categoriesRef (déclaré dans config.js)
             categoriesRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 categories = data || {};
@@ -1055,7 +1084,6 @@
         
         // ============ ÉCOUTER LES PRODUITS ============
         function listenToProducts() {
-            // ✅ Utilisation de productsRef (déclaré dans config.js)
             productsRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 
