@@ -383,7 +383,7 @@
             return true;
         }
         
-        // ============ AJOUTER UN PRODUIT ============
+        // ============ AJOUTER UN PRODUIT (CORRIGÉ) ============
         function addProduct(data) {
             console.log('📝 addProduct appelé avec:', data);
             
@@ -402,11 +402,14 @@
             
             console.log('📦 Nouveau produit:', newProduct);
             
-            return productsRef.push().set(newProduct)
-                .then((ref) => {
-                    console.log('✅ Produit ajouté avec ID:', ref.key);
+            // ✅ CORRECTION: Créer la référence AVANT de faire set()
+            const newRef = productsRef.push();
+            
+            return newRef.set(newProduct)
+                .then(() => {
+                    console.log('✅ Produit ajouté avec ID:', newRef.key);
                     showToast('✅ Produit ajouté avec succès !', 'success');
-                    return ref;
+                    return newRef;
                 })
                 .catch((error) => {
                     console.error('❌ Erreur Firebase:', error);
@@ -613,7 +616,7 @@
             }, 3000);
         }
         
-        // ============ FORMULAIRE D'AJOUT - VERSION AVEC BOUTON (type="button") ============
+        // ============ FORMULAIRE D'AJOUT ============
         document.getElementById('addBtn').addEventListener('click', function() {
             console.log('📝 Bouton cliqué !');
             
