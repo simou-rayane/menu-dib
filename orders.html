@@ -591,10 +591,10 @@
                         <span class="order-status">${statusLabel}</span>
                     </div>
                     <div class="order-items">
-                        ${order.items.map(item => `<div class="order-item"><span class="item-name">${item.name} × ${item.quantity}</span><span class="item-price">${item.subtotal.toFixed(2)}€</span></div>`).join('')}
+                        ${order.items.map(item => `<div class="order-item"><span class="item-name">${item.name} × ${item.quantity}</span><span class="item-price">${item.subtotal.toFixed(2)}Dhs</span></div>`).join('')}
                     </div>
                     ${order.notes ? `<div class="order-notes">📝 ${order.notes}</div>` : ''}
-                    <div class="order-total">Total: ${order.total.toFixed(2)}€</div>
+                    <div class="order-total">Total: ${order.total.toFixed(2)}Dhs</div>
                     ${order.customerName ? `<div style="margin-top: 8px; color: #666; font-size: 14px;">👤 ${order.customerName}</div>` : ''}
                     ${order.customerPhone ? `<div style="color: #666; font-size: 14px;">📞 ${order.customerPhone}</div>` : ''}
                     <div class="order-actions">${actionsHTML}</div>
@@ -620,8 +620,8 @@
             if (!order) { showToast('❌ Commande non trouvée', 'error'); return; }
             let whatsappNumber = "1234567890";
             let message = `🍽️ *Commande*\n📋 Réf: ${order.orderNumber || orderId.slice(-6)}\n📌 Table: ${order.table}\n⏰ ${new Date(order.timestamp).toLocaleString('fr-FR')}\n\n*Détails:*\n`;
-            order.items.forEach(item => { message += `• ${item.name} x${item.quantity} = ${item.subtotal.toFixed(2)}€\n`; });
-            message += `\n*Total: ${order.total.toFixed(2)}€*`;
+            order.items.forEach(item => { message += `• ${item.name} x${item.quantity} = ${item.subtotal.toFixed(2)}Dhs\n`; });
+            message += `\n*Total: ${order.total.toFixed(2)}Dhs*`;
             const encodedMessage = encodeURIComponent(message);
             window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
             showToast(`📱 Message WhatsApp envoyé`, 'success');
@@ -665,7 +665,7 @@
                 notes: order.notes || ''
             }));
             const headers = ['Numéro', 'Table', 'Date', 'Articles', 'Total', 'Statut', 'Client', 'Téléphone', 'Notes'];
-            const rows = exportData.map(order => [order.orderNumber, order.table, order.date, order.items, order.total + ' €', order.status, order.customerName, order.customerPhone, order.notes]);
+            const rows = exportData.map(order => [order.orderNumber, order.table, order.date, order.items, order.total + ' Dhs', order.status, order.customerName, order.customerPhone, order.notes]);
             const csvContent = [headers.join(';'), ...rows.map(row => row.join(';'))].join('\n');
             const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
