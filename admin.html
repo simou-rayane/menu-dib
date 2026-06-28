@@ -292,10 +292,6 @@
             color: white;
         }
         
-        .form-actions .btn-save:hover {
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        }
-        
         .form-actions .btn-reset {
             background: #6c757d;
             color: white;
@@ -392,6 +388,54 @@
             text-align: center;
             color: #999;
             font-size: 12px;
+        }
+        
+        .picx-preview {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9ff;
+            border-radius: 8px;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .picx-preview img {
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 5px;
+            border: 2px solid #4caf50;
+        }
+        
+        .picx-preview .selected-label {
+            color: #155724;
+            font-size: 13px;
+        }
+        
+        .image-input-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .image-input-group input {
+            flex: 1;
+            margin-bottom: 0 !important;
+        }
+        
+        .image-input-group button {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            white-space: nowrap;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        .image-input-group button:hover {
+            background: #764ba2;
         }
         
         /* ============ CATEGORIES ============ */
@@ -663,20 +707,17 @@
                 
                 <form id="restaurantForm">
                     <div class="form-grid">
-                        <!-- Identifiant -->
                         <div class="form-group">
                             <label>Identifiant du restaurant</label>
                             <input type="text" id="restaurantId" value="default" disabled>
-                            <div class="help-text" style="font-size: 12px; color: #999;">Utilisé dans l'URL: ?restaurant=identifiant</div>
+                            <div style="font-size: 12px; color: #999;">Utilisé dans l'URL: ?restaurant=identifiant</div>
                         </div>
                         
-                        <!-- Nom -->
                         <div class="form-group">
                             <label>Nom du restaurant <span class="required">*</span></label>
                             <input type="text" id="restaurantName" placeholder="Mon Restaurant" required>
                         </div>
                         
-                        <!-- Logo -->
                         <div class="form-group full-width">
                             <label>🖼️ Logo</label>
                             <div class="image-preview-container">
@@ -696,7 +737,6 @@
                             <input type="hidden" id="restaurantLogo" value="">
                         </div>
                         
-                        <!-- Bannière -->
                         <div class="form-group full-width">
                             <label>📸 Bannière</label>
                             <div class="image-preview-container">
@@ -716,40 +756,34 @@
                             <input type="hidden" id="restaurantBanner" value="">
                         </div>
                         
-                        <!-- Adresse -->
                         <div class="form-group full-width">
                             <label>📍 Adresse</label>
                             <input type="text" id="restaurantAddress" placeholder="123 Rue de la Paix, 75001 Paris">
                         </div>
                         
-                        <!-- Téléphone -->
                         <div class="form-group">
                             <label>📞 Téléphone</label>
                             <input type="text" id="restaurantPhone" placeholder="01 23 45 67 89">
-                            <div class="help-text" style="font-size: 12px; color: #999;">Affiché sur le menu</div>
+                            <div style="font-size: 12px; color: #999;">Affiché sur le menu</div>
                         </div>
                         
-                        <!-- Téléphone (format international) -->
                         <div class="form-group">
                             <label>📞 Téléphone (format international)</label>
                             <input type="text" id="restaurantPhoneLink" placeholder="+33123456789">
-                            <div class="help-text" style="font-size: 12px; color: #999;">Pour le bouton Appeler. Ex: +33123456789</div>
+                            <div style="font-size: 12px; color: #999;">Pour le bouton Appeler. Ex: +33123456789</div>
                         </div>
                         
-                        <!-- WhatsApp -->
                         <div class="form-group">
                             <label>💬 WhatsApp (commandes)</label>
                             <input type="text" id="restaurantWhatsApp" placeholder="33123456789">
-                            <div class="help-text" style="font-size: 12px; color: #999;">Format international sans le +</div>
+                            <div style="font-size: 12px; color: #999;">Format international sans le +</div>
                         </div>
                         
-                        <!-- Livraison prix -->
                         <div class="form-group">
                             <label>🚚 Prix de livraison (€)</label>
                             <input type="number" id="restaurantDeliveryPrice" placeholder="5" step="0.5">
                         </div>
                         
-                        <!-- Livraison disponible -->
                         <div class="form-group">
                             <label>🚚 Livraison disponible</label>
                             <select id="restaurantDeliveryAvailable">
@@ -758,38 +792,33 @@
                             </select>
                         </div>
                         
-                        <!-- Facebook -->
                         <div class="form-group">
                             <label>📘 Facebook (URL)</label>
                             <input type="url" id="restaurantFacebook" placeholder="https://facebook.com/votre-page">
                         </div>
                         
-                        <!-- Instagram -->
                         <div class="form-group">
                             <label>📸 Instagram (URL)</label>
                             <input type="url" id="restaurantInstagram" placeholder="https://instagram.com/votre-compte">
                         </div>
                         
-                        <!-- Site web -->
                         <div class="form-group">
                             <label>🌐 Site web (URL)</label>
                             <input type="url" id="restaurantWebsite" placeholder="https://votre-site.com">
                         </div>
                         
-                        <!-- Google Maps -->
                         <div class="form-group">
                             <label>📍 Itinéraire (URL)</label>
                             <input type="url" id="restaurantMapsUrl" placeholder="https://maps.google.com/maps?q=...">
                         </div>
                         
-                        <!-- Restaurant actif -->
                         <div class="form-group full-width">
                             <label>Restaurant actif</label>
                             <select id="restaurantActive">
                                 <option value="true">✅ Actif</option>
                                 <option value="false">❌ Inactif</option>
                             </select>
-                            <div class="help-text" style="font-size: 12px; color: #999;">Si inactif, le restaurant n'apparaîtra pas</div>
+                            <div style="font-size: 12px; color: #999;">Si inactif, le restaurant n'apparaîtra pas</div>
                         </div>
                         
                         <div class="form-actions">
@@ -860,7 +889,7 @@
             <div class="admin-section">
                 <h2>📷 Gestion des images</h2>
                 
-                <div class="github-config" style="background: #f8f9ff; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; margin-bottom: 15px;">
+                <div style="background: #f8f9ff; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; margin-bottom: 15px;">
                     <h4>📁 Configuration du dépôt PicX</h4>
                     <input type="text" id="githubUsername" placeholder="Nom d'utilisateur GitHub" value="simou-rayane" style="width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 8px;">
                     <input type="text" id="githubRepo" placeholder="Dépôt PicX" value="picx-images-hosting" style="width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 8px;">
@@ -890,10 +919,12 @@
     <!-- ============ SCRIPT PRINCIPAL ============ -->
     <script>
         // ============================================
-        // ADMIN.JS - COMPLET AVEC GESTION DU RESTAURANT
+        // ADMIN.JS - VERSION CORRIGÉE (SANS DOUBLONS)
         // ============================================
         
-        // ⚠️ Les références Firebase sont déjà dans config.js
+        // ⚠️ TOUTES LES RÉFÉRENCES SONT DANS config.js
+        // Ne pas déclarer : productsRef, ordersRef, cartsRef, tablesRef, categoriesRef, restaurantsRef
+        
         let products = [];
         let categories = {};
         let restaurantData = {};
@@ -911,7 +942,6 @@
         };
         
         // ============ RÉFÉRENCES ============
-        const restaurantsRef = database.ref('restaurants');
         const currentRestaurantId = 'default';
         
         // ============ ÉTAT DE CONNEXION ============
@@ -1510,7 +1540,7 @@
                 
                 if (picxImages.length === 0) {
                     showToast('❌ Aucune image trouvée', 'error');
-                    return;
+                    return [];
                 }
                 
                 return picxImages;
@@ -1635,19 +1665,16 @@
         
         function resetFirebaseProducts() {
             if (confirm('⚠️ Réinitialiser tous les produits ?')) {
-                createDefaultProducts();
-                showToast('✅ Produits réinitialisés !', 'success');
+                const defaultProducts = {
+                    'prod1': { name: "Salade César", price: 12, category: "entrees", description: "Salade, poulet, parmesan", visible: true, createdAt: Date.now() },
+                    'prod2': { name: "Steak Frites", price: 18, category: "plats", description: "Steak grillé, frites maison", visible: true, createdAt: Date.now() },
+                    'prod3': { name: "Tiramisu", price: 7, category: "desserts", description: "Café, mascarpone", visible: true, createdAt: Date.now() },
+                    'prod4': { name: "Coca-Cola", price: 3, category: "boissons", description: "33cl", visible: true, createdAt: Date.now() }
+                };
+                productsRef.set(defaultProducts)
+                    .then(() => showToast('✅ Produits réinitialisés !', 'success'))
+                    .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
             }
-        }
-        
-        function createDefaultProducts() {
-            const defaultProducts = {
-                'prod1': { name: "Salade César", price: 12, category: "entrees", description: "Salade, poulet, parmesan", visible: true, createdAt: Date.now() },
-                'prod2': { name: "Steak Frites", price: 18, category: "plats", description: "Steak grillé, frites maison", visible: true, createdAt: Date.now() },
-                'prod3': { name: "Tiramisu", price: 7, category: "desserts", description: "Café, mascarpone", visible: true, createdAt: Date.now() },
-                'prod4': { name: "Coca-Cola", price: 3, category: "boissons", description: "33cl", visible: true, createdAt: Date.now() }
-            };
-            productsRef.set(defaultProducts);
         }
         
         // ============ FORMULAIRE D'AJOUT ============
@@ -1703,7 +1730,7 @@
         loadCategories();
         loadProducts();
         
-        // Exposer les fonctions globalement
+        // Exposer les fonctions globalement (AVANT leur utilisation dans le HTML)
         window.openImageSelector = openImageSelector;
         window.removeImage = removeImage;
         window.resetRestaurantForm = resetRestaurantForm;
