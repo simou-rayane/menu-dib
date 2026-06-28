@@ -118,6 +118,142 @@
             transform: none;
         }
         
+        /* ============ CATEGORIES ============ */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .category-item {
+            background: #f8f9ff;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .category-item:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
+        }
+        
+        .category-item .category-icon {
+            font-size: 32px;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .category-item .category-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 15px;
+        }
+        
+        .category-item .category-key {
+            font-size: 11px;
+            color: #999;
+            display: block;
+            margin-top: 3px;
+        }
+        
+        .category-item .category-status {
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 5px;
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 12px;
+        }
+        
+        .category-item .category-status.active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .category-item .category-status.inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .category-item .category-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .category-item .category-actions button {
+            padding: 4px 12px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .category-item .category-actions button:hover {
+            transform: scale(1.05);
+        }
+        
+        .category-item .category-actions .btn-edit-cat {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .category-item .category-actions .btn-toggle-cat {
+            background: #ff9800;
+            color: white;
+        }
+        
+        .category-item .category-actions .btn-delete-cat {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .add-category-form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        
+        .add-category-form input {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .add-category-form input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        
+        .add-category-form button {
+            padding: 10px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        
+        .add-category-form button:hover {
+            background: #764ba2;
+        }
+        
         /* ============ PICX - STYLES ============ */
         .picx-modal {
             position: fixed;
@@ -355,6 +491,12 @@
             .product-item .product-actions { justify-content: center; }
             .image-input-group { flex-direction: column; }
             .picx-modal-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+            .categories-grid { grid-template-columns: 1fr 1fr; }
+        }
+        
+        @media (max-width: 480px) {
+            .categories-grid { grid-template-columns: 1fr; }
+            .add-category-form { flex-direction: column; }
         }
     </style>
 </head>
@@ -370,6 +512,22 @@
         </header>
         
         <div id="connectionStatus" class="connected">✅ Connecté à Firebase</div>
+        
+        <!-- ============ SECTION CATÉGORIES ============ -->
+        <div class="admin-section">
+            <h2>📂 Gestion des catégories</h2>
+            
+            <div class="add-category-form">
+                <input type="text" id="newCategoryKey" placeholder="Clé (ex: snacks)" style="flex: 1;">
+                <input type="text" id="newCategoryName" placeholder="Nom (ex: Snacks)" style="flex: 1;">
+                <input type="text" id="newCategoryIcon" placeholder="Icône (ex: 🌮)" style="flex: 0.5; min-width: 80px;">
+                <button onclick="addCategory()">➕ Ajouter</button>
+            </div>
+            
+            <div id="categoriesList" class="categories-grid">
+                <!-- Les catégories seront chargées ici -->
+            </div>
+        </div>
         
         <!-- ============ FORMULAIRE D'AJOUT ============ -->
         <div class="admin-section">
@@ -417,7 +575,7 @@
     <!-- ============ SCRIPT PRINCIPAL ============ -->
     <script>
         // ============================================
-        // ADMIN.JS - VERSION COMPLÈTE AVEC PICX
+        // ADMIN.JS - VERSION COMPLÈTE AVEC CATÉGORIES
         // ============================================
         
         // ⚠️ Les références Firebase sont déjà dans config.js
@@ -425,7 +583,7 @@
         let categories = {};
         let picxImages = [];
         let selectedPicxImage = null;
-        let picxMode = 'add'; // 'add' ou 'edit'
+        let picxMode = 'add';
         let pendingProductId = null;
         
         // ============ CONFIGURATION PICX ============
@@ -451,22 +609,221 @@
             updateConnectionStatus(snapshot.val());
         });
         
-        // ============ CHARGER LES CATÉGORIES ============
+        // ============ GESTION DES CATÉGORIES ============
+        
+        // Charger les catégories
         function loadCategories() {
             categoriesRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
                     categories = data;
-                    updateCategorySelect();
+                } else {
+                    categories = {};
+                    createDefaultCategories();
                 }
+                displayCategories();
+                updateCategorySelect();
             });
         }
         
+        // Créer les catégories par défaut
+        function createDefaultCategories() {
+            const defaultCategories = {
+                'entrees': { name: 'Entrées', icon: '🥗', order: 1, active: true },
+                'plats': { name: 'Plats', icon: '🍽️', order: 2, active: true },
+                'desserts': { name: 'Desserts', icon: '🍰', order: 3, active: true },
+                'boissons': { name: 'Boissons', icon: '🥤', order: 4, active: true }
+            };
+            categoriesRef.set(defaultCategories);
+            showToast('✅ Catégories par défaut créées', 'success');
+        }
+        
+        // Afficher les catégories
+        function displayCategories() {
+            const container = document.getElementById('categoriesList');
+            if (!container) return;
+            
+            const sortedKeys = Object.keys(categories).sort((a, b) => 
+                (categories[a].order || 0) - (categories[b].order || 0)
+            );
+            
+            if (sortedKeys.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #999; grid-column: 1/-1;">Aucune catégorie</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            sortedKeys.forEach(key => {
+                const cat = categories[key];
+                const div = document.createElement('div');
+                div.className = 'category-item';
+                div.innerHTML = `
+                    <span class="category-icon">${cat.icon || '📁'}</span>
+                    <span class="category-name">${cat.name}</span>
+                    <span class="category-key">${key}</span>
+                    <span class="category-status ${cat.active !== false ? 'active' : 'inactive'}">
+                        ${cat.active !== false ? '✅ Actif' : '⛔ Inactif'}
+                    </span>
+                    <div class="category-actions">
+                        <button class="btn-edit-cat" onclick="editCategory('${key}')">✏️</button>
+                        <button class="btn-toggle-cat" onclick="toggleCategory('${key}')">
+                            ${cat.active !== false ? '⛔' : '✅'}
+                        </button>
+                        <button class="btn-delete-cat" onclick="deleteCategory('${key}')">🗑</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        // AJOUTER une catégorie
+        function addCategory() {
+            const key = document.getElementById('newCategoryKey').value.trim();
+            const name = document.getElementById('newCategoryName').value.trim();
+            const icon = document.getElementById('newCategoryIcon').value.trim() || '📁';
+            
+            if (!key || !name) {
+                showToast('❌ Veuillez entrer une clé et un nom', 'error');
+                return;
+            }
+            
+            if (!/^[a-z0-9_]+$/.test(key)) {
+                showToast('❌ Clé invalide (minuscules, chiffres, underscores)', 'error');
+                return;
+            }
+            
+            if (categories[key]) {
+                showToast('❌ Cette catégorie existe déjà', 'error');
+                return;
+            }
+            
+            const newCategory = {
+                name: name,
+                icon: icon,
+                order: Object.keys(categories).length + 1,
+                active: true
+            };
+            
+            categoriesRef.child(key).set(newCategory)
+                .then(() => {
+                    showToast(`✅ Catégorie "${name}" ajoutée !`, 'success');
+                    document.getElementById('newCategoryKey').value = '';
+                    document.getElementById('newCategoryName').value = '';
+                    document.getElementById('newCategoryIcon').value = '';
+                })
+                .catch(error => {
+                    showToast('❌ Erreur: ' + error.message, 'error');
+                });
+        }
+        
+        // MODIFIER une catégorie
+        function editCategory(key) {
+            const cat = categories[key];
+            if (!cat) return;
+            
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
+                z-index: 9999; animation: fadeIn 0.3s ease;
+            `;
+            overlay.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 12px; max-width: 500px; width: 90%; max-height: 90%; overflow-y: auto;">
+                    <h2 style="margin-bottom: 20px;">✏️ Modifier la catégorie</h2>
+                    <form id="editCategoryForm">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Nom</label>
+                            <input type="text" id="editCatName" value="${cat.name}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" required>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Icône</label>
+                            <input type="text" id="editCatIcon" value="${cat.icon || '📁'}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Ordre d'affichage</label>
+                            <input type="number" id="editCatOrder" value="${cat.order || 0}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
+                            <button type="submit" style="flex: 1; padding: 12px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">✅ Sauvegarder</button>
+                            <button type="button" onclick="this.closest('.modal-overlay').remove()" style="flex: 1; padding: 12px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">❌ Annuler</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            
+            document.getElementById('editCategoryForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const updates = {
+                    name: document.getElementById('editCatName').value.trim(),
+                    icon: document.getElementById('editCatIcon').value.trim() || '📁',
+                    order: parseInt(document.getElementById('editCatOrder').value) || 0
+                };
+                
+                categoriesRef.child(key).update(updates)
+                    .then(() => {
+                        showToast('✅ Catégorie modifiée !', 'success');
+                        overlay.remove();
+                    })
+                    .catch(error => {
+                        showToast('❌ Erreur: ' + error.message, 'error');
+                    });
+            });
+        }
+        
+        // SUPPRIMER une catégorie
+        function deleteCategory(key) {
+            const cat = categories[key];
+            if (!cat) return;
+            
+            // Vérifier si des produits utilisent cette catégorie
+            const productsInCategory = products.filter(p => p.category === key);
+            if (productsInCategory.length > 0) {
+                showToast(`❌ Impossible de supprimer "${cat.name}" : ${productsInCategory.length} produit(s) l'utilisent.`, 'error');
+                return;
+            }
+            
+            if (confirm(`⚠️ Supprimer la catégorie "${cat.name}" définitivement ?`)) {
+                categoriesRef.child(key).remove()
+                    .then(() => {
+                        showToast('✅ Catégorie supprimée !', 'success');
+                    })
+                    .catch(error => {
+                        showToast('❌ Erreur: ' + error.message, 'error');
+                    });
+            }
+        }
+        
+        // MASQUER/AFFICHER une catégorie
+        function toggleCategory(key) {
+            const cat = categories[key];
+            if (!cat) return;
+            
+            const newStatus = cat.active === false ? true : false;
+            const action = newStatus ? 'activée' : 'désactivée';
+            
+            categoriesRef.child(key).update({ active: newStatus })
+                .then(() => {
+                    showToast(`✅ Catégorie ${action}`, 'success');
+                })
+                .catch(error => {
+                    showToast('❌ Erreur: ' + error.message, 'error');
+                });
+        }
+        
+        // Mettre à jour le sélecteur de catégories
         function updateCategorySelect() {
             const select = document.getElementById('productCategory');
             if (!select) return;
+            
             select.innerHTML = '<option value="">Choisir une catégorie...</option>';
-            const sortedKeys = Object.keys(categories).sort((a, b) => (categories[a].order || 0) - (categories[b].order || 0));
+            
+            const sortedKeys = Object.keys(categories).sort((a, b) => 
+                (categories[a].order || 0) - (categories[b].order || 0)
+            );
+            
             sortedKeys.forEach(key => {
                 const cat = categories[key];
                 if (cat.active !== false) {
@@ -923,10 +1280,24 @@
         
         // ============ INITIALISATION ============
         console.log('🚀 Démarrage de l\'administration...');
+        
+        // Vérifier que Firebase est bien initialisé
+        if (typeof database === 'undefined') {
+            console.error('❌ Firebase non initialisé ! Vérifiez config.js');
+            document.getElementById('connectionStatus').className = 'disconnected';
+            document.getElementById('connectionStatus').innerHTML = '❌ Firebase non initialisé - Vérifiez config.js';
+        } else {
+            console.log('✅ Firebase initialisé');
+        }
+        
         loadCategories();
         loadProducts();
         
         // Exposer les fonctions globalement
+        window.addCategory = addCategory;
+        window.editCategory = editCategory;
+        window.toggleCategory = toggleCategory;
+        window.deleteCategory = deleteCategory;
         window.loadPicXImagesForAdd = loadPicXImagesForAdd;
         window.loadPicXImagesForEdit = loadPicXImagesForEdit;
         window.selectPicXImage = selectPicXImage;
