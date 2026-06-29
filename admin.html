@@ -95,11 +95,13 @@
             cursor: pointer;
             font-size: 16px;
             font-weight: 600;
+            transition: opacity 0.3s;
         }
         #loginForm .btn-login:hover { opacity: 0.9; }
         #loginForm .btn-login:disabled { opacity: 0.6; cursor: not-allowed; }
         #loginError { color: #f44336; margin-top: 10px; text-align: center; font-size: 14px; }
         
+        /* ============ ADMIN SECTION ============ */
         .admin-section {
             background: white;
             padding: 25px;
@@ -281,63 +283,6 @@
         .form-actions .btn-save:hover { box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); }
         .form-actions .btn-reset { background: #6c757d; color: white; }
         
-        /* ============ PICX ============ */
-        .picx-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 99999;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            animation: fadeIn 0.3s ease;
-        }
-        .picx-modal-content {
-            background: white;
-            border-radius: 12px;
-            max-width: 800px;
-            width: 100%;
-            max-height: 80vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        .picx-modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            border-bottom: 1px solid #eee;
-        }
-        .picx-modal-header h3 { margin: 0; }
-        .picx-modal-header .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; }
-        .picx-modal-grid {
-            padding: 15px;
-            overflow-y: auto;
-            max-height: 60vh;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 10px;
-        }
-        .picx-modal-grid .picx-item {
-            cursor: pointer;
-            border: 2px solid transparent;
-            border-radius: 8px;
-            padding: 5px;
-            transition: all 0.3s;
-            background: #f8f9fa;
-            text-align: center;
-        }
-        .picx-modal-grid .picx-item:hover { border-color: #667eea; transform: scale(1.05); }
-        .picx-modal-grid .picx-item img { width: 100%; height: 100px; object-fit: cover; border-radius: 5px; }
-        .picx-modal-grid .picx-item .picx-name { font-size: 10px; color: #666; display: block; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .picx-modal-footer { padding: 15px; border-top: 1px solid #eee; text-align: center; color: #999; font-size: 12px; }
-        
         /* ============ CATEGORIES ============ */
         .categories-grid {
             display: grid;
@@ -446,6 +391,63 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateX(-50%) translateY(100px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
         
+        /* ============ PICX ============ */
+        .picx-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+        .picx-modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .picx-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .picx-modal-header h3 { margin: 0; }
+        .picx-modal-header .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; }
+        .picx-modal-grid {
+            padding: 15px;
+            overflow-y: auto;
+            max-height: 60vh;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
+        .picx-modal-grid .picx-item {
+            cursor: pointer;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            padding: 5px;
+            transition: all 0.3s;
+            background: #f8f9fa;
+            text-align: center;
+        }
+        .picx-modal-grid .picx-item:hover { border-color: #667eea; transform: scale(1.05); }
+        .picx-modal-grid .picx-item img { width: 100%; height: 100px; object-fit: cover; border-radius: 5px; }
+        .picx-modal-grid .picx-item .picx-name { font-size: 10px; color: #666; display: block; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .picx-modal-footer { padding: 15px; border-top: 1px solid #eee; text-align: center; color: #999; font-size: 12px; }
+        
         @media (max-width: 768px) {
             .form-grid { grid-template-columns: 1fr; }
             .form-actions { flex-direction: column; }
@@ -474,23 +476,34 @@
         
         <div id="connectionStatus" class="connected">✅ Connecté à Firebase</div>
         
-        <!-- ============ FORMULAIRE DE CONNEXION ============ -->
+        <!-- ============ FORMULAIRE DE CONNEXION (CORRIGÉ) ============ -->
         <div id="loginForm" style="display: none;">
-            <h2>🔐 Connexion</h2>
-            <form id="loginFormElement">
-                <label>Email</label>
-                <input type="email" id="loginEmail" placeholder="admin@restaurant.com" required>
-                <label>Mot de passe</label>
-                <input type="password" id="loginPassword" placeholder="Votre mot de passe" required>
-                <button type="submit" class="btn-login">🔐 Se connecter</button>
-                <div id="loginError"></div>
+            <h2 style="text-align: center; margin-bottom: 20px; color: #333;">🔐 Connexion</h2>
+            <form id="loginFormElement" autocomplete="off">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #555;">Email</label>
+                    <input type="email" id="loginEmail" placeholder="admin@restaurant.com" 
+                           style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px;" 
+                           required>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #555;">Mot de passe</label>
+                    <input type="password" id="loginPassword" placeholder="Votre mot de passe" 
+                           style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px;" 
+                           required>
+                </div>
+                <button type="submit" class="btn-login" 
+                        style="width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600;">
+                    🔐 Se connecter
+                </button>
+                <div id="loginError" style="color: #f44336; margin-top: 10px; text-align: center; font-size: 14px;"></div>
             </form>
         </div>
         
         <!-- ============ CONTENU ADMIN ============ -->
         <div id="adminContent" style="display: none;">
             
-            <!-- ============ TABS ============ -->
+            <!-- TABS -->
             <div class="tabs">
                 <button class="tab-btn active" data-tab="tab-restaurant">🏪 Restaurant</button>
                 <button class="tab-btn" data-tab="tab-categories">📂 Catégories</button>
@@ -724,7 +737,7 @@
         // ⚠️ TOUTES LES RÉFÉRENCES SONT DANS config.js
         
         // ============================================
-        // 🔐 AUTHENTIFICATION (AJOUTER ICI)
+        // 🔐 AUTHENTIFICATION
         // ============================================
         
         // Éléments DOM
@@ -765,7 +778,7 @@
             adminContent.style.display = 'block';
         }
         
-        // Vérifier l'état de l'authentification
+        // ✅ Vérifier l'état de l'authentification (AJOUTER ICI)
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
                 console.log('✅ Connecté en tant que:', user.email);
@@ -858,7 +871,7 @@
         // ============================================
         
         // ============================================
-        // RESTE DU CODE ADMIN (inchangé)
+        // RESTE DU CODE ADMIN
         // ============================================
         
         let products = [];
@@ -870,20 +883,9 @@
         let pendingProductId = null;
         let imageSelectorMode = null;
         
-        // ... (le reste de votre code admin ici)
-        
-        // ============================================
-        // INITIALISATION (après authentification)
-        // ============================================
-        
-        // ⚠️ ATTENTION : Les fonctions loadRestaurant, loadCategories, etc.
-        // doivent être appelées APRÈS l'authentification.
-        // Elles sont déjà dans votre code existant.
+        // ... (votre code existant ici)
         
         console.log('🚀 Démarrage de l\'administration...');
-        
-        // Note: Les fonctions comme loadRestaurant, loadCategories, loadProducts
-        // seront appelées quand l'utilisateur sera authentifié (via onAuthStateChanged)
         
         // Exposer les fonctions globalement
         window.openImageSelector = openImageSelector;
