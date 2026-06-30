@@ -11,33 +11,45 @@ jobs:
       contents: write
     
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
       
       - name: Generate config.js
         run: |
-          cat > config.js << 'EOF'
-          // 🔥 Configuration Firebase - Généré automatiquement
-          const firebaseConfig = {
-            apiKey: '${{ secrets.FIREBASE_API_KEY }}',
-            authDomain: '${{ secrets.FIREBASE_AUTH_DOMAIN }}',
-            databaseURL: '${{ secrets.FIREBASE_DATABASE_URL }}',
-            projectId: '${{ secrets.FIREBASE_PROJECT_ID }}',
-            storageBucket: '${{ secrets.FIREBASE_STORAGE_BUCKET }}',
-            messagingSenderId: '${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}',
-            appId: '${{ secrets.FIREBASE_APP_ID }}'
-          };
-          if (typeof firebase !== 'undefined' && !firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-            console.log('✅ Firebase initialisé depuis config.js');
-          }
-          window.firebaseConfig = firebaseConfig;
-          EOF
+          echo "// Configuration Firebase" > config.js
+          echo "const firebaseConfig = {" >> config.js
+          echo "  apiKey: '${{ secrets.FIREBASE_API_KEY }}'," >> config.js
+          echo "  authDomain: '${{ secrets.FIREBASE_AUTH_DOMAIN }}'," >> config.js
+          echo "  databaseURL: '${{ secrets.FIREBASE_DATABASE_URL }}'," >> config.js
+          echo "  projectId: '${{ secrets.FIREBASE_PROJECT_ID }}'," >> config.js
+          echo "  storageBucket: '${{ secrets.FIREBASE_STORAGE_BUCKET }}'," >> config.js
+          echo "  messagingSenderId: '${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}'," >> config.js
+          echo "  appId: '${{ secrets.FIREBASE_APP_ID }}'" >> config.js
+          echo "};" >> config.js
+          echo "if (typeof firebase !== 'undefined' && !firebase.apps.length) {" >> config.js
+          echo "  firebase.initializeApp(firebaseConfig);" >> config.js
+          echo "  console.log('✅ Firebase initialisé depuis config.js');" >> config.js
+          echo "}" >> config.js
+          echo "" >> config.js
+          echo "window.firebaseConfig = firebaseConfig;" >> config.js
           
+          # Afficher le contenu pour vérification
+          echo "✅ config.js généré :"
+          cat config.js
+      
+      - name: Check files
+        run: |
+          echo "📁 Fichiers dans le répertoire :"
+          ls -la
+          echo ""
+          echo "📄 config.js existe ?"
+          test -f config.js && echo "✅ OUI" || echo "❌ NON"
+      
       - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          folder: .
-          branch: gh-pages
-          clean: true
-          commit-message: "🚀 Déploiement automatique"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
+          publish_branch: gh-pages
+          force_orphan: true
+          commit_message: "🚀 Déploiement automatique $(date)"
