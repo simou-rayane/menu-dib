@@ -14,9 +14,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       
-      - name: Generate config.js
+      - name: 🔥 Generate config.js
         run: |
-          echo "// Configuration Firebase" > config.js
+          echo "// 🔥 Configuration Firebase - Généré automatiquement" > config.js
           echo "const firebaseConfig = {" >> config.js
           echo "  apiKey: '${{ secrets.FIREBASE_API_KEY }}'," >> config.js
           echo "  authDomain: '${{ secrets.FIREBASE_AUTH_DOMAIN }}'," >> config.js
@@ -26,6 +26,7 @@ jobs:
           echo "  messagingSenderId: '${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}'," >> config.js
           echo "  appId: '${{ secrets.FIREBASE_APP_ID }}'" >> config.js
           echo "};" >> config.js
+          echo "" >> config.js
           echo "if (typeof firebase !== 'undefined' && !firebase.apps.length) {" >> config.js
           echo "  firebase.initializeApp(firebaseConfig);" >> config.js
           echo "  console.log('✅ Firebase initialisé depuis config.js');" >> config.js
@@ -33,11 +34,11 @@ jobs:
           echo "" >> config.js
           echo "window.firebaseConfig = firebaseConfig;" >> config.js
           
-          # Afficher le contenu pour vérification
+          echo ""
           echo "✅ config.js généré :"
           cat config.js
       
-      - name: Check files
+      - name: 📁 Vérification des fichiers
         run: |
           echo "📁 Fichiers dans le répertoire :"
           ls -la
@@ -45,11 +46,11 @@ jobs:
           echo "📄 config.js existe ?"
           test -f config.js && echo "✅ OUI" || echo "❌ NON"
       
-      - name: Deploy to GitHub Pages
+      - name: 🚀 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: .
           publish_branch: gh-pages
           force_orphan: true
-          commit_message: "🚀 Déploiement automatique $(date)"
+          commit_message: "🚀 Déploiement automatique - config.js inclus"
