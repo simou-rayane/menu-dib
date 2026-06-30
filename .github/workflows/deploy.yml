@@ -7,13 +7,15 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
     steps:
       - uses: actions/checkout@v3
       
-      - name: Generate config.js
+      - name: Create config.js
         run: |
-          echo "// 🔥 Configuration Firebase - Généré automatiquement" > config.js
-          echo "const firebaseConfig = {" >> config.js
+          echo "const firebaseConfig = {" > config.js
           echo "  apiKey: '${{ secrets.FIREBASE_API_KEY }}'," >> config.js
           echo "  authDomain: '${{ secrets.FIREBASE_AUTH_DOMAIN }}'," >> config.js
           echo "  databaseURL: '${{ secrets.FIREBASE_DATABASE_URL }}'," >> config.js
@@ -22,17 +24,10 @@ jobs:
           echo "  messagingSenderId: '${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}'," >> config.js
           echo "  appId: '${{ secrets.FIREBASE_APP_ID }}'" >> config.js
           echo "};" >> config.js
-          echo "" >> config.js
-          echo "// Initialiser Firebase" >> config.js
-          echo "if (!firebase.apps.length) {" >> config.js
-          echo "  firebase.initializeApp(firebaseConfig);" >> config.js
-          echo "  console.log('✅ Firebase initialisé depuis config.js');" >> config.js
-          echo "}" >> config.js
-          echo "" >> config.js
-          echo "// Exporter pour les autres fichiers" >> config.js
-          echo "window.firebaseConfig = firebaseConfig;" >> config.js
-          
-      - name: Deploy to GitHub Pages
+          echo "if (typeof firebase !== 'undefined' && !firebase.apps.length) firebase.initializeApp(firebaseConfig);" >> config.js
+          cat config.js
+      
+      - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
