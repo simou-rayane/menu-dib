@@ -14,9 +14,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       
-      - name: 🔥 Generate config.js (FORCED)
+      - name: 🔥 Vérification des secrets
         run: |
-          echo "// 🔥 Configuration Firebase - Généré automatiquement" > config.js
+          echo "🔍 Vérification des secrets Firebase..."
+          echo ""
+          echo "FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY != '' && '✅' || '❌' }}"
+          echo "FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN != '' && '✅' || '❌' }}"
+          echo "FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL != '' && '✅' || '❌' }}"
+          echo "FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID != '' && '✅' || '❌' }}"
+          echo "FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET != '' && '✅' || '❌' }}"
+          echo "FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID != '' && '✅' || '❌' }}"
+          echo "FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID != '' && '✅' || '❌' }}"
+      
+      - name: 🔥 Generate config.js
+        run: |
+          # Vérifier que les secrets existent
+          if [ -z "${{ secrets.FIREBASE_API_KEY }}" ]; then
+            echo "❌ ERREUR: FIREBASE_API_KEY manquant !"
+            exit 1
+          fi
+          
+          echo "// Configuration Firebase - Généré automatiquement" > config.js
           echo "const firebaseConfig = {" >> config.js
           echo "  apiKey: '${{ secrets.FIREBASE_API_KEY }}'," >> config.js
           echo "  authDomain: '${{ secrets.FIREBASE_AUTH_DOMAIN }}'," >> config.js
@@ -27,7 +45,6 @@ jobs:
           echo "  appId: '${{ secrets.FIREBASE_APP_ID }}'" >> config.js
           echo "};" >> config.js
           echo "" >> config.js
-          echo "// Initialiser Firebase" >> config.js
           echo "if (typeof firebase !== 'undefined' && !firebase.apps.length) {" >> config.js
           echo "  firebase.initializeApp(firebaseConfig);" >> config.js
           echo "  console.log('✅ Firebase initialisé depuis config.js');" >> config.js
@@ -36,31 +53,24 @@ jobs:
           echo "window.firebaseConfig = firebaseConfig;" >> config.js
           
           echo ""
-          echo "==========================================="
           echo "✅ config.js généré avec succès !"
-          echo "==========================================="
           echo ""
           echo "📄 Contenu de config.js :"
           echo "-------------------------------------------"
           cat config.js
           echo "-------------------------------------------"
       
-      - name: 📁 Vérification FORCÉE de config.js
+      - name: 📁 Vérification des fichiers
         run: |
-          echo ""
-          echo "📁 Vérification des fichiers..."
-          echo "-------------------------------------------"
+          echo "📁 Fichiers :"
           ls -la
-          echo "-------------------------------------------"
           echo ""
           if [ -f "config.js" ]; then
             echo "✅ config.js EXISTE !"
             echo "📄 Taille : $(wc -c < config.js) bytes"
           else
-            echo "❌ ERREUR : config.js n'existe pas !"
-            echo "💡 Création forcée..."
-            echo "// Fallback config" > config.js
-            echo "const firebaseConfig = { apiKey: 'test' };" >> config.js
+            echo "❌ config.js n'existe pas !"
+            exit 1
           fi
       
       - name: 🚀 Deploy to GitHub Pages
@@ -70,16 +80,6 @@ jobs:
           publish_dir: .
           publish_branch: gh-pages
           force_orphan: true
-          commit_message: "🚀 Déploiement - config.js généré"
+          commit_message: "🚀 Déploiement - config.js inclus"
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
-      
-      - name: ✅ Vérification finale
-        run: |
-          echo ""
-          echo "==========================================="
-          echo "🎉 Déploiement terminé !"
-          echo "==========================================="
-          echo ""
-          echo "🌐 Site : https://simou-rayane.github.io/menu-dib/"
-          echo "📄 config.js : https://simou-rayane.github.io/menu-dib/config.js"
