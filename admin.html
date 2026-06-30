@@ -46,6 +46,8 @@
         .btn-export { background: #2196F3; color: white; }
         .btn-import { background: #ff9800; color: white; }
         .btn-reset { background: #dc3545; color: white; }
+        .btn-reload { background: #4CAF50; color: white; }
+        .btn-logout { background: #f44336; color: white; }
         
         #connectionStatus {
             padding: 10px 20px;
@@ -388,6 +390,46 @@
         .toast.info { background: #2196F3; }
         .toast.warning { background: #ff9800; }
         
+        /* ============ MODAL ============ */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeIn 0.3s ease;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+        }
+        .modal-content h2 { margin-bottom: 20px; }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .modal-actions button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .modal-actions .btn-save { background: #667eea; color: white; }
+        .modal-actions .btn-cancel { background: #dc3545; color: white; }
+        
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateX(-50%) translateY(100px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
         
@@ -468,9 +510,11 @@
         <header>
             <h1>🔧 <span>Administration</span> Firebase</h1>
             <div class="header-actions">
+                <button class="btn-reload" onclick="reloadAllData()">🔄 Recharger</button>
                 <button class="btn-export" onclick="exportProducts()">📤 Exporter</button>
                 <button class="btn-import" onclick="importProducts()">📥 Importer</button>
                 <button class="btn-reset" onclick="resetFirebaseProducts()">🔄 Réinitialiser</button>
+                <button class="btn-logout" onclick="logoutUser()" id="logoutBtn" style="display:none;">🚪 Déconnexion</button>
             </div>
         </header>
         
@@ -482,20 +526,13 @@
             <form id="loginFormElement" autocomplete="off">
                 <div style="margin-bottom: 15px;">
                     <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #555;">Email</label>
-                    <input type="email" id="loginEmail" placeholder="admin@restaurant.com" 
-                           style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px;" 
-                           required>
+                    <input type="email" id="loginEmail" placeholder="admin@restaurant.com" required>
                 </div>
                 <div style="margin-bottom: 20px;">
                     <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #555;">Mot de passe</label>
-                    <input type="password" id="loginPassword" placeholder="Votre mot de passe" 
-                           style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px;" 
-                           required>
+                    <input type="password" id="loginPassword" placeholder="Votre mot de passe" required>
                 </div>
-                <button type="submit" class="btn-login" 
-                        style="width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600;">
-                    🔐 Se connecter
-                </button>
+                <button type="submit" class="btn-login">🔐 Se connecter</button>
                 <div id="loginError" style="color: #f44336; margin-top: 10px; text-align: center; font-size: 14px;"></div>
             </form>
         </div>
@@ -644,11 +681,11 @@
             <!-- ============ TAB 2: CATÉGORIES ============ -->
             <div class="tab-content" id="tab-categories">
                 <div class="admin-section">
-                    <h2>📂 Gestion des catégories</h2>
+                    <h2>📂 Gestion des catégories (<span id="categoryCount">0</span>)</h2>
                     
                     <div class="add-category-form">
-                        <input type="text" id="newCategoryKey" placeholder="Clé (ex: snacks)" style="flex: 1;">
-                        <input type="text" id="newCategoryName" placeholder="Nom (ex: Snacks)" style="flex: 1;">
+                        <input type="text" id="newCategoryKey" placeholder="Clé (ex: snacks)">
+                        <input type="text" id="newCategoryName" placeholder="Nom (ex: Snacks)">
                         <input type="text" id="newCategoryIcon" placeholder="Icône (ex: 🌮)" style="flex: 0.5; min-width: 80px;">
                         <button onclick="addCategory()">➕ Ajouter</button>
                     </div>
@@ -726,36 +763,61 @@
     </div>
     
     <!-- ============ FIREBASE CONFIG ============ -->
-    <script src="config.js"></script>
+    <script src="config.js" onerror="handleConfigError()"></script>
    
     <!-- ============ SCRIPT PRINCIPAL ============ -->
     <script>
         // ============================================
-        // ADMIN.JS - AVEC AUTHENTIFICATION
+        // ADMIN.JS - VERSION COMPLÈTEMENT CORRIGÉE
         // ============================================
         
-        // ⚠️ TOUTES LES RÉFÉRENCES SONT DANS config.js
+        // ============================================
+        // 🔧 VARIABLES GLOBALES
+        // ============================================
+        let products = [];
+        let categories = {};
+        let restaurantData = {};
+        let picxImages = [];
+        let selectedPicxImage = null;
+        let imageSelectorMode = null;
+        let currentRestaurantId = 'default';
+        
+        // Références Firebase
+        let database, restaurantsRef, categoriesRef, productsRef;
+        
+        // ============================================
+        // 📋 CONFIGURATION PICX
+        // ============================================
+        const PICX_CONFIG = {
+            username: 'simou-rayane',
+            repo: 'picx-images-hosting',
+            branch: 'master'
+        };
+        
+        // ============================================
+        // 🚨 GESTIONNAIRE D'ERREUR CONFIG
+        // ============================================
+        function handleConfigError() {
+            console.error('❌ Erreur: config.js non trouvé');
+            document.getElementById('connectionStatus').innerHTML = '❌ Erreur: config.js manquant';
+            document.getElementById('connectionStatus').className = 'disconnected';
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('loginError').textContent = '⚠️ Le fichier config.js est manquant. Contactez l\'administrateur.';
+        }
         
         // ============================================
         // 🔐 AUTHENTIFICATION
         // ============================================
         
-        // Éléments DOM
-        const loginForm = document.getElementById('loginForm');
-        const adminContent = document.getElementById('adminContent');
-        const loginFormElement = document.getElementById('loginFormElement');
-        const loginError = document.getElementById('loginError');
-        
-        // Fonction de connexion
         function loginUser(email, password) {
             return firebase.auth().signInWithEmailAndPassword(email, password);
         }
         
-        // Fonction de déconnexion
         function logoutUser() {
             firebase.auth().signOut()
                 .then(() => {
                     console.log('👋 Déconnecté');
+                    showToast('👋 Déconnecté', 'info');
                     showLoginForm();
                 })
                 .catch(error => {
@@ -764,49 +826,45 @@
                 });
         }
         
-        // Afficher le formulaire de connexion
         function showLoginForm() {
-            loginForm.style.display = 'block';
-            adminContent.style.display = 'none';
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('adminContent').style.display = 'none';
+            document.getElementById('logoutBtn').style.display = 'none';
             document.getElementById('connectionStatus').innerHTML = '🔐 Veuillez vous connecter';
             document.getElementById('connectionStatus').className = 'disconnected';
         }
         
-        // Afficher le contenu admin
         function showAdminContent() {
-            loginForm.style.display = 'none';
-            adminContent.style.display = 'block';
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('adminContent').style.display = 'block';
+            document.getElementById('logoutBtn').style.display = 'inline-block';
         }
         
-        // ✅ Vérifier l'état de l'authentification
+        // ✅ État de l'authentification
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
                 console.log('✅ Connecté en tant que:', user.email);
+                console.log('🆔 UID:', user.uid);
                 showAdminContent();
                 document.getElementById('connectionStatus').innerHTML = `✅ Connecté en tant que ${user.email}`;
                 document.getElementById('connectionStatus').className = 'connected';
-                addLogoutButton();
+                
+                // 🔥 Charger les données après connexion
+                setTimeout(() => {
+                    console.log('🔄 Chargement des données...');
+                    if (typeof loadRestaurant === 'function') loadRestaurant();
+                    if (typeof loadCategories === 'function') loadCategories();
+                    if (typeof loadProducts === 'function') loadProducts();
+                }, 500);
+                
             } else {
                 console.log('🔐 Non connecté');
                 showLoginForm();
             }
         });
         
-        // Ajouter le bouton de déconnexion
-        function addLogoutButton() {
-            const headerActions = document.querySelector('.header-actions');
-            if (headerActions && !document.getElementById('logoutBtn')) {
-                const logoutBtn = document.createElement('button');
-                logoutBtn.id = 'logoutBtn';
-                logoutBtn.textContent = '🚪 Déconnexion';
-                logoutBtn.style.cssText = 'background: #f44336; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600;';
-                logoutBtn.onclick = logoutUser;
-                headerActions.appendChild(logoutBtn);
-            }
-        }
-        
-        // Gestion du formulaire de connexion
-        loginFormElement.addEventListener('submit', function(e) {
+        // Formulaire de connexion
+        document.getElementById('loginFormElement').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const email = document.getElementById('loginEmail').value;
@@ -815,7 +873,7 @@
             const btn = this.querySelector('.btn-login');
             btn.disabled = true;
             btn.textContent = '⏳ Connexion...';
-            loginError.textContent = '';
+            document.getElementById('loginError').textContent = '';
             
             loginUser(email, password)
                 .then((userCredential) => {
@@ -835,7 +893,7 @@
                     } else if (error.code === 'auth/too-many-requests') {
                         errorMessage = '❌ Trop de tentatives. Réessayez plus tard.';
                     }
-                    loginError.textContent = errorMessage;
+                    document.getElementById('loginError').textContent = errorMessage;
                     showToast(errorMessage, 'error');
                 })
                 .finally(() => {
@@ -845,61 +903,43 @@
         });
         
         // ============================================
-        // FIN AUTHENTIFICATION
+        // 🚀 INITIALISATION FIREBASE
         // ============================================
         
-        // ============================================
-        // RESTE DU CODE ADMIN
-        // ============================================
-        
-        let products = [];
-        let categories = {};
-        let restaurantData = {};
-        let picxImages = [];
-        let selectedPicxImage = null;
-        let picxMode = 'add';
-        let pendingProductId = null;
-        let imageSelectorMode = null;
-        
-        // ============ CONFIGURATION PICX ============
-        const PICX_CONFIG = {
-            username: 'simou-rayane',
-            repo: 'picx-images-hosting',
-            branch: 'master'
-        };
-        
-        // ============ RÉFÉRENCES ============
-        const currentRestaurantId = 'default';
-        
-        // ============ ÉTAT DE CONNEXION ============
-        function updateConnectionStatus(connected) {
-            const statusEl = document.getElementById('connectionStatus');
-            if (connected) {
-                statusEl.className = 'connected';
-                statusEl.innerHTML = '✅ Connecté à Firebase - Synchronisation active';
-            } else {
-                statusEl.className = 'disconnected';
-                statusEl.innerHTML = '❌ Déconnecté - Vérifiez votre configuration';
+        function initializeFirebase() {
+            if (typeof firebase === 'undefined' || firebase.apps.length === 0) {
+                console.log('⏳ Attente de Firebase...');
+                setTimeout(initializeFirebase, 500);
+                return;
             }
+            
+            console.log('✅ Firebase prêt');
+            
+            // Initialiser les références
+            database = firebase.database();
+            restaurantsRef = database.ref('restaurants');
+            categoriesRef = database.ref('categories');
+            productsRef = database.ref('products');
+            
+            // Exposer globalement
+            window.database = database;
+            window.restaurantsRef = restaurantsRef;
+            window.categoriesRef = categoriesRef;
+            window.productsRef = productsRef;
+            
+            console.log('✅ Références Firebase initialisées');
         }
         
-        database.ref('.info/connected').on('value', (snapshot) => {
-            updateConnectionStatus(snapshot.val());
-        });
-        
-        // ============ TABS ============
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                document.getElementById(this.dataset.tab).classList.add('active');
-            });
-        });
-        
-        // ============ GESTION DU RESTAURANT ============
+        // ============================================
+        // 📦 CHARGEMENT DU RESTAURANT
+        // ============================================
         
         function loadRestaurant() {
+            if (!restaurantsRef) {
+                console.warn('⏳ RestaurantsRef non initialisé');
+                return;
+            }
+            
             restaurantsRef.child(currentRestaurantId).on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
@@ -909,12 +949,16 @@
                     updateBannerPreview(data.banner);
                     console.log('✅ Restaurant chargé:', data.name);
                 } else {
+                    console.log('📝 Aucune donnée restaurant, création par défaut');
                     restaurantData = getDefaultRestaurant();
                     populateRestaurantForm(restaurantData);
                     updateLogoPreview(null);
                     updateBannerPreview(null);
                     restaurantsRef.child(currentRestaurantId).set(restaurantData);
                 }
+            }, (error) => {
+                console.error('❌ Erreur chargement restaurant:', error);
+                showToast('❌ Erreur: ' + error.message, 'error');
             });
         }
         
@@ -929,15 +973,16 @@
                 whatsapp: "33123456789",
                 deliveryPrice: 5,
                 deliveryAvailable: true,
-                facebook: "https://facebook.com/votre-page",
-                instagram: "https://instagram.com/votre-compte",
-                website: "https://votre-site.com",
-                mapsUrl: "https://maps.google.com/maps?q=123+Rue+de+la+Paix+75001+Paris",
+                facebook: null,
+                instagram: null,
+                website: null,
+                mapsUrl: null,
                 active: true
             };
         }
         
         function populateRestaurantForm(data) {
+            if (!data) return;
             document.getElementById('restaurantId').value = currentRestaurantId;
             document.getElementById('restaurantName').value = data.name || '';
             document.getElementById('restaurantLogo').value = data.logo || '';
@@ -953,13 +998,13 @@
             document.getElementById('restaurantWebsite').value = data.website || '';
             document.getElementById('restaurantMapsUrl').value = data.mapsUrl || '';
             document.getElementById('restaurantActive').value = data.active !== false ? 'true' : 'false';
-            updateLogoPreview(data.logo);
-            updateBannerPreview(data.banner);
         }
         
         function resetRestaurantForm() {
             if (confirm('🔄 Réinitialiser le formulaire avec les valeurs actuelles ?')) {
                 populateRestaurantForm(restaurantData);
+                updateLogoPreview(restaurantData.logo);
+                updateBannerPreview(restaurantData.banner);
                 showToast('🔄 Formulaire réinitialisé', 'info');
             }
         }
@@ -1057,15 +1102,8 @@
             }
         }
         
-        document.getElementById('restaurantName').addEventListener('input', function() {
-            const logo = document.getElementById('restaurantLogo').value;
-            if (!logo) {
-                const placeholder = document.getElementById('logoPlaceholder');
-                placeholder.textContent = this.value.charAt(0).toUpperCase() || 'R';
-            }
-        });
-        
         // ============ SAUVEGARDER LE RESTAURANT ============
+        
         document.getElementById('restaurantForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -1095,15 +1133,14 @@
             btn.disabled = true;
             btn.textContent = '⏳ Sauvegarde...';
             
-            restaurantsRef.child(currentRestaurantId).set(data)
+            restaurantsRef.child(currentRestaurantId).update(data)
                 .then(() => {
                     showToast('✅ Restaurant mis à jour avec succès !', 'success');
                     restaurantData = data;
-                    updateLogoPreview(data.logo);
-                    updateBannerPreview(data.banner);
                 })
                 .catch(error => {
                     showToast('❌ Erreur: ' + error.message, 'error');
+                    console.error('❌ Erreur sauvegarde:', error);
                 })
                 .finally(() => {
                     btn.disabled = false;
@@ -1111,19 +1148,32 @@
                 });
         });
         
-        // ============ GESTION DES CATÉGORIES ============
+        // ============================================
+        // 📂 GESTION DES CATÉGORIES
+        // ============================================
         
         function loadCategories() {
+            if (!categoriesRef) {
+                console.warn('⏳ CategoriesRef non initialisé');
+                return;
+            }
+            
             categoriesRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
                     categories = data;
+                    console.log('✅ Catégories chargées:', Object.keys(categories).length);
                 } else {
                     categories = {};
+                    console.log('📝 Aucune catégorie, création par défaut');
                     createDefaultCategories();
                 }
                 displayCategories();
                 updateCategorySelect();
+                document.getElementById('categoryCount').textContent = Object.keys(categories).length;
+            }, (error) => {
+                console.error('❌ Erreur chargement catégories:', error);
+                showToast('❌ Erreur: ' + error.message, 'error');
             });
         }
         
@@ -1184,7 +1234,7 @@
                 return;
             }
             if (!/^[a-z0-9_]+$/.test(key)) {
-                showToast('❌ Clé invalide', 'error');
+                showToast('❌ Clé invalide (uniquement lettres minuscules, chiffres, _)', 'error');
                 return;
             }
             if (categories[key]) {
@@ -1192,14 +1242,19 @@
                 return;
             }
             
-            categoriesRef.child(key).set({ name, icon, order: Object.keys(categories).length + 1, active: true })
-                .then(() => {
-                    showToast(`✅ Catégorie "${name}" ajoutée !`, 'success');
-                    document.getElementById('newCategoryKey').value = '';
-                    document.getElementById('newCategoryName').value = '';
-                    document.getElementById('newCategoryIcon').value = '';
-                })
-                .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
+            categoriesRef.child(key).set({ 
+                name, 
+                icon, 
+                order: Object.keys(categories).length + 1, 
+                active: true 
+            })
+            .then(() => {
+                showToast(`✅ Catégorie "${name}" ajoutée !`, 'success');
+                document.getElementById('newCategoryKey').value = '';
+                document.getElementById('newCategoryName').value = '';
+                document.getElementById('newCategoryIcon').value = '';
+            })
+            .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
         }
         
         function editCategory(key) {
@@ -1208,30 +1263,25 @@
             
             const overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
-            overlay.style.cssText = `
-                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
-                z-index: 9999; animation: fadeIn 0.3s ease;
-            `;
             overlay.innerHTML = `
-                <div style="background: white; padding: 30px; border-radius: 12px; max-width: 500px; width: 90%; max-height: 90%; overflow-y: auto;">
-                    <h2 style="margin-bottom: 20px;">✏️ Modifier la catégorie</h2>
+                <div class="modal-content">
+                    <h2>✏️ Modifier la catégorie</h2>
                     <form id="editCategoryForm">
                         <div style="margin-bottom: 15px;">
                             <label style="display: block; margin-bottom: 5px; font-weight: 600;">Nom</label>
-                            <input type="text" id="editCatName" value="${cat.name}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;" required>
+                            <input type="text" id="editCatName" value="${cat.name}" required>
                         </div>
                         <div style="margin-bottom: 15px;">
                             <label style="display: block; margin-bottom: 5px; font-weight: 600;">Icône</label>
-                            <input type="text" id="editCatIcon" value="${cat.icon || '📁'}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;">
+                            <input type="text" id="editCatIcon" value="${cat.icon || '📁'}">
                         </div>
                         <div style="margin-bottom: 15px;">
                             <label style="display: block; margin-bottom: 5px; font-weight: 600;">Ordre</label>
-                            <input type="number" id="editCatOrder" value="${cat.order || 0}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;">
+                            <input type="number" id="editCatOrder" value="${cat.order || 0}">
                         </div>
-                        <div style="display: flex; gap: 10px; margin-top: 20px;">
-                            <button type="submit" style="flex: 1; padding: 12px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">✅ Sauvegarder</button>
-                            <button type="button" onclick="this.closest('.modal-overlay').remove()" style="flex: 1; padding: 12px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">❌ Annuler</button>
+                        <div class="modal-actions">
+                            <button type="submit" class="btn-save">✅ Sauvegarder</button>
+                            <button type="button" class="btn-cancel" onclick="this.closest('.modal-overlay').remove()">❌ Annuler</button>
                         </div>
                     </form>
                 </div>
@@ -1246,7 +1296,10 @@
                     order: parseInt(document.getElementById('editCatOrder').value) || 0
                 };
                 categoriesRef.child(key).update(updates)
-                    .then(() => { showToast('✅ Catégorie modifiée !', 'success'); overlay.remove(); })
+                    .then(() => { 
+                        showToast('✅ Catégorie modifiée !', 'success'); 
+                        overlay.remove(); 
+                    })
                     .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
             });
         }
@@ -1291,50 +1344,68 @@
             });
         }
         
-        // ============ CHARGER LES PRODUITS ============
+        // ============================================
+        // 🍽️ GESTION DES PRODUITS
+        // ============================================
+        
         function loadProducts() {
+            if (!productsRef) {
+                console.warn('⏳ ProductsRef non initialisé');
+                return;
+            }
+            
             productsRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
                     products = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+                    console.log('✅ Produits chargés:', products.length);
                 } else {
                     products = [];
+                    console.log('📝 Aucun produit');
                 }
                 displayProducts();
                 document.getElementById('productCount').textContent = products.length;
+            }, (error) => {
+                console.error('❌ Erreur chargement produits:', error);
+                showToast('❌ Erreur: ' + error.message, 'error');
             });
         }
         
-        // ============ AFFICHER LES PRODUITS ============
         function displayProducts() {
             const container = document.getElementById('productsList');
             if (!container) return;
+            
             if (products.length === 0) {
                 container.innerHTML = '<p style="text-align:center; color:#999;">Aucun produit</p>';
                 return;
             }
+            
             container.innerHTML = '';
             products.forEach((product) => {
                 const div = document.createElement('div');
                 div.className = 'product-item';
                 const categoryName = categories[product.category]?.name || product.category || 'Non catégorisé';
                 const categoryIcon = categories[product.category]?.icon || '';
-                let imageHtml = product.image ? `<img src="${product.image}" class="product-thumbnail" onerror="this.style.display='none'; this.parentElement.querySelector('.product-thumbnail-placeholder').style.display='flex';">` : `<div class="product-thumbnail-placeholder">📷</div>`;
+                
+                let imageHtml = product.image 
+                    ? `<img src="${product.image}" class="product-thumbnail" onerror="this.style.display='none'; this.parentElement.querySelector('.product-thumbnail-placeholder').style.display='flex';">` 
+                    : `<div class="product-thumbnail-placeholder">📷</div>`;
+                
                 div.innerHTML = `
                     <div class="product-info">
                         ${imageHtml}
                         <div class="product-details">
                             <div>
                                 <span class="name">${product.name}</span>
-                                <span class="price">${product.price.toFixed(2)} €</span>
+                                <span class="price">${parseFloat(product.price).toFixed(2)} €</span>
                                 <span class="category">(${categoryIcon} ${categoryName})</span>
                             </div>
                             <div class="description">${product.description || ''}</div>
                         </div>
                     </div>
                     <div class="product-actions">
-                        <button class="${product.visible ? 'status-visible' : 'status-hidden'}" onclick="toggleVisibility('${product.id}')">
-                            ${product.visible ? '✓ Visible' : '✗ Masqué'}
+                        <button class="${product.visible !== false ? 'status-visible' : 'status-hidden'}" onclick="toggleVisibility('${product.id}')">
+                            ${product.visible !== false ? '✓ Visible' : '✗ Masqué'}
                         </button>
                         <button class="btn-edit" onclick="editProduct('${product.id}')">✏️</button>
                         <button class="btn-photo" onclick="changeImage('${product.id}')">📷</button>
@@ -1345,18 +1416,29 @@
             });
         }
         
-        // ============ PRODUITS - FONCTIONS ============
-        
         function validateProduct(p) {
-            if (!p.name?.trim()) { showToast('❌ Le nom est requis', 'error'); return false; }
-            if (!p.price || isNaN(p.price) || p.price <= 0) { showToast('❌ Prix invalide', 'error'); return false; }
-            if (!p.category) { showToast('❌ La catégorie est requise', 'error'); return false; }
+            if (!p.name?.trim()) { 
+                showToast('❌ Le nom est requis', 'error'); 
+                return false; 
+            }
+            if (!p.price || isNaN(p.price) || p.price <= 0) { 
+                showToast('❌ Prix invalide', 'error'); 
+                return false; 
+            }
+            if (!p.category) { 
+                showToast('❌ La catégorie est requise', 'error'); 
+                return false; 
+            }
             return true;
         }
         
         function addProduct(productData) {
             return new Promise((resolve, reject) => {
-                if (!validateProduct(productData)) { reject(new Error('Validation')); return; }
+                if (!validateProduct(productData)) { 
+                    reject(new Error('Validation')); 
+                    return; 
+                }
+                
                 const newProduct = {
                     name: productData.name.trim(),
                     price: parseFloat(productData.price),
@@ -1366,21 +1448,25 @@
                     image: document.getElementById('productImage').value.trim() || null,
                     createdAt: Date.now()
                 };
-                const ref = productsRef.push();
-                ref.set(newProduct)
+                
+                productsRef.push().set(newProduct)
                     .then(() => {
                         showToast('✅ Produit ajouté !', 'success');
                         document.getElementById('productForm').reset();
                         clearPicXImage();
                         resolve(true);
                     })
-                    .catch(error => { showToast('❌ Erreur: ' + error.message, 'error'); reject(error); });
+                    .catch(error => { 
+                        showToast('❌ Erreur: ' + error.message, 'error'); 
+                        reject(error); 
+                    });
             });
         }
         
         function editProduct(productId) {
             const product = products.find(p => p.id === productId);
             if (!product) return;
+            
             let catOptions = '';
             const sortedKeys = Object.keys(categories).sort((a, b) => (categories[a].order || 0) - (categories[b].order || 0));
             sortedKeys.forEach(key => {
@@ -1389,17 +1475,33 @@
                     catOptions += `<option value="${key}" ${key === product.category ? 'selected' : ''}>${cat.icon || '📁'} ${cat.name}</option>`;
                 }
             });
+            
             const overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
             overlay.innerHTML = `
                 <div class="modal-content">
                     <h2>✏️ Modifier le produit</h2>
                     <form id="editForm">
-                        <div style="margin-bottom:15px;"><label style="font-weight:600;">Nom</label><input type="text" id="editName" value="${product.name}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;" required></div>
-                        <div style="margin-bottom:15px;"><label style="font-weight:600;">Prix (€)</label><input type="number" id="editPrice" value="${product.price}" step="0.01" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;" required></div>
-                        <div style="margin-bottom:15px;"><label style="font-weight:600;">Catégorie</label><select id="editCategory" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;">${catOptions}</select></div>
-                        <div style="margin-bottom:15px;"><label style="font-weight:600;">Description</label><textarea id="editDesc" rows="3" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;">${product.description || ''}</textarea></div>
-                        <div style="margin-bottom:15px;"><label style="font-weight:600;">Image URL</label><input type="text" id="editImageUrl" value="${product.image || ''}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;" placeholder="https://..."></div>
+                        <div style="margin-bottom:15px;">
+                            <label style="font-weight:600;">Nom</label>
+                            <input type="text" id="editName" value="${product.name}" required>
+                        </div>
+                        <div style="margin-bottom:15px;">
+                            <label style="font-weight:600;">Prix (€)</label>
+                            <input type="number" id="editPrice" value="${product.price}" step="0.01" required>
+                        </div>
+                        <div style="margin-bottom:15px;">
+                            <label style="font-weight:600;">Catégorie</label>
+                            <select id="editCategory">${catOptions}</select>
+                        </div>
+                        <div style="margin-bottom:15px;">
+                            <label style="font-weight:600;">Description</label>
+                            <textarea id="editDesc" rows="3">${product.description || ''}</textarea>
+                        </div>
+                        <div style="margin-bottom:15px;">
+                            <label style="font-weight:600;">Image URL</label>
+                            <input type="text" id="editImageUrl" value="${product.image || ''}" placeholder="https://...">
+                        </div>
                         <div class="modal-actions">
                             <button type="submit" class="btn-save">✅ Sauvegarder</button>
                             <button type="button" class="btn-cancel" onclick="this.closest('.modal-overlay').remove()">❌ Annuler</button>
@@ -1408,6 +1510,7 @@
                 </div>
             `;
             document.body.appendChild(overlay);
+            
             document.getElementById('editForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 const updates = {
@@ -1419,8 +1522,12 @@
                     updatedAt: Date.now()
                 };
                 if (!validateProduct(updates)) return;
+                
                 productsRef.child(productId).update(updates)
-                    .then(() => { showToast('✅ Produit modifié !', 'success'); overlay.remove(); })
+                    .then(() => { 
+                        showToast('✅ Produit modifié !', 'success'); 
+                        overlay.remove(); 
+                    })
                     .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
             });
         }
@@ -1438,11 +1545,41 @@
         function toggleVisibility(productId) {
             const product = products.find(p => p.id === productId);
             if (!product) return;
-            productsRef.child(productId).update({ visible: !product.visible, updatedAt: Date.now() })
-                .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
+            productsRef.child(productId).update({ 
+                visible: product.visible === false ? true : false, 
+                updatedAt: Date.now() 
+            })
+            .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
         }
         
-        // ============ PICX - GESTION DES IMAGES ============
+        // ============ FORMULAIRE D'AJOUT ============
+        
+        document.getElementById('addBtn').addEventListener('click', function() {
+            const productData = {
+                name: document.getElementById('productName').value,
+                price: document.getElementById('productPrice').value,
+                category: document.getElementById('productCategory').value,
+                description: document.getElementById('productDesc').value
+            };
+            
+            this.disabled = true;
+            this.textContent = '⏳ Ajout en cours...';
+            
+            addProduct(productData)
+                .then(() => {
+                    document.getElementById('productForm').reset();
+                    clearPicXImage();
+                })
+                .catch(() => {})
+                .finally(() => {
+                    this.disabled = false;
+                    this.textContent = '➕ Ajouter le produit';
+                });
+        });
+        
+        // ============================================
+        // 📷 PICX - GESTION DES IMAGES
+        // ============================================
         
         async function loadPicXImages() {
             try {
@@ -1481,8 +1618,10 @@
         
         async function loadPicXImagesForGallery() {
             const images = await loadPicXImages();
+            const grid = document.getElementById('picxGalleryGrid');
+            
             if (!images || images.length === 0) {
-                document.getElementById('picxGalleryGrid').innerHTML = `
+                grid.innerHTML = `
                     <div style="grid-column: 1 / -1; text-align: center; padding: 30px; color: #999;">
                         <div style="font-size: 48px; margin-bottom: 10px;">📂</div>
                         <p>Aucune image trouvée</p>
@@ -1491,44 +1630,46 @@
                 return;
             }
             
-            const grid = document.getElementById('picxGalleryGrid');
             grid.innerHTML = '';
-            images.forEach((item, index) => {
+            images.forEach((item) => {
                 const div = document.createElement('div');
                 div.className = 'picx-item';
-                div.style.cssText = 'cursor: pointer; border: 2px solid transparent; border-radius: 8px; padding: 5px; transition: all 0.3s; background: #f8f9fa; text-align: center;';
                 div.innerHTML = `
-                    <img src="${item.download_url}" style="width: 100%; height: 100px; object-fit: cover; border-radius: 5px;" onerror="this.parentElement.style.display='none'">
-                    <span style="font-size: 10px; color: #666; display: block; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${item.name}</span>
+                    <img src="${item.download_url}" onerror="this.parentElement.style.display='none'">
+                    <span class="picx-name">${item.name}</span>
                 `;
                 div.onclick = function() {
-                    if (imageSelectorMode === 'logo') {
-                        updateLogoPreview(item.download_url);
-                        document.getElementById('restaurantLogo').value = item.download_url;
-                        showToast('✅ Logo sélectionné ! N\'oubliez pas d\'enregistrer.', 'success');
-                        imageSelectorMode = null;
-                        document.querySelector('[data-tab="tab-restaurant"]').click();
-                    } else if (imageSelectorMode === 'banner') {
-                        updateBannerPreview(item.download_url);
-                        document.getElementById('restaurantBanner').value = item.download_url;
-                        showToast('✅ Bannière sélectionnée ! N\'oubliez pas d\'enregistrer.', 'success');
-                        imageSelectorMode = null;
-                        document.querySelector('[data-tab="tab-restaurant"]').click();
-                    } else {
-                        // Mode produit - sélection pour le formulaire
-                        document.getElementById('productImage').value = item.download_url;
-                        const preview = document.getElementById('picxPreview');
-                        const previewImg = document.getElementById('picxPreviewImg');
-                        if (preview && previewImg) {
-                            previewImg.src = item.download_url;
-                            preview.style.display = 'flex';
-                        }
-                        showToast('✅ Image sélectionnée', 'success');
-                    }
+                    selectPicXImage(item.download_url);
                 };
                 grid.appendChild(div);
             });
             showToast(`✅ ${images.length} images chargées`, 'success');
+        }
+        
+        function selectPicXImage(imageUrl) {
+            if (imageSelectorMode === 'logo') {
+                updateLogoPreview(imageUrl);
+                document.getElementById('restaurantLogo').value = imageUrl;
+                showToast('✅ Logo sélectionné ! N\'oubliez pas d\'enregistrer.', 'success');
+                imageSelectorMode = null;
+                document.querySelector('[data-tab="tab-restaurant"]').click();
+            } else if (imageSelectorMode === 'banner') {
+                updateBannerPreview(imageUrl);
+                document.getElementById('restaurantBanner').value = imageUrl;
+                showToast('✅ Bannière sélectionnée ! N\'oubliez pas d\'enregistrer.', 'success');
+                imageSelectorMode = null;
+                document.querySelector('[data-tab="tab-restaurant"]').click();
+            } else {
+                // Mode produit - sélection pour le formulaire
+                document.getElementById('productImage').value = imageUrl;
+                const preview = document.getElementById('picxPreview');
+                const previewImg = document.getElementById('picxPreviewImg');
+                if (preview && previewImg) {
+                    previewImg.src = imageUrl;
+                    preview.style.display = 'flex';
+                }
+                showToast('✅ Image sélectionnée', 'success');
+            }
         }
         
         function loadPicXImagesForAdd() {
@@ -1536,27 +1677,27 @@
             loadPicXImagesForGallery();
         }
         
-        function loadPicXImagesForEdit(productId) {
-            imageSelectorMode = null;
-            pendingProductId = productId;
-            loadPicXImagesForGallery();
-        }
-        
         function clearPicXImage() {
-            selectedPicxImage = null;
             document.getElementById('productImage').value = '';
             const preview = document.getElementById('picxPreview');
             if (preview) preview.style.display = 'none';
         }
         
         function changeImage(productId) {
-            loadPicXImagesForEdit(productId);
+            imageSelectorMode = null;
+            loadPicXImagesForGallery();
+            showToast('📷 Sélectionnez une image pour ce produit', 'info');
         }
         
-        // ============ EXPORT / IMPORT ============
+        // ============================================
+        // 🔄 EXPORT / IMPORT / RÉINITIALISATION
+        // ============================================
         
         function exportProducts() {
-            if (products.length === 0) { showToast('❌ Aucun produit', 'error'); return; }
+            if (products.length === 0) { 
+                showToast('❌ Aucun produit à exporter', 'error'); 
+                return; 
+            }
             const blob = new Blob([JSON.stringify(products, null, 2)], { type: 'application/json' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
@@ -1578,12 +1719,23 @@
                         const imported = JSON.parse(event.target.result);
                         if (!Array.isArray(imported)) throw new Error('Format invalide');
                         if (!confirm(`Importer ${imported.length} produits ?`)) return;
+                        
                         const promises = imported.map(p => {
-                            const np = { name: p.name, price: p.price, category: p.category || 'plats', description: p.description || '', image: p.image || null, visible: true, createdAt: Date.now() };
+                            const np = { 
+                                name: p.name, 
+                                price: parseFloat(p.price) || 0, 
+                                category: p.category || 'plats', 
+                                description: p.description || '', 
+                                image: p.image || null, 
+                                visible: true, 
+                                createdAt: Date.now() 
+                            };
                             return productsRef.push().set(np);
                         });
                         Promise.all(promises).then(() => showToast(`✅ ${imported.length} produits importés !`, 'success'));
-                    } catch (error) { showToast('❌ Fichier invalide', 'error'); }
+                    } catch (error) { 
+                        showToast('❌ Fichier invalide', 'error'); 
+                    }
                 };
                 reader.readAsText(file);
             };
@@ -1591,44 +1743,40 @@
         }
         
         function resetFirebaseProducts() {
-            if (confirm('⚠️ Réinitialiser tous les produits ?')) {
-                const defaultProducts = {
-                    'prod1': { name: "Salade César", price: 12, category: "entrees", description: "Salade, poulet, parmesan", visible: true, createdAt: Date.now() },
-                    'prod2': { name: "Steak Frites", price: 18, category: "plats", description: "Steak grillé, frites maison", visible: true, createdAt: Date.now() },
-                    'prod3': { name: "Tiramisu", price: 7, category: "desserts", description: "Café, mascarpone", visible: true, createdAt: Date.now() },
-                    'prod4': { name: "Coca-Cola", price: 3, category: "boissons", description: "33cl", visible: true, createdAt: Date.now() }
-                };
-                productsRef.set(defaultProducts)
-                    .then(() => showToast('✅ Produits réinitialisés !', 'success'))
-                    .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
-            }
+            if (!confirm('⚠️ Réinitialiser tous les produits ?')) return;
+            
+            const defaultProducts = {
+                'prod1': { name: "Salade César", price: 12, category: "entrees", description: "Salade, poulet, parmesan", visible: true, createdAt: Date.now() },
+                'prod2': { name: "Steak Frites", price: 18, category: "plats", description: "Steak grillé, frites maison", visible: true, createdAt: Date.now() },
+                'prod3': { name: "Tiramisu", price: 7, category: "desserts", description: "Café, mascarpone", visible: true, createdAt: Date.now() },
+                'prod4': { name: "Coca-Cola", price: 3, category: "boissons", description: "33cl", visible: true, createdAt: Date.now() }
+            };
+            productsRef.set(defaultProducts)
+                .then(() => showToast('✅ Produits réinitialisés !', 'success'))
+                .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
         }
         
-        // ============ FORMULAIRE D'AJOUT ============
-        document.getElementById('addBtn').addEventListener('click', function() {
-            const productData = {
-                name: document.getElementById('productName').value,
-                price: document.getElementById('productPrice').value,
-                category: document.getElementById('productCategory').value,
-                description: document.getElementById('productDesc').value
-            };
+        function reloadAllData() {
+            console.log('🔄 Rechargement des données...');
+            showToast('🔄 Rechargement...', 'info');
             
-            this.disabled = true;
-            this.textContent = '⏳ Ajout en cours...';
+            loadRestaurant();
+            loadCategories();
+            loadProducts();
             
-            addProduct(productData)
-                .then(() => {
-                    document.getElementById('productForm').reset();
-                    clearPicXImage();
-                })
-                .catch(() => {})
-                .finally(() => {
-                    this.disabled = false;
-                    this.textContent = '➕ Ajouter le produit';
-                });
-        });
+            setTimeout(() => {
+                console.log('📊 État des données:');
+                console.log('  - Restaurant:', restaurantData ? '✅' : '❌');
+                console.log('  - Catégories:', Object.keys(categories).length > 0 ? '✅ (' + Object.keys(categories).length + ')' : '❌');
+                console.log('  - Produits:', products.length > 0 ? '✅ (' + products.length + ')' : '❌');
+                showToast('✅ Données rechargées', 'success');
+            }, 1000);
+        }
         
-        // ============ TOAST ============
+        // ============================================
+        // 💬 TOAST
+        // ============================================
+        
         function showToast(message, type = 'info') {
             const colors = { 'success': '#4caf50', 'error': '#dc3545', 'warning': '#ff9800', 'info': '#2196F3' };
             const toast = document.createElement('div');
@@ -1643,7 +1791,31 @@
         }
         
         // ============================================
-        // EXPOSER LES FONCTIONS GLOBALEMENT
+        // 📋 TABS
+        // ============================================
+        
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById(this.dataset.tab).classList.add('active');
+            });
+        });
+        
+        // ============================================
+        // 🚀 INITIALISATION FINALE
+        // ============================================
+        
+        // Initialiser Firebase dès que la page est chargée
+        if (document.readyState === 'complete') {
+            initializeFirebase();
+        } else {
+            window.addEventListener('load', initializeFirebase);
+        }
+        
+        // ============================================
+        // 📤 EXPOSER LES FONCTIONS GLOBALEMENT
         // ============================================
         
         window.openImageSelector = openImageSelector;
@@ -1651,7 +1823,6 @@
         window.resetRestaurantForm = resetRestaurantForm;
         window.loadPicXImagesForGallery = loadPicXImagesForGallery;
         window.loadPicXImagesForAdd = loadPicXImagesForAdd;
-        window.loadPicXImagesForEdit = loadPicXImagesForEdit;
         window.clearPicXImage = clearPicXImage;
         window.changeImage = changeImage;
         window.addCategory = addCategory;
@@ -1664,9 +1835,20 @@
         window.exportProducts = exportProducts;
         window.importProducts = importProducts;
         window.resetFirebaseProducts = resetFirebaseProducts;
+        window.reloadAllData = reloadAllData;
+        window.logoutUser = logoutUser;
+        window.selectPicXImage = selectPicXImage;
+        window.handleConfigError = handleConfigError;
+        window.loadRestaurant = loadRestaurant;
+        window.loadCategories = loadCategories;
+        window.loadProducts = loadProducts;
         
-        console.log('✅ Admin initialisé');
-
+        console.log('✅ Admin initialisé - Version corrigée');
+        console.log('📊 Fonctions disponibles:');
+        console.log('  - reloadAllData() : Recharger toutes les données');
+        console.log('  - exportProducts() : Exporter les produits');
+        console.log('  - importProducts() : Importer des produits');
+        console.log('  - resetFirebaseProducts() : Réinitialiser les produits');
         
     </script>
 </body>
