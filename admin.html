@@ -11,35 +11,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     
     <!-- ============================================ -->
-    <!-- 🔥 CONFIGURATION FIREBASE DIRECTE -->
+    <!-- 🔥 CONFIGURATION FIREBASE (générée automatiquement) -->
     <!-- ============================================ -->
-    <script>
-        // 🔥 CONFIGURATION FIREBASE
-const firebaseConfig = {
-  apiKey: "AIzaSyAp9akZE9yGLmZAVkcZ7YB4pM1kUP8cJWM",
-  authDomain: "restaurant-menu-9179b.firebaseapp.com",
-  databaseURL: "https://restaurant-menu-9179b-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "restaurant-menu-9179b",
-  storageBucket: "restaurant-menu-9179b.firebasestorage.app",
-  messagingSenderId: "57456460201",
-  appId: "1:57456460201:web:8b40ceeffe81eea918c4b8"
-        };        
-
-        // Initialiser Firebase
-        if (typeof firebase !== 'undefined' && !firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-            console.log('✅ Firebase initialisé avec config directe');
-        } else if (typeof firebase !== 'undefined') {
-            console.log('✅ Firebase déjà initialisé');
-        } else {
-            console.error('❌ Firebase SDK non chargé');
-        }
-        
-        // Fonction de gestion d'erreur (pour config.js si jamais)
-        function handleConfigError() {
-            console.warn('⚠️ config.js non trouvé, mais config directe utilisée');
-        }
-    </script>
+    <script src="config.js" onerror="handleConfigError()"></script>
     
     <style>
         /* ============ STYLES ============ */
@@ -723,7 +697,7 @@ const firebaseConfig = {
     <!-- ============================================ -->
     <script>
         // ============================================
-        // ADMIN.JS - VERSION CORRIGÉE
+        // ADMIN.JS - VERSION FINALE AVEC CONFIG.JS
         // ============================================
         
         // ============================================
@@ -736,12 +710,26 @@ const firebaseConfig = {
         let imageSelectorMode = null;
         let currentRestaurantId = 'default';
         let database, restaurantsRef, categoriesRef, productsRef;
+        let configLoaded = false;
         
-        // UID attendu
+        // 🔐 UID attendu (celui de votre compte admin)
         const EXPECTED_UID = 'kW1jJa76EuVPg53pwBuk58nCs1e2';
         
         // ============================================
-        // 2. TOAST
+        // 2. GESTIONNAIRE D'ERREUR CONFIG.JS
+        // ============================================
+        function handleConfigError() {
+            console.error('❌ Erreur: config.js non trouvé');
+            const status = document.getElementById('connectionStatus');
+            if (status) {
+                status.innerHTML = '❌ Erreur: config.js manquant - Vérifiez le déploiement';
+                status.className = 'disconnected';
+            }
+            showToast('❌ config.js manquant. Contactez l\'administrateur.', 'error');
+        }
+        
+        // ============================================
+        // 3. TOAST
         // ============================================
         function showToast(message, type = 'info') {
             const colors = { 'success': '#4caf50', 'error': '#dc3545', 'warning': '#ff9800', 'info': '#2196F3' };
@@ -757,7 +745,7 @@ const firebaseConfig = {
         }
         
         // ============================================
-        // 3. AUTHENTIFICATION
+        // 4. AUTHENTIFICATION
         // ============================================
         function loginUser(email, password) {
             return firebase.auth().signInWithEmailAndPassword(email, password);
@@ -802,10 +790,43 @@ const firebaseConfig = {
         }
         
         // ============================================
-        // 4. AUTH STATE AVEC VÉRIFICATION UID
+        // 5. VÉRIFICATION DE CONFIG.JS
+        // ============================================
+        function checkConfigLoaded() {
+            if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0) {
+                configLoaded = true;
+                console.log('✅ config.js chargé et Firebase initialisé');
+                return true;
+            }
+            
+            // Si config.js n'est pas chargé après 3 secondes, afficher une erreur
+            if (!configLoaded) {
+                console.warn('⏳ Attente de config.js...');
+                setTimeout(() => {
+                    if (!configLoaded && typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length === 0) {
+                        const status = document.getElementById('connectionStatus');
+                        if (status) {
+                            status.innerHTML = '❌ config.js non chargé - Vérifiez le déploiement';
+                            status.className = 'disconnected';
+                        }
+                        showToast('❌ config.js non chargé', 'error');
+                    }
+                }, 3000);
+                return false;
+            }
+            return true;
+        }
+        
+        // ============================================
+        // 6. AUTH STATE AVEC VÉRIFICATION UID
         // ============================================
         firebase.auth().onAuthStateChanged((user) => {
             const status = document.getElementById('connectionStatus');
+            
+            // Vérifier que config.js est chargé
+            if (!checkConfigLoaded()) {
+                return;
+            }
             
             if (user) {
                 console.log('✅ Utilisateur connecté:', user.email);
@@ -814,14 +835,15 @@ const firebaseConfig = {
                 if (user.uid === EXPECTED_UID) {
                     console.log('✅ UID correspond aux règles Firebase');
                     if (status) {
-                        status.innerHTML = `✅ Connecté en tant que ${user.email} (UID OK)`;
+                        status.innerHTML = `✅ Connecté en tant que ${user.email}`;
                         status.className = 'connected';
                     }
                     showAdminContent();
                     
-                    // Initialiser Firebase et charger les données
+                    // Initialiser les références Firebase
                     initializeFirebase();
                     
+                    // Charger les données
                     setTimeout(() => {
                         console.log('🔄 Chargement des données...');
                         loadRestaurant();
@@ -831,8 +853,10 @@ const firebaseConfig = {
                     
                 } else {
                     console.warn('⚠️ UID ne correspond pas!');
+                    console.warn(`📌 Attendu: ${EXPECTED_UID}`);
+                    console.warn(`📌 Reçu: ${user.uid}`);
                     if (status) {
-                        status.innerHTML = `⚠️ UID non conforme - Votre UID: ${user.uid}`;
+                        status.innerHTML = `⚠️ UID non autorisé - Contactez l'admin`;
                         status.className = 'disconnected';
                     }
                     showToast('⛔ Accès refusé - UID non autorisé', 'error');
@@ -846,7 +870,7 @@ const firebaseConfig = {
         });
         
         // ============================================
-        // 5. FORMULAIRE DE CONNEXION
+        // 7. FORMULAIRE DE CONNEXION
         // ============================================
         const loginFormElement = document.getElementById('loginFormElement');
         if (loginFormElement) {
@@ -891,7 +915,7 @@ const firebaseConfig = {
         }
         
         // ============================================
-        // 6. INITIALISATION FIREBASE
+        // 8. INITIALISATION FIREBASE
         // ============================================
         function initializeFirebase() {
             if (typeof firebase === 'undefined' || firebase.apps.length === 0) {
@@ -915,7 +939,7 @@ const firebaseConfig = {
         }
         
         // ============================================
-        // 7. RECHARGEMENT DES DONNÉES
+        // 9. RECHARGEMENT DES DONNÉES
         // ============================================
         function reloadAllData() {
             console.log('🔄 Rechargement des données...');
@@ -934,7 +958,7 @@ const firebaseConfig = {
         }
         
         // ============================================
-        // 8. CHARGEMENT DU RESTAURANT
+        // 10. CHARGEMENT DU RESTAURANT
         // ============================================
         function loadRestaurant() {
             if (!restaurantsRef) {
@@ -1013,7 +1037,7 @@ const firebaseConfig = {
         }
         
         // ============================================
-        // 9. LOGO ET BANNIÈRE
+        // 11. LOGO ET BANNIÈRE
         // ============================================
         function updateLogoPreview(logoUrl) {
             const img = document.getElementById('logoPreviewImg');
@@ -1106,7 +1130,7 @@ const firebaseConfig = {
         }
         
         // ============================================
-        // 10. SAUVEGARDER LE RESTAURANT
+        // 12. SAUVEGARDER LE RESTAURANT
         // ============================================
         const restaurantForm = document.getElementById('restaurantForm');
         if (restaurantForm) {
@@ -1153,7 +1177,7 @@ const firebaseConfig = {
         }
         
         // ============================================
-        // 11. GESTION DES CATÉGORIES
+        // 13. GESTION DES CATÉGORIES
         // ============================================
         function loadCategories() {
             if (!categoriesRef) return;
@@ -1331,7 +1355,7 @@ const firebaseConfig = {
         }
         
         // ============================================
-        // 12. GESTION DES PRODUITS
+        // 14. GESTION DES PRODUITS
         // ============================================
         function loadProducts() {
             if (!productsRef) return;
@@ -1514,7 +1538,7 @@ const firebaseConfig = {
         }
         
         // ============================================
-        // 13. PICX - GESTION DES IMAGES
+        // 15. PICX - GESTION DES IMAGES
         // ============================================
         async function loadPicXImages() {
             try {
@@ -1608,7 +1632,7 @@ const firebaseConfig = {
         }
         
         // ============================================
-        // 14. EXPORT / IMPORT / RÉINITIALISATION
+        // 16. EXPORT / IMPORT / RÉINITIALISATION
         // ============================================
         function exportProducts() {
             if (products.length === 0) { showToast('❌ Aucun produit', 'error'); return; }
@@ -1666,7 +1690,7 @@ const firebaseConfig = {
         }
         
         // ============================================
-        // 15. TABS
+        // 17. TABS
         // ============================================
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -1679,8 +1703,9 @@ const firebaseConfig = {
         });
         
         // ============================================
-        // 16. INITIALISATION
+        // 18. INITIALISATION
         // ============================================
+        // Démarrer l'initialisation après le chargement de la page
         if (document.readyState === 'complete') {
             initializeFirebase();
         } else {
@@ -1688,7 +1713,7 @@ const firebaseConfig = {
         }
         
         // ============================================
-        // 17. EXPOSER LES FONCTIONS
+        // 19. EXPOSER LES FONCTIONS
         // ============================================
         window.reloadAllData = reloadAllData;
         window.logoutUser = logoutUser;
@@ -1714,9 +1739,11 @@ const firebaseConfig = {
         window.loadCategories = loadCategories;
         window.loadProducts = loadProducts;
         window.initializeFirebase = initializeFirebase;
+        window.handleConfigError = handleConfigError;
         
-        console.log('✅ Admin initialisé - Version corrigée');
+        console.log('✅ Admin initialisé - Version finale avec config.js');
         console.log('🔐 UID attendu:', EXPECTED_UID);
+        console.log('📁 config.js doit être généré automatiquement par deploy.yml');
     </script>
 </body>
 </html>
