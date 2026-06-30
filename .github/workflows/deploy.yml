@@ -14,9 +14,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       
-      - name: 🔥 Generate config.js
+      - name: Generate config.js
         run: |
-          echo "// 🔥 Configuration Firebase - Généré automatiquement" > config.js
+          echo "// Configuration Firebase" > config.js
           echo "const firebaseConfig = {" >> config.js
           echo "  apiKey: '${{ secrets.FIREBASE_API_KEY }}'," >> config.js
           echo "  authDomain: '${{ secrets.FIREBASE_AUTH_DOMAIN }}'," >> config.js
@@ -26,31 +26,13 @@ jobs:
           echo "  messagingSenderId: '${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}'," >> config.js
           echo "  appId: '${{ secrets.FIREBASE_APP_ID }}'" >> config.js
           echo "};" >> config.js
-          echo "" >> config.js
-          echo "if (typeof firebase !== 'undefined' && !firebase.apps.length) {" >> config.js
-          echo "  firebase.initializeApp(firebaseConfig);" >> config.js
-          echo "  console.log('✅ Firebase initialisé depuis config.js');" >> config.js
-          echo "}" >> config.js
-          echo "" >> config.js
-          echo "window.firebaseConfig = firebaseConfig;" >> config.js
-          
-          echo ""
-          echo "✅ config.js généré :"
-          cat config.js
+          echo "if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);" >> config.js
       
-      - name: 📁 Vérification des fichiers
-        run: |
-          echo "📁 Fichiers dans le répertoire :"
-          ls -la
-          echo ""
-          echo "📄 config.js existe ?"
-          test -f config.js && echo "✅ OUI" || echo "❌ NON"
-      
-      - name: 🚀 Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
-          publish_branch: gh-pages
-          force_orphan: true
-          commit_message: "🚀 Déploiement automatique - config.js inclus"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          folder: .
+          branch: gh-pages
+          clean: true
+          commit-message: "🚀 Déploiement - config.js généré"
