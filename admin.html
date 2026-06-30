@@ -840,28 +840,46 @@
             document.getElementById('logoutBtn').style.display = 'inline-block';
         }
         
-        // ✅ État de l'authentification
-        firebase.auth().onAuthStateChanged((user) => {
-            if (user) {
-                console.log('✅ Connecté en tant que:', user.email);
-                console.log('🆔 UID:', user.uid);
-                showAdminContent();
-                document.getElementById('connectionStatus').innerHTML = `✅ Connecté en tant que ${user.email}`;
-                document.getElementById('connectionStatus').className = 'connected';
-                
-                // 🔥 Charger les données après connexion
-                setTimeout(() => {
-                    console.log('🔄 Chargement des données...');
-                    if (typeof loadRestaurant === 'function') loadRestaurant();
-                    if (typeof loadCategories === 'function') loadCategories();
-                    if (typeof loadProducts === 'function') loadProducts();
-                }, 500);
-                
-            } else {
-                console.log('🔐 Non connecté');
-                showLoginForm();
-            }
-        });
+       // ✅ État de l'authentification avec VÉRIFICATION UID
+firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+        console.log('✅ Utilisateur connecté:', user.email);
+        console.log('🆔 Votre UID:', user.uid);
+        
+        // 🔐 VÉRIFICATION DE L'UID
+        const expectedUID = 'kW1jJa76EuVPg53pwBuk58nCs1e2';
+        
+        if (user.uid === expectedUID) {
+            console.log('✅ UID correspond aux règles Firebase');
+            document.getElementById('connectionStatus').innerHTML = `✅ Connecté en tant que ${user.email} (UID OK)`;
+            document.getElementById('connectionStatus').className = 'connected';
+        } else {
+            console.warn('⚠️ ATTENTION: UID ne correspond pas aux règles!');
+            console.warn(`📌 Règles attendent: ${expectedUID}`);
+            console.warn(`📌 Votre UID: ${user.uid}`);
+            document.getElementById('connectionStatus').innerHTML = `⚠️ UID non conforme - Contactez l'admin (Votre UID: ${user.uid})`;
+            document.getElementById('connectionStatus').className = 'disconnected';
+            // ⚠️ Optionnel: Bloquer l'accès si UID incorrect
+            // showLoginForm();
+            // return;
+        }
+        
+        showAdminContent();
+        addLogoutButton();
+        
+        // 🔥 Charger les données après connexion
+        setTimeout(() => {
+            console.log('🔄 Chargement des données...');
+            if (typeof loadRestaurant === 'function') loadRestaurant();
+            if (typeof loadCategories === 'function') loadCategories();
+            if (typeof loadProducts === 'function') loadProducts();
+        }, 500);
+        
+    } else {
+        console.log('🔐 Non connecté');
+        showLoginForm();
+    }
+});
         
         // Formulaire de connexion
         document.getElementById('loginFormElement').addEventListener('submit', function(e) {
