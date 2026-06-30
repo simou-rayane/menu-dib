@@ -10,11 +10,38 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     
+    <!-- ============================================ -->
+    <!-- 🔥 CONFIGURATION FIREBASE DIRECTE -->
+    <!-- ============================================ -->
+    <script>
+        // 🔥 REMPLACEZ PAR VOS VRAIES CLÉS
+        const firebaseConfig = {
+            apiKey: "AIzaSyAp9akZE9yGLmZAVkcZ7YB4pM1kUP8cJWM",
+            authDomain: "restaurant-menu-9179b.firebaseapp.com",
+            databaseURL: "https://restaurant-menu-9179b-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "restaurant-menu-9179b",
+            storageBucket: "restaurant-menu-9179b.appspot.com",
+            messagingSenderId: "57456460201",
+            appId: "1:57456460201:web:XXXXXXXXXXXXX" // REMPLACEZ PAR VOTRE APP_ID
+        };
+
+        // Initialiser Firebase
+        if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+            console.log('✅ Firebase initialisé avec config directe');
+        } else if (typeof firebase !== 'undefined') {
+            console.log('✅ Firebase déjà initialisé');
+        } else {
+            console.error('❌ Firebase SDK non chargé');
+        }
+    </script>
+    
     <style>
-        /* ... tous vos styles existants ... */
+        /* ... vos styles existants ... */
     </style>
 </head>
 <body>
+    <!-- ... reste du HTML ... -->
     <!-- ============================================ -->
     <!-- TOUT VOTRE HTML EXISTANT (header, login, tabs, etc.) -->
     <!-- ============================================ -->
