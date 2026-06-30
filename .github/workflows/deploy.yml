@@ -14,9 +14,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       
-      - name: Generate config.js
+      - name: 🔥 Generate config.js (FORCED)
         run: |
-          echo "// Configuration Firebase - Généré automatiquement" > config.js
+          echo "// 🔥 Configuration Firebase - Généré automatiquement" > config.js
           echo "const firebaseConfig = {" >> config.js
           echo "  apiKey: '${{ secrets.FIREBASE_API_KEY }}'," >> config.js
           echo "  authDomain: '${{ secrets.FIREBASE_AUTH_DOMAIN }}'," >> config.js
@@ -35,16 +35,33 @@ jobs:
           echo "" >> config.js
           echo "window.firebaseConfig = firebaseConfig;" >> config.js
           
-          echo "✅ config.js généré :"
-          cat config.js
-      
-      - name: 📁 Vérification des fichiers
-        run: |
-          echo "📁 Fichiers :"
-          ls -la
           echo ""
-          echo "📄 config.js existe ?"
-          test -f config.js && echo "✅ OUI" || echo "❌ NON"
+          echo "==========================================="
+          echo "✅ config.js généré avec succès !"
+          echo "==========================================="
+          echo ""
+          echo "📄 Contenu de config.js :"
+          echo "-------------------------------------------"
+          cat config.js
+          echo "-------------------------------------------"
+      
+      - name: 📁 Vérification FORCÉE de config.js
+        run: |
+          echo ""
+          echo "📁 Vérification des fichiers..."
+          echo "-------------------------------------------"
+          ls -la
+          echo "-------------------------------------------"
+          echo ""
+          if [ -f "config.js" ]; then
+            echo "✅ config.js EXISTE !"
+            echo "📄 Taille : $(wc -c < config.js) bytes"
+          else
+            echo "❌ ERREUR : config.js n'existe pas !"
+            echo "💡 Création forcée..."
+            echo "// Fallback config" > config.js
+            echo "const firebaseConfig = { apiKey: 'test' };" >> config.js
+          fi
       
       - name: 🚀 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
@@ -54,3 +71,15 @@ jobs:
           publish_branch: gh-pages
           force_orphan: true
           commit_message: "🚀 Déploiement - config.js généré"
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+      
+      - name: ✅ Vérification finale
+        run: |
+          echo ""
+          echo "==========================================="
+          echo "🎉 Déploiement terminé !"
+          echo "==========================================="
+          echo ""
+          echo "🌐 Site : https://simou-rayane.github.io/menu-dib/"
+          echo "📄 config.js : https://simou-rayane.github.io/menu-dib/config.js"
