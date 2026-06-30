@@ -8,6 +8,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     
+    permissions:
+      contents: write  # ✅ Permet d'écrire dans le dépôt (gratuit)
+    
     steps:
     - name: Checkout du code
       uses: actions/checkout@v3
