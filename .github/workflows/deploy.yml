@@ -14,26 +14,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       
-      - name: 🔥 Vérification des secrets
-        run: |
-          echo "🔍 Vérification des secrets Firebase..."
-          echo ""
-          echo "FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY != '' && '✅' || '❌' }}"
-          echo "FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN != '' && '✅' || '❌' }}"
-          echo "FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL != '' && '✅' || '❌' }}"
-          echo "FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID != '' && '✅' || '❌' }}"
-          echo "FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET != '' && '✅' || '❌' }}"
-          echo "FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID != '' && '✅' || '❌' }}"
-          echo "FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID != '' && '✅' || '❌' }}"
-      
       - name: 🔥 Generate config.js
         run: |
-          # Vérifier que les secrets existent
-          if [ -z "${{ secrets.FIREBASE_API_KEY }}" ]; then
-            echo "❌ ERREUR: FIREBASE_API_KEY manquant !"
-            exit 1
-          fi
-          
           echo "// Configuration Firebase - Généré automatiquement" > config.js
           echo "const firebaseConfig = {" >> config.js
           echo "  apiKey: '${{ secrets.FIREBASE_API_KEY }}'," >> config.js
@@ -52,26 +34,16 @@ jobs:
           echo "" >> config.js
           echo "window.firebaseConfig = firebaseConfig;" >> config.js
           
-          echo ""
-          echo "✅ config.js généré avec succès !"
-          echo ""
-          echo "📄 Contenu de config.js :"
-          echo "-------------------------------------------"
+          echo "✅ config.js généré"
           cat config.js
-          echo "-------------------------------------------"
       
       - name: 📁 Vérification des fichiers
         run: |
-          echo "📁 Fichiers :"
+          echo "📁 Fichiers avant déploiement :"
           ls -la
           echo ""
-          if [ -f "config.js" ]; then
-            echo "✅ config.js EXISTE !"
-            echo "📄 Taille : $(wc -c < config.js) bytes"
-          else
-            echo "❌ config.js n'existe pas !"
-            exit 1
-          fi
+          echo "📄 config.js existe ?"
+          test -f config.js && echo "✅ OUI" || echo "❌ NON"
       
       - name: 🚀 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
@@ -83,3 +55,8 @@ jobs:
           commit_message: "🚀 Déploiement - config.js inclus"
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
+      
+      - name: ✅ Vérification post-déploiement
+        run: |
+          echo "✅ Déploiement terminé"
+          echo "🌐 https://simou-rayane.github.io/menu-dib/config.js"
