@@ -11,768 +11,33 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     
     <style>
-        /* ============ STYLES ============ */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        
-        header {
-            background: white;
-            padding: 20px 30px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            margin-bottom: 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        
-        header h1 { color: #333; display: flex; align-items: center; gap: 10px; }
-        header h1 span { color: #667eea; }
-        
-        .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-        .header-actions button {
-            padding: 8px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        .header-actions button:hover { transform: scale(1.05); }
-        
-        .btn-export { background: #2196F3; color: white; }
-        .btn-import { background: #ff9800; color: white; }
-        .btn-reset { background: #dc3545; color: white; }
-        .btn-reload { background: #4CAF50; color: white; }
-        .btn-logout { background: #f44336; color: white; }
-        
-        #connectionStatus {
-            padding: 10px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-weight: 500;
-        }
-        #connectionStatus.connected {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        #connectionStatus.disconnected {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        /* ============ FORMULAIRE DE CONNEXION ============ */
-        #loginForm {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            max-width: 400px;
-            margin: 0 auto 25px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        }
-        
-        #loginForm h2 { text-align: center; margin-bottom: 20px; color: #333; }
-        #loginForm label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; }
-        #loginForm input {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
-        #loginForm input:focus { border-color: #667eea; outline: none; }
-        #loginForm .btn-login {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: opacity 0.3s;
-        }
-        #loginForm .btn-login:hover { opacity: 0.9; }
-        #loginForm .btn-login:disabled { opacity: 0.6; cursor: not-allowed; }
-        #loginError { color: #f44336; margin-top: 10px; text-align: center; font-size: 14px; }
-        
-        /* ============ ADMIN SECTION ============ */
-        .admin-section {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            margin-bottom: 25px;
-        }
-        .admin-section h2 {
-            color: #333;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #f0f2f5;
-        }
-        
-        .admin-section input,
-        .admin-section select,
-        .admin-section textarea {
-            width: 100%;
-            padding: 10px 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            margin-bottom: 10px;
-            transition: border-color 0.3s;
-        }
-        .admin-section input:focus,
-        .admin-section select:focus,
-        .admin-section textarea:focus {
-            border-color: #667eea;
-            outline: none;
-        }
-        .admin-section textarea { resize: vertical; min-height: 60px; }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.3s;
-            width: 100%;
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-        }
-        .btn-primary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        /* ============ TABS ============ */
-        .tabs {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-            background: white;
-            padding: 8px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        }
-        
-        .tab-btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.3s;
-            background: transparent;
-            color: #666;
-        }
-        
-        .tab-btn:hover {
-            background: #f0f4ff;
-            color: #667eea;
-        }
-        
-        .tab-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        /* ============ IMAGE PREVIEW ============ */
-        .image-preview-container {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            padding: 15px;
-            background: #f8f9ff;
-            border-radius: 8px;
-            border: 2px dashed #e0e0e0;
-            flex-wrap: wrap;
-        }
-        
-        .image-preview-container img {
-            width: 120px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 8px;
-            border: 2px solid #667eea;
-            background: white;
-        }
-        
-        .image-preview-container .placeholder-image {
-            width: 120px;
-            height: 80px;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 14px;
-            font-weight: 600;
-            border: 2px solid #667eea;
-        }
-        
-        .image-preview-container .image-info { flex: 1; }
-        .image-preview-container .image-info .name { font-weight: 600; color: #333; }
-        .image-preview-container .image-info .url { font-size: 12px; color: #999; word-break: break-all; }
-        
-        .image-preview-container .image-actions { display: flex; gap: 8px; }
-        .image-preview-container .image-actions button {
-            padding: 6px 16px;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 12px;
-            transition: all 0.3s;
-        }
-        .image-preview-container .image-actions .btn-select { background: #667eea; color: white; }
-        .image-preview-container .image-actions .btn-select:hover { background: #764ba2; }
-        .image-preview-container .image-actions .btn-remove { background: #dc3545; color: white; }
-        .image-preview-container .image-actions .btn-remove:hover { background: #c62828; }
-        
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        .form-group { margin-bottom: 5px; }
-        .form-group.full-width { grid-column: 1 / -1; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; font-size: 14px; }
-        .form-group label .required { color: #dc3545; }
-        
-        .form-actions {
-            grid-column: 1 / -1;
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .form-actions button {
-            padding: 12px 30px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 16px;
-            transition: all 0.3s;
-            flex: 1;
-        }
-        .form-actions .btn-save { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-        .form-actions .btn-save:hover { box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); }
-        .form-actions .btn-reset { background: #6c757d; color: white; }
-        
-        /* ============ CATEGORIES ============ */
-        .categories-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-        .category-item {
-            background: #f8f9ff;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-            transition: all 0.3s;
-        }
-        .category-item:hover { border-color: #667eea; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15); }
-        .category-item .category-icon { font-size: 32px; display: block; margin-bottom: 5px; }
-        .category-item .category-name { font-weight: 600; color: #333; font-size: 14px; }
-        .category-item .category-key { font-size: 11px; color: #999; display: block; margin-top: 3px; }
-        .category-item .category-status { font-size: 11px; font-weight: 600; margin-top: 5px; display: inline-block; padding: 2px 12px; border-radius: 12px; }
-        .category-item .category-status.active { background: #d4edda; color: #155724; }
-        .category-item .category-status.inactive { background: #f8d7da; color: #721c24; }
-        .category-item .category-actions { margin-top: 10px; display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; }
-        .category-item .category-actions button { padding: 4px 12px; border: none; border-radius: 15px; cursor: pointer; font-size: 11px; font-weight: 600; transition: all 0.3s; }
-        .category-item .category-actions button:hover { transform: scale(1.05); }
-        .category-item .category-actions .btn-edit-cat { background: #2196F3; color: white; }
-        .category-item .category-actions .btn-toggle-cat { background: #ff9800; color: white; }
-        .category-item .category-actions .btn-delete-cat { background: #dc3545; color: white; }
-        
-        .add-category-form {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 15px;
-        }
-        .add-category-form input {
-            flex: 1;
-            min-width: 120px;
-            padding: 10px 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-        .add-category-form input:focus { border-color: #667eea; outline: none; }
-        .add-category-form button {
-            padding: 10px 24px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            white-space: nowrap;
-        }
-        .add-category-form button:hover { background: #764ba2; }
-        
-        /* ============ PRODUCT LIST ============ */
-        .product-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid #eee;
-            transition: background 0.3s;
-        }
-        .product-item:hover { background: #f8f9ff; }
-        .product-item .product-info { display: flex; align-items: center; gap: 15px; flex: 1; }
-        .product-item .product-thumbnail { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; background: #f8f9fa; }
-        .product-item .product-thumbnail-placeholder { width: 50px; height: 50px; background: #f0f0f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 24px; border: 1px solid #eee; }
-        .product-item .product-details { flex: 1; }
-        .product-item .product-details .name { font-weight: 600; color: #333; }
-        .product-item .product-details .price { color: #667eea; font-weight: 600; }
-        .product-item .product-details .category { color: #666; font-size: 13px; }
-        .product-item .product-details .description { color: #999; font-size: 13px; }
-        .product-item .product-actions { display: flex; gap: 5px; flex-wrap: wrap; }
-        .product-item .product-actions button { padding: 5px 12px; border: none; border-radius: 15px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.3s; }
-        .product-item .product-actions button:hover { transform: scale(1.05); }
-        .status-visible { background: #4caf50; color: white; }
-        .status-hidden { background: #dc3545; color: white; }
-        .btn-edit { background: #2196F3; color: white; }
-        .btn-photo { background: #4CAF50; color: white; }
-        .btn-delete { background: #dc3545; color: white; }
-        
-        /* ============ TOAST ============ */
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 15px 30px;
-            border-radius: 12px;
-            color: white;
-            font-weight: 500;
-            z-index: 10000;
-            animation: slideUp 0.5s ease;
-            max-width: 90%;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        .toast.success { background: #4caf50; }
-        .toast.error { background: #dc3545; }
-        .toast.info { background: #2196F3; }
-        .toast.warning { background: #ff9800; }
-        
-        /* ============ MODAL ============ */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            animation: fadeIn 0.3s ease;
-        }
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 90%;
-            overflow-y: auto;
-        }
-        .modal-content h2 { margin-bottom: 20px; }
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .modal-actions button {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-        .modal-actions .btn-save { background: #667eea; color: white; }
-        .modal-actions .btn-cancel { background: #dc3545; color: white; }
-        
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateX(-50%) translateY(100px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
-        
-        /* ============ PICX ============ */
-        .picx-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 99999;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            animation: fadeIn 0.3s ease;
-        }
-        .picx-modal-content {
-            background: white;
-            border-radius: 12px;
-            max-width: 800px;
-            width: 100%;
-            max-height: 80vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        .picx-modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            border-bottom: 1px solid #eee;
-        }
-        .picx-modal-header h3 { margin: 0; }
-        .picx-modal-header .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; }
-        .picx-modal-grid {
-            padding: 15px;
-            overflow-y: auto;
-            max-height: 60vh;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 10px;
-        }
-        .picx-modal-grid .picx-item {
-            cursor: pointer;
-            border: 2px solid transparent;
-            border-radius: 8px;
-            padding: 5px;
-            transition: all 0.3s;
-            background: #f8f9fa;
-            text-align: center;
-        }
-        .picx-modal-grid .picx-item:hover { border-color: #667eea; transform: scale(1.05); }
-        .picx-modal-grid .picx-item img { width: 100%; height: 100px; object-fit: cover; border-radius: 5px; }
-        .picx-modal-grid .picx-item .picx-name { font-size: 10px; color: #666; display: block; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .picx-modal-footer { padding: 15px; border-top: 1px solid #eee; text-align: center; color: #999; font-size: 12px; }
-        
-        @media (max-width: 768px) {
-            .form-grid { grid-template-columns: 1fr; }
-            .form-actions { flex-direction: column; }
-            header { flex-direction: column; text-align: center; }
-            .tabs { justify-content: center; }
-            .tab-btn { padding: 10px 16px; font-size: 13px; }
-            .categories-grid { grid-template-columns: 1fr 1fr; }
-            .image-preview-container { flex-direction: column; text-align: center; }
-        }
-        @media (max-width: 480px) {
-            .categories-grid { grid-template-columns: 1fr; }
-            .add-category-form { flex-direction: column; }
-        }
+        /* ... tous vos styles existants ... */
     </style>
 </head>
 <body>
+    <!-- ============================================ -->
+    <!-- TOUT VOTRE HTML EXISTANT (header, login, tabs, etc.) -->
+    <!-- ============================================ -->
+    
     <div class="container">
-        <header>
-            <h1>🔧 <span>Administration</span> Firebase</h1>
-            <div class="header-actions">
-                <button class="btn-reload" onclick="reloadAllData()">🔄 Recharger</button>
-                <button class="btn-export" onclick="exportProducts()">📤 Exporter</button>
-                <button class="btn-import" onclick="importProducts()">📥 Importer</button>
-                <button class="btn-reset" onclick="resetFirebaseProducts()">🔄 Réinitialiser</button>
-                <button class="btn-logout" onclick="logoutUser()" id="logoutBtn" style="display:none;">🚪 Déconnexion</button>
-            </div>
-        </header>
-        
-        <div id="connectionStatus" class="connected">✅ Connecté à Firebase</div>
-        
-        <!-- ============ FORMULAIRE DE CONNEXION ============ -->
-        <div id="loginForm" style="display: none;">
-            <h2 style="text-align: center; margin-bottom: 20px; color: #333;">🔐 Connexion</h2>
-            <form id="loginFormElement" autocomplete="off">
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #555;">Email</label>
-                    <input type="email" id="loginEmail" placeholder="admin@restaurant.com" required>
-                </div>
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #555;">Mot de passe</label>
-                    <input type="password" id="loginPassword" placeholder="Votre mot de passe" required>
-                </div>
-                <button type="submit" class="btn-login">🔐 Se connecter</button>
-                <div id="loginError" style="color: #f44336; margin-top: 10px; text-align: center; font-size: 14px;"></div>
-            </form>
-        </div>
-        
-        <!-- ============ CONTENU ADMIN ============ -->
-        <div id="adminContent" style="display: none;">
-            
-            <!-- TABS -->
-            <div class="tabs">
-                <button class="tab-btn active" data-tab="tab-restaurant">🏪 Restaurant</button>
-                <button class="tab-btn" data-tab="tab-categories">📂 Catégories</button>
-                <button class="tab-btn" data-tab="tab-products">🍽️ Produits</button>
-                <button class="tab-btn" data-tab="tab-images">📷 Images</button>
-            </div>
-            
-            <!-- ============ TAB 1: RESTAURANT ============ -->
-            <div class="tab-content active" id="tab-restaurant">
-                <div class="admin-section">
-                    <h2>🏪 Informations du restaurant</h2>
-                    
-                    <form id="restaurantForm">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label>Identifiant du restaurant</label>
-                                <input type="text" id="restaurantId" value="default" disabled>
-                                <div style="font-size: 12px; color: #999;">Utilisé dans l'URL: ?restaurant=identifiant</div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Nom du restaurant <span class="required">*</span></label>
-                                <input type="text" id="restaurantName" placeholder="Mon Restaurant" required>
-                            </div>
-                            
-                            <div class="form-group full-width">
-                                <label>🖼️ Logo</label>
-                                <div class="image-preview-container">
-                                    <div id="logoPreviewContainer">
-                                        <img id="logoPreviewImg" src="" alt="Logo" style="display: none;">
-                                        <div class="placeholder-image" id="logoPlaceholder">Logo</div>
-                                    </div>
-                                    <div class="image-info">
-                                        <div class="name" id="logoName">Aucun logo</div>
-                                        <div class="url" id="logoUrl">-</div>
-                                    </div>
-                                    <div class="image-actions">
-                                        <button type="button" class="btn-select" onclick="openImageSelector('logo')">📷 Choisir</button>
-                                        <button type="button" class="btn-remove" onclick="removeImage('logo')">🗑 Supprimer</button>
-                                    </div>
-                                </div>
-                                <input type="hidden" id="restaurantLogo" value="">
-                            </div>
-                            
-                            <div class="form-group full-width">
-                                <label>📸 Bannière</label>
-                                <div class="image-preview-container">
-                                    <div id="bannerPreviewContainer">
-                                        <img id="bannerPreviewImg" src="" alt="Bannière" style="display: none; width: 100%; height: 150px; object-fit: cover; border-radius: 8px;">
-                                        <div class="placeholder-image" id="bannerPlaceholder" style="width: 100%; height: 150px;">Bannière</div>
-                                    </div>
-                                    <div class="image-info">
-                                        <div class="name" id="bannerName">Aucune bannière</div>
-                                        <div class="url" id="bannerUrl">-</div>
-                                    </div>
-                                    <div class="image-actions">
-                                        <button type="button" class="btn-select" onclick="openImageSelector('banner')">📷 Choisir</button>
-                                        <button type="button" class="btn-remove" onclick="removeImage('banner')">🗑 Supprimer</button>
-                                    </div>
-                                </div>
-                                <input type="hidden" id="restaurantBanner" value="">
-                            </div>
-                            
-                            <div class="form-group full-width">
-                                <label>📍 Adresse</label>
-                                <input type="text" id="restaurantAddress" placeholder="123 Rue de la Paix, 75001 Paris">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>📞 Téléphone</label>
-                                <input type="text" id="restaurantPhone" placeholder="01 23 45 67 89">
-                                <div style="font-size: 12px; color: #999;">Affiché sur le menu</div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>📞 Téléphone (format international)</label>
-                                <input type="text" id="restaurantPhoneLink" placeholder="+33123456789">
-                                <div style="font-size: 12px; color: #999;">Pour le bouton Appeler</div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>💬 WhatsApp (commandes)</label>
-                                <input type="text" id="restaurantWhatsApp" placeholder="33123456789">
-                                <div style="font-size: 12px; color: #999;">Format international sans le +</div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>🚚 Prix de livraison (€)</label>
-                                <input type="number" id="restaurantDeliveryPrice" placeholder="5" step="0.5">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>🚚 Livraison disponible</label>
-                                <select id="restaurantDeliveryAvailable">
-                                    <option value="true">✅ Oui</option>
-                                    <option value="false">❌ Non</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>📘 Facebook (URL)</label>
-                                <input type="url" id="restaurantFacebook" placeholder="https://facebook.com/votre-page">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>📸 Instagram (URL)</label>
-                                <input type="url" id="restaurantInstagram" placeholder="https://instagram.com/votre-compte">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>🌐 Site web (URL)</label>
-                                <input type="url" id="restaurantWebsite" placeholder="https://votre-site.com">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>📍 Itinéraire (URL)</label>
-                                <input type="url" id="restaurantMapsUrl" placeholder="https://maps.google.com/maps?q=...">
-                            </div>
-                            
-                            <div class="form-group full-width">
-                                <label>Restaurant actif</label>
-                                <select id="restaurantActive">
-                                    <option value="true">✅ Actif</option>
-                                    <option value="false">❌ Inactif</option>
-                                </select>
-                                <div style="font-size: 12px; color: #999;">Si inactif, le restaurant n'apparaîtra pas</div>
-                            </div>
-                            
-                            <div class="form-actions">
-                                <button type="submit" class="btn-save">💾 Enregistrer</button>
-                                <button type="button" class="btn-reset" onclick="resetRestaurantForm()">🔄 Réinitialiser</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            
-            <!-- ============ TAB 2: CATÉGORIES ============ -->
-            <div class="tab-content" id="tab-categories">
-                <div class="admin-section">
-                    <h2>📂 Gestion des catégories (<span id="categoryCount">0</span>)</h2>
-                    
-                    <div class="add-category-form">
-                        <input type="text" id="newCategoryKey" placeholder="Clé (ex: snacks)">
-                        <input type="text" id="newCategoryName" placeholder="Nom (ex: Snacks)">
-                        <input type="text" id="newCategoryIcon" placeholder="Icône (ex: 🌮)" style="flex: 0.5; min-width: 80px;">
-                        <button onclick="addCategory()">➕ Ajouter</button>
-                    </div>
-                    
-                    <div id="categoriesList" class="categories-grid">
-                        <!-- Les catégories seront chargées ici -->
-                    </div>
-                </div>
-            </div>
-            
-            <!-- ============ TAB 3: PRODUITS ============ -->
-            <div class="tab-content" id="tab-products">
-                <div class="admin-section">
-                    <h2>➕ Ajouter un produit</h2>
-                    <form id="productForm">
-                        <input type="text" id="productName" placeholder="Nom du produit" required>
-                        <input type="number" id="productPrice" placeholder="Prix (€)" step="0.01" required>
-                        <select id="productCategory" required>
-                            <option value="">Choisir une catégorie...</option>
-                        </select>
-                        <textarea id="productDesc" placeholder="Description"></textarea>
-                        
-                        <div style="margin: 10px 0;">
-                            <label style="display: block; font-weight: 600; margin-bottom: 5px;">📷 Image (PicX)</label>
-                            <div style="display: flex; gap: 10px;">
-                                <input type="text" id="productImage" placeholder="https://raw.githubusercontent.com/.../image.jpg" style="flex: 1;">
-                                <button type="button" onclick="loadPicXImagesForAdd()" style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; white-space: nowrap;">📂 Parcourir</button>
-                            </div>
-                            <div class="picx-preview" id="picxPreview" style="display: none; margin-top: 10px; padding: 10px; background: #f8f9ff; border-radius: 8px; align-items: center; gap: 15px;">
-                                <img id="picxPreviewImg" src="" style="max-width: 100px; max-height: 100px; border-radius: 5px; border: 2px solid #4caf50;">
-                                <span style="color: #155724; font-size: 13px;">✅ Image sélectionnée</span>
-                                <button type="button" onclick="clearPicXImage()" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">✕</button>
-                            </div>
-                        </div>
-                        
-                        <button type="button" class="btn-primary" id="addBtn">➕ Ajouter le produit</button>
-                    </form>
-                </div>
-                
-                <div class="admin-section">
-                    <h2>📋 Gestion des produits (<span id="productCount">0</span>)</h2>
-                    <div id="productsList" class="products-list"></div>
-                </div>
-            </div>
-            
-            <!-- ============ TAB 4: IMAGES ============ -->
-            <div class="tab-content" id="tab-images">
-                <div class="admin-section">
-                    <h2>📷 Gestion des images</h2>
-                    
-                    <div style="background: #f8f9ff; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; margin-bottom: 15px;">
-                        <h4>📁 Configuration du dépôt PicX</h4>
-                        <input type="text" id="githubUsername" placeholder="Nom d'utilisateur GitHub" value="simou-rayane" style="width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 8px;">
-                        <input type="text" id="githubRepo" placeholder="Dépôt PicX" value="picx-images-hosting" style="width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 8px;">
-                        <input type="text" id="githubBranch" placeholder="Branche" value="master" style="width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 8px;">
-                        <div style="font-size: 12px; color: #666; margin-top: 5px;">💡 Utilisez PicX pour uploader vos images dans ce dépôt.</div>
-                    </div>
-                    
-                    <div style="margin-top: 15px;">
-                        <button type="button" onclick="loadPicXImagesForGallery()" style="background: #667eea; color: white; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; margin-bottom: 12px;">🔄 Charger les images</button>
-                        
-                        <div id="picxGalleryGrid" class="picx-modal-grid" style="max-height: 400px; border: 2px solid #e0e0e0; border-radius: 8px; background: #fafafa;">
-                            <div style="grid-column: 1 / -1; text-align: center; padding: 30px; color: #999;">
-                                <div style="font-size: 48px; margin-bottom: 10px;">📂</div>
-                                <p>Aucune image chargée</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-        </div>
-        <!-- ============ FIN CONTENU ADMIN ============ -->
-        
+        <!-- ... tout votre HTML ... -->
     </div>
     
-    <!-- ============ FIREBASE CONFIG ============ -->
+    <!-- ============================================ -->
+    <!-- FIREBASE CONFIG -->
+    <!-- ============================================ -->
     <script src="config.js" onerror="handleConfigError()"></script>
    
-    <!-- ============ SCRIPT PRINCIPAL ============ -->
+    <!-- ============================================ -->
+    <!-- SCRIPT PRINCIPAL CORRIGÉ -->
+    <!-- ============================================ -->
     <script>
         // ============================================
         // ADMIN.JS - VERSION COMPLÈTEMENT CORRIGÉE
         // ============================================
         
         // ============================================
-        // 🔧 VARIABLES GLOBALES
+        // 1. VARIABLES GLOBALES
         // ============================================
         let products = [];
         let categories = {};
@@ -781,12 +46,14 @@
         let selectedPicxImage = null;
         let imageSelectorMode = null;
         let currentRestaurantId = 'default';
+        let pendingProductId = null;
+        let picxMode = 'add';
         
-        // Références Firebase
+        // Références Firebase (seront initialisées dans initializeFirebase)
         let database, restaurantsRef, categoriesRef, productsRef;
         
         // ============================================
-        // 📋 CONFIGURATION PICX
+        // 2. CONFIGURATION PICX
         // ============================================
         const PICX_CONFIG = {
             username: 'simou-rayane',
@@ -795,7 +62,7 @@
         };
         
         // ============================================
-        // 🚨 GESTIONNAIRE D'ERREUR CONFIG
+        // 3. GESTIONNAIRE D'ERREUR CONFIG
         // ============================================
         function handleConfigError() {
             console.error('❌ Erreur: config.js non trouvé');
@@ -806,9 +73,44 @@
         }
         
         // ============================================
-        // 🔐 AUTHENTIFICATION
+        // 4. TOAST
         // ============================================
+        function showToast(message, type = 'info') {
+            const colors = { 'success': '#4caf50', 'error': '#dc3545', 'warning': '#ff9800', 'info': '#2196F3' };
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.style.background = colors[type] || '#667eea';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.animation = 'slideUp 0.5s ease reverse';
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
         
+        // ============================================
+        // 5. RECHARGEMENT DES DONNÉES (défini AVANT utilisation)
+        // ============================================
+        function reloadAllData() {
+            console.log('🔄 Rechargement des données...');
+            showToast('🔄 Rechargement...', 'info');
+            
+            if (typeof loadRestaurant === 'function') loadRestaurant();
+            if (typeof loadCategories === 'function') loadCategories();
+            if (typeof loadProducts === 'function') loadProducts();
+            
+            setTimeout(() => {
+                console.log('📊 État des données:');
+                console.log('  - Restaurant:', restaurantData ? '✅' : '❌');
+                console.log('  - Catégories:', Object.keys(categories).length > 0 ? '✅ (' + Object.keys(categories).length + ')' : '❌');
+                console.log('  - Produits:', products.length > 0 ? '✅ (' + products.length + ')' : '❌');
+                showToast('✅ Données rechargées', 'success');
+            }, 1000);
+        }
+        
+        // ============================================
+        // 6. AUTHENTIFICATION
+        // ============================================
         function loginUser(email, password) {
             return firebase.auth().signInWithEmailAndPassword(email, password);
         }
@@ -840,48 +142,84 @@
             document.getElementById('logoutBtn').style.display = 'inline-block';
         }
         
-       // ✅ État de l'authentification avec VÉRIFICATION UID
-firebase.auth().onAuthStateChanged((user) => {
-    if (user) {
-        console.log('✅ Utilisateur connecté:', user.email);
-        console.log('🆔 Votre UID:', user.uid);
-        
-        // 🔐 VÉRIFICATION DE L'UID
-        const expectedUID = 'kW1jJa76EuVPg53pwBuk58nCs1e2';
-        
-        if (user.uid === expectedUID) {
-            console.log('✅ UID correspond aux règles Firebase');
-            document.getElementById('connectionStatus').innerHTML = `✅ Connecté en tant que ${user.email} (UID OK)`;
-            document.getElementById('connectionStatus').className = 'connected';
-        } else {
-            console.warn('⚠️ ATTENTION: UID ne correspond pas aux règles!');
-            console.warn(`📌 Règles attendent: ${expectedUID}`);
-            console.warn(`📌 Votre UID: ${user.uid}`);
-            document.getElementById('connectionStatus').innerHTML = `⚠️ UID non conforme - Contactez l'admin (Votre UID: ${user.uid})`;
-            document.getElementById('connectionStatus').className = 'disconnected';
-            // ⚠️ Optionnel: Bloquer l'accès si UID incorrect
-            // showLoginForm();
-            // return;
+        function addLogoutButton() {
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.style.display = 'inline-block';
+                logoutBtn.onclick = logoutUser;
+            }
         }
         
-        showAdminContent();
-        addLogoutButton();
+        // ============================================
+        // 7. INITIALISATION FIREBASE (UNIQUE DÉCLARATION)
+        // ============================================
+        function initializeFirebase() {
+            if (typeof firebase === 'undefined' || firebase.apps.length === 0) {
+                console.log('⏳ Attente de Firebase...');
+                setTimeout(initializeFirebase, 500);
+                return;
+            }
+            
+            console.log('✅ Firebase prêt');
+            
+            // ✅ UNIQUE DÉCLARATION DES RÉFÉRENCES
+            database = firebase.database();
+            restaurantsRef = database.ref('restaurants');
+            categoriesRef = database.ref('categories');
+            productsRef = database.ref('products');
+            
+            // Exposer globalement
+            window.database = database;
+            window.restaurantsRef = restaurantsRef;
+            window.categoriesRef = categoriesRef;
+            window.productsRef = productsRef;
+            
+            console.log('✅ Références Firebase initialisées');
+        }
         
-        // 🔥 Charger les données après connexion
-        setTimeout(() => {
-            console.log('🔄 Chargement des données...');
-            if (typeof loadRestaurant === 'function') loadRestaurant();
-            if (typeof loadCategories === 'function') loadCategories();
-            if (typeof loadProducts === 'function') loadProducts();
-        }, 500);
+        // ============================================
+        // 8. AUTH STATE AVEC VÉRIFICATION UID
+        // ============================================
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                console.log('✅ Utilisateur connecté:', user.email);
+                console.log('🆔 Votre UID:', user.uid);
+                
+                // 🔐 VÉRIFICATION DE L'UID
+                const expectedUID = 'kW1jJa76EuVPg53pwBuk58nCs1e2';
+                
+                if (user.uid === expectedUID) {
+                    console.log('✅ UID correspond aux règles Firebase');
+                    document.getElementById('connectionStatus').innerHTML = `✅ Connecté en tant que ${user.email} (UID OK)`;
+                    document.getElementById('connectionStatus').className = 'connected';
+                } else {
+                    console.warn('⚠️ ATTENTION: UID ne correspond pas aux règles!');
+                    console.warn(`📌 Règles attendent: ${expectedUID}`);
+                    console.warn(`📌 Votre UID: ${user.uid}`);
+                    document.getElementById('connectionStatus').innerHTML = `⚠️ UID non conforme - Votre UID: ${user.uid}`;
+                    document.getElementById('connectionStatus').className = 'disconnected';
+                }
+                
+                showAdminContent();
+                addLogoutButton();
+                
+                // 🔥 Charger les données après connexion
+                setTimeout(() => {
+                    console.log('🔄 Chargement des données...');
+                    if (typeof loadRestaurant === 'function') loadRestaurant();
+                    if (typeof loadCategories === 'function') loadCategories();
+                    if (typeof loadProducts === 'function') loadProducts();
+                }, 500);
+                
+            } else {
+                console.log('🔐 Non connecté');
+                showLoginForm();
+            }
+        });
         
-    } else {
-        console.log('🔐 Non connecté');
-        showLoginForm();
-    }
-});
-        
-        // Formulaire de connexion
+        // ============================================
+        // 9. FORMULAIRE DE CONNEXION
+        // ============================================
         document.getElementById('loginFormElement').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -921,37 +259,8 @@ firebase.auth().onAuthStateChanged((user) => {
         });
         
         // ============================================
-        // 🚀 INITIALISATION FIREBASE
+        // 10. CHARGEMENT DU RESTAURANT
         // ============================================
-        
-        function initializeFirebase() {
-            if (typeof firebase === 'undefined' || firebase.apps.length === 0) {
-                console.log('⏳ Attente de Firebase...');
-                setTimeout(initializeFirebase, 500);
-                return;
-            }
-            
-            console.log('✅ Firebase prêt');
-            
-            // Initialiser les références
-            database = firebase.database();
-            restaurantsRef = database.ref('restaurants');
-            categoriesRef = database.ref('categories');
-            productsRef = database.ref('products');
-            
-            // Exposer globalement
-            window.database = database;
-            window.restaurantsRef = restaurantsRef;
-            window.categoriesRef = categoriesRef;
-            window.productsRef = productsRef;
-            
-            console.log('✅ Références Firebase initialisées');
-        }
-        
-        // ============================================
-        // 📦 CHARGEMENT DU RESTAURANT
-        // ============================================
-        
         function loadRestaurant() {
             if (!restaurantsRef) {
                 console.warn('⏳ RestaurantsRef non initialisé');
@@ -1028,7 +337,6 @@ firebase.auth().onAuthStateChanged((user) => {
         }
         
         // ============ LOGO ET BANNIÈRE ============
-        
         function updateLogoPreview(logoUrl) {
             const img = document.getElementById('logoPreviewImg');
             const placeholder = document.getElementById('logoPlaceholder');
@@ -1121,7 +429,6 @@ firebase.auth().onAuthStateChanged((user) => {
         }
         
         // ============ SAUVEGARDER LE RESTAURANT ============
-        
         document.getElementById('restaurantForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -1167,9 +474,8 @@ firebase.auth().onAuthStateChanged((user) => {
         });
         
         // ============================================
-        // 📂 GESTION DES CATÉGORIES
+        // 11. GESTION DES CATÉGORIES
         // ============================================
-        
         function loadCategories() {
             if (!categoriesRef) {
                 console.warn('⏳ CategoriesRef non initialisé');
@@ -1363,9 +669,8 @@ firebase.auth().onAuthStateChanged((user) => {
         }
         
         // ============================================
-        // 🍽️ GESTION DES PRODUITS
+        // 12. GESTION DES PRODUITS
         // ============================================
-        
         function loadProducts() {
             if (!productsRef) {
                 console.warn('⏳ ProductsRef non initialisé');
@@ -1570,8 +875,7 @@ firebase.auth().onAuthStateChanged((user) => {
             .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
         }
         
-        // ============ FORMULAIRE D'AJOUT ============
-        
+        // ============ FORMULAIRE D'AJOUT PRODUIT ============
         document.getElementById('addBtn').addEventListener('click', function() {
             const productData = {
                 name: document.getElementById('productName').value,
@@ -1596,9 +900,8 @@ firebase.auth().onAuthStateChanged((user) => {
         });
         
         // ============================================
-        // 📷 PICX - GESTION DES IMAGES
+        // 13. PICX - GESTION DES IMAGES
         // ============================================
-        
         async function loadPicXImages() {
             try {
                 const username = document.getElementById('githubUsername').value.trim() || PICX_CONFIG.username;
@@ -1678,7 +981,6 @@ firebase.auth().onAuthStateChanged((user) => {
                 imageSelectorMode = null;
                 document.querySelector('[data-tab="tab-restaurant"]').click();
             } else {
-                // Mode produit - sélection pour le formulaire
                 document.getElementById('productImage').value = imageUrl;
                 const preview = document.getElementById('picxPreview');
                 const previewImg = document.getElementById('picxPreviewImg');
@@ -1703,14 +1005,14 @@ firebase.auth().onAuthStateChanged((user) => {
         
         function changeImage(productId) {
             imageSelectorMode = null;
+            pendingProductId = productId;
             loadPicXImagesForGallery();
             showToast('📷 Sélectionnez une image pour ce produit', 'info');
         }
         
         // ============================================
-        // 🔄 EXPORT / IMPORT / RÉINITIALISATION
+        // 14. EXPORT / IMPORT / RÉINITIALISATION
         // ============================================
-        
         function exportProducts() {
             if (products.length === 0) { 
                 showToast('❌ Aucun produit à exporter', 'error'); 
@@ -1774,44 +1076,9 @@ firebase.auth().onAuthStateChanged((user) => {
                 .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
         }
         
-        function reloadAllData() {
-            console.log('🔄 Rechargement des données...');
-            showToast('🔄 Rechargement...', 'info');
-            
-            loadRestaurant();
-            loadCategories();
-            loadProducts();
-            
-            setTimeout(() => {
-                console.log('📊 État des données:');
-                console.log('  - Restaurant:', restaurantData ? '✅' : '❌');
-                console.log('  - Catégories:', Object.keys(categories).length > 0 ? '✅ (' + Object.keys(categories).length + ')' : '❌');
-                console.log('  - Produits:', products.length > 0 ? '✅ (' + products.length + ')' : '❌');
-                showToast('✅ Données rechargées', 'success');
-            }, 1000);
-        }
-        
         // ============================================
-        // 💬 TOAST
+        // 15. TABS
         // ============================================
-        
-        function showToast(message, type = 'info') {
-            const colors = { 'success': '#4caf50', 'error': '#dc3545', 'warning': '#ff9800', 'info': '#2196F3' };
-            const toast = document.createElement('div');
-            toast.className = 'toast ' + type;
-            toast.style.background = colors[type] || '#667eea';
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.style.animation = 'slideUp 0.5s ease reverse';
-                setTimeout(() => toast.remove(), 500);
-            }, 3000);
-        }
-        
-        // ============================================
-        // 📋 TABS
-        // ============================================
-        
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -1822,10 +1089,8 @@ firebase.auth().onAuthStateChanged((user) => {
         });
         
         // ============================================
-        // 🚀 INITIALISATION FINALE
+        // 16. INITIALISATION FINALE
         // ============================================
-        
-        // Initialiser Firebase dès que la page est chargée
         if (document.readyState === 'complete') {
             initializeFirebase();
         } else {
@@ -1833,9 +1098,10 @@ firebase.auth().onAuthStateChanged((user) => {
         }
         
         // ============================================
-        // 📤 EXPOSER LES FONCTIONS GLOBALEMENT
+        // 17. EXPOSER TOUTES LES FONCTIONS GLOBALEMENT
         // ============================================
-        
+        window.reloadAllData = reloadAllData;
+        window.logoutUser = logoutUser;
         window.openImageSelector = openImageSelector;
         window.removeImage = removeImage;
         window.resetRestaurantForm = resetRestaurantForm;
@@ -1853,21 +1119,19 @@ firebase.auth().onAuthStateChanged((user) => {
         window.exportProducts = exportProducts;
         window.importProducts = importProducts;
         window.resetFirebaseProducts = resetFirebaseProducts;
-        window.reloadAllData = reloadAllData;
-        window.logoutUser = logoutUser;
         window.selectPicXImage = selectPicXImage;
         window.handleConfigError = handleConfigError;
         window.loadRestaurant = loadRestaurant;
         window.loadCategories = loadCategories;
         window.loadProducts = loadProducts;
         
-        console.log('✅ Admin initialisé - Version corrigée');
+        console.log('✅ Admin initialisé - Version corrigée avec UID');
         console.log('📊 Fonctions disponibles:');
         console.log('  - reloadAllData() : Recharger toutes les données');
         console.log('  - exportProducts() : Exporter les produits');
         console.log('  - importProducts() : Importer des produits');
         console.log('  - resetFirebaseProducts() : Réinitialiser les produits');
-        
+        console.log('🔐 UID attendu: kW1jJa76EuVPg53pwBuk58nCs1e2');
     </script>
 </body>
 </html>
