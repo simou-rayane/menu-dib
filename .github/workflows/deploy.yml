@@ -1,78 +1,39 @@
-name: Deploy to GitHub Pages
+name: Deploy
 
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-      
-      - name: Build with environment variables
-        run: |
-          # Créer le dossier de build
-          mkdir -p ./build
-          
-          # Copier tous les fichiers HTML, CSS, JS et images
-          cp -r *.html *.css *.js images ./build/ 2>/dev/null || true
-          
-          # Générer config.js avec les secrets GitHub
-          cat > ./build/config.js << 'EOF'
-          // Auto-generated config - DO NOT EDIT
-          const firebaseConfig = {
-              apiKey: '${{ secrets.FIREBASE_API_KEY }}',
-              authDomain: '${{ secrets.FIREBASE_AUTH_DOMAIN }}',
-              databaseURL: '${{ secrets.FIREBASE_DATABASE_URL }}',
-              projectId: '${{ secrets.FIREBASE_PROJECT_ID }}',
-              storageBucket: '${{ secrets.FIREBASE_STORAGE_BUCKET }}',
-              messagingSenderId: '${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}',
-              appId: '${{ secrets.FIREBASE_APP_ID }}'
-          };
-
-          firebase.initializeApp(firebaseConfig);
-          const database = firebase.database();
-
-          const productsRef = database.ref('products');
-          const ordersRef = database.ref('orders');
-          const cartsRef = database.ref('carts');
-          const tablesRef = database.ref('tables');
-          const categoriesRef = database.ref('categories');
-          const restaurantsRef = database.ref('restaurants');
-
-          console.log('✅ Firebase initialisé');
-          EOF
-          
-          # Copier aussi en firebase-config.js pour compatibilité
-          cp ./build/config.js ./build/firebase-config.js
-          
-          echo "✅ Fichiers générés avec succès"
-          ls -la ./build/
-      
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: './build'
-
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: build
     steps:
+      - uses: actions/checkout@v3
+      
+      - name: Generate config.js
+        run: |
+          echo "// 🔥 Configuration Firebase - Généré automatiquement" > config.js
+          echo "const firebaseConfig = {" >> config.js
+          echo "  apiKey: '${{ secrets.FIREBASE_API_KEY }}'," >> config.js
+          echo "  authDomain: '${{ secrets.FIREBASE_AUTH_DOMAIN }}'," >> config.js
+          echo "  databaseURL: '${{ secrets.FIREBASE_DATABASE_URL }}'," >> config.js
+          echo "  projectId: '${{ secrets.FIREBASE_PROJECT_ID }}'," >> config.js
+          echo "  storageBucket: '${{ secrets.FIREBASE_STORAGE_BUCKET }}'," >> config.js
+          echo "  messagingSenderId: '${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}'," >> config.js
+          echo "  appId: '${{ secrets.FIREBASE_APP_ID }}'" >> config.js
+          echo "};" >> config.js
+          echo "" >> config.js
+          echo "// Initialiser Firebase" >> config.js
+          echo "if (!firebase.apps.length) {" >> config.js
+          echo "  firebase.initializeApp(firebaseConfig);" >> config.js
+          echo "  console.log('✅ Firebase initialisé depuis config.js');" >> config.js
+          echo "}" >> config.js
+          echo "" >> config.js
+          echo "// Exporter pour les autres fichiers" >> config.js
+          echo "window.firebaseConfig = firebaseConfig;" >> config.js
+          
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
