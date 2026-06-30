@@ -9,10 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - name: 📥 Checkout du code
+    - name: Checkout du code
       uses: actions/checkout@v3
     
-    - name: 🔥 Génération de config.js
+    - name: Génération de config.js
       run: |
         echo "// 🔥 Configuration Firebase - Généré automatiquement" > config.js
         echo "const firebaseConfig = {" >> config.js
@@ -34,19 +34,17 @@ jobs:
         echo "// Exporter la config" >> config.js
         echo "window.firebaseConfig = firebaseConfig;" >> config.js
         
-        # Afficher le contenu généré pour vérification
         echo "✅ config.js généré avec succès !"
-        cat config.js | head -20
     
-    - name: 📤 Vérification des fichiers
+    - name: Vérification des fichiers
       run: |
         echo "📁 Fichiers présents :"
         ls -la
         echo ""
         echo "📄 Contenu de config.js :"
-        cat config.js | head -25
+        cat config.js
     
-    - name: 🚀 Déploiement vers GitHub Pages
+    - name: Déploiement vers GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -54,7 +52,7 @@ jobs:
         publish_branch: gh-pages
         force_orphan: true
     
-    - name: ✅ Fin du déploiement
+    - name: Fin du déploiement
       run: |
         echo "✅ Déploiement terminé avec succès !"
         echo "🌐 Site disponible sur : https://simou-rayane.github.io/menu-dib/"
