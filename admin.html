@@ -13,7 +13,9 @@
     <!-- ============================================ -->
     <!-- 🔥 CONFIGURATION FIREBASE (générée automatiquement) -->
     <!-- ============================================ -->
-   const firebaseConfig = {
+<script>
+
+    const firebaseConfig = {
   apiKey: "AIzaSyAp9akZE9yGLmZAVkcZ7YB4pM1kUP8cJWM",
   authDomain: "restaurant-menu-9179b.firebaseapp.com",
   databaseURL: "https://restaurant-menu-9179b-default-rtdb.europe-west1.firebasedatabase.app",
@@ -22,7 +24,13 @@
   messagingSenderId: "57456460201",
   appId: "1:57456460201:web:8b40ceeffe81eea918c4b8"
     };
-    
+        // Initialiser Firebase
+    if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+        console.log('✅ Firebase initialisé (config intégrée)');
+    }
+</script>
+
     <style>
         /* ============ STYLES ============ */
         * { margin: 0; padding: 0; box-sizing: border-box; }
