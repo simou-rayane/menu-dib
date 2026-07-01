@@ -53,6 +53,12 @@
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             --danger: #e74c3c;
             --success: #2ecc71;
+            --warning: #f39c12;
+            --whatsapp: #25D366;
+            --facebook: #1877f2;
+            --instagram: #e4405f;
+            --phone: #4CAF50;
+            --maps: #ea4335;
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -68,7 +74,7 @@
         }
         
         /* ============================================ */
-        /* 🖼️ BANNIÈRE AVEC LOGO */
+        /* 🖼️ BANNIÈRE */
         /* ============================================ */
         .banner-container {
             max-width: 1200px;
@@ -120,7 +126,6 @@
             pointer-events: none;
         }
         
-        /* Logo dans la bannière */
         .banner-logo-container {
             display: flex;
             align-items: center;
@@ -170,7 +175,6 @@
             text-shadow: 0 2px 10px rgba(0,0,0,0.8);
         }
         
-        /* Badge numéro de table sur la bannière */
         .table-badge {
             position: absolute;
             top: 20px;
@@ -191,6 +195,134 @@
         
         .table-badge span {
             font-size: 1.2rem;
+        }
+        
+        /* ============================================ */
+        /* 📋 BARRE D'INFORMATIONS RESTAURANT */
+        /* ============================================ */
+        .restaurant-info-bar {
+            max-width: 1200px;
+            margin: -10px auto 25px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px 20px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            position: relative;
+            z-index: 5;
+        }
+        
+        .info-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            border-radius: 30px;
+            border: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        
+        .info-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .info-btn .icon {
+            font-size: 1.1rem;
+        }
+        
+        .info-btn.phone {
+            background: rgba(76, 175, 80, 0.2);
+            color: var(--phone);
+            border: 1px solid var(--phone);
+        }
+        
+        .info-btn.phone:hover {
+            background: var(--phone);
+            color: white;
+        }
+        
+        .info-btn.whatsapp {
+            background: rgba(37, 211, 102, 0.2);
+            color: var(--whatsapp);
+            border: 1px solid var(--whatsapp);
+        }
+        
+        .info-btn.whatsapp:hover {
+            background: var(--whatsapp);
+            color: white;
+        }
+        
+        .info-btn.maps {
+            background: rgba(234, 67, 53, 0.2);
+            color: var(--maps);
+            border: 1px solid var(--maps);
+        }
+        
+        .info-btn.maps:hover {
+            background: var(--maps);
+            color: white;
+        }
+        
+        .info-btn.facebook {
+            background: rgba(24, 119, 242, 0.2);
+            color: var(--facebook);
+            border: 1px solid var(--facebook);
+        }
+        
+        .info-btn.facebook:hover {
+            background: var(--facebook);
+            color: white;
+        }
+        
+        .info-btn.instagram {
+            background: rgba(228, 64, 95, 0.2);
+            color: var(--instagram);
+            border: 1px solid var(--instagram);
+        }
+        
+        .info-btn.instagram:hover {
+            background: var(--instagram);
+            color: white;
+        }
+        
+        .info-btn.website {
+            background: rgba(52, 152, 219, 0.2);
+            color: #3498db;
+            border: 1px solid #3498db;
+        }
+        
+        .info-btn.website:hover {
+            background: #3498db;
+            color: white;
+        }
+        
+        .info-text {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+        }
+        
+        .info-text .icon {
+            font-size: 1.1rem;
+        }
+        
+        .info-text .highlight {
+            color: var(--accent);
+            font-weight: 600;
         }
         
         /* ============================================ */
@@ -464,7 +596,6 @@
             transform: rotate(90deg);
         }
         
-        /* Numéro de table dans le panier */
         .table-selector {
             padding: 15px 24px;
             border-bottom: 1px solid var(--border-color);
@@ -499,7 +630,6 @@
             box-shadow: 0 0 0 3px var(--accent-glow);
         }
         
-        /* Liste des produits du panier */
         .cart-items {
             flex: 1;
             overflow-y: auto;
@@ -623,7 +753,6 @@
             transform: scale(1.1);
         }
         
-        /* Total et actions */
         .cart-footer {
             padding: 20px 24px;
             border-top: 1px solid var(--border-color);
@@ -809,6 +938,16 @@
                 font-size: 0.8rem;
             }
             
+            .restaurant-info-bar {
+                gap: 8px;
+                padding: 12px 15px;
+            }
+            
+            .info-btn, .info-text {
+                padding: 6px 14px;
+                font-size: 0.75rem;
+            }
+            
             .search-container { padding: 15px; margin-bottom: 20px; }
             .search-bar input { font-size: 14px; padding: 12px 16px; }
             
@@ -841,6 +980,16 @@
             .banner-text .restaurant-name-banner { font-size: 1.1rem; }
             .banner-logo { width: 40px; height: 40px; }
             .banner-logo-placeholder { width: 40px; height: 40px; font-size: 16px; }
+            
+            .restaurant-info-bar {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .info-btn, .info-text {
+                width: 100%;
+                justify-content: center;
+            }
         }
         
         /* ============================================ */
@@ -937,7 +1086,6 @@
         </div>
         <div class="banner-overlay">
             <div class="banner-logo-container">
-                <!-- Logo -->
                 <img id="bannerLogo" class="banner-logo" src="" alt="Logo" style="display: none;">
                 <div id="bannerLogoPlaceholder" class="banner-logo-placeholder">🍽️</div>
                 <div class="banner-text">
@@ -946,9 +1094,49 @@
                 </div>
             </div>
         </div>
-        <!-- Badge numéro de table -->
         <div class="table-badge" id="tableBadge">
             <span>🍽️</span> Table <span id="tableNumberDisplay">1</span>
+        </div>
+    </div>
+    
+    <!-- ============================================ -->
+    <!-- 📋 BARRE D'INFORMATIONS RESTAURANT -->
+    <!-- ============================================ -->
+    <div class="restaurant-info-bar" id="restaurantInfoBar">
+        <!-- Téléphone -->
+        <a id="infoPhone" class="info-btn phone" style="display:none;">
+            <span class="icon">📞</span> <span id="infoPhoneText">Appeler</span>
+        </a>
+        
+        <!-- WhatsApp -->
+        <a id="infoWhatsApp" class="info-btn whatsapp" style="display:none;">
+            <span class="icon">💬</span> WhatsApp
+        </a>
+        
+        <!-- Itinéraire -->
+        <a id="infoMaps" class="info-btn maps" style="display:none;">
+            <span class="icon">📍</span> Itinéraire
+        </a>
+        
+        <!-- Facebook -->
+        <a id="infoFacebook" class="info-btn facebook" style="display:none;">
+            <span class="icon">📘</span> Facebook
+        </a>
+        
+        <!-- Instagram -->
+        <a id="infoInstagram" class="info-btn instagram" style="display:none;">
+            <span class="icon">📸</span> Instagram
+        </a>
+        
+        <!-- Site web -->
+        <a id="infoWebsite" class="info-btn website" style="display:none;">
+            <span class="icon">🌐</span> Site web
+        </a>
+        
+        <!-- Livraison -->
+        <div id="infoDelivery" class="info-text" style="display:none;">
+            <span class="icon">🚚</span>
+            Livraison disponible <span class="highlight" id="deliveryPrice"></span>
         </div>
     </div>
     
@@ -999,20 +1187,17 @@
     <!-- ============================================ -->
     <div class="cart-overlay" id="cartOverlay" onclick="closeCartOutside(event)">
         <div class="cart-modal" id="cartModal">
-            <!-- En-tête -->
             <div class="cart-header">
                 <h2>🛒 Mon panier</h2>
                 <button class="close-btn" onclick="closeCart()">✕</button>
             </div>
             
-            <!-- Numéro de table -->
             <div class="table-selector">
                 <label>🍽️ Table n°</label>
                 <input type="number" id="tableNumberInput" value="1" min="1" max="50">
                 <span style="font-size:12px; color:var(--text-muted);">(Vérifiez votre numéro de table)</span>
             </div>
             
-            <!-- Liste des produits -->
             <div class="cart-items" id="cartItems">
                 <div class="cart-empty">
                     <span class="icon">🛒</span>
@@ -1021,7 +1206,6 @@
                 </div>
             </div>
             
-            <!-- Footer avec total et actions -->
             <div class="cart-footer">
                 <div class="cart-total">
                     <span>Total</span>
@@ -1040,7 +1224,7 @@
     <!-- ============================================ -->
     <script>
         // ============================================
-        // MENU.JS - VERSION AVEC LOGO, TABLE ET WHATSAPP
+        // MENU.JS - VERSION AVEC TOUS LES BOUTONS
         // ============================================
         
         // ============================================
@@ -1084,7 +1268,7 @@
         }
         
         // ============================================
-        // 3. RÉCUPÉRATION DU NUMÉRO DE TABLE DEPUIS L'URL
+        // 3. RÉCUPÉRATION DU NUMÉRO DE TABLE
         // ============================================
         function getTableFromURL() {
             const params = new URLSearchParams(window.location.search);
@@ -1120,7 +1304,6 @@
             tableNumber = getTableFromURL();
             cart = getCart();
             
-            // Afficher le numéro de table
             document.getElementById('tableNumberDisplay').textContent = tableNumber;
             document.getElementById('tableNumberInput').value = tableNumber;
             
@@ -1132,7 +1315,7 @@
         }
         
         // ============================================
-        // 5. CHARGEMENT DU RESTAURANT (AVEC LOGO)
+        // 5. CHARGEMENT DU RESTAURANT (AVEC TOUS LES BOUTONS)
         // ============================================
         function loadRestaurant() {
             restaurantsRef.child(DEFAULT_RESTAURANT).on('value', (snapshot) => {
@@ -1140,12 +1323,12 @@
                 if (data) {
                     restaurantData = data;
                     displayBanner(data);
+                    displayInfoButtons(data);
                 }
             });
         }
         
         function displayBanner(data) {
-            // Bannière
             const bannerImg = document.getElementById('bannerImage');
             const bannerPlaceholder = document.getElementById('bannerPlaceholder');
             
@@ -1162,17 +1345,14 @@
                 bannerPlaceholder.style.display = 'flex';
             }
             
-            // Nom
             const nameEl = document.getElementById('bannerRestaurantName');
             if (nameEl) nameEl.textContent = data.name || 'Mon Restaurant';
             
-            // Slogan / Adresse
             const sloganEl = document.getElementById('bannerRestaurantSlogan');
             if (sloganEl) {
                 sloganEl.textContent = data.address || 'Découvrez notre carte';
             }
             
-            // Logo
             const logoImg = document.getElementById('bannerLogo');
             const logoPlaceholder = document.getElementById('bannerLogoPlaceholder');
             
@@ -1187,6 +1367,79 @@
             } else if (logoImg) {
                 logoImg.style.display = 'none';
                 logoPlaceholder.style.display = 'flex';
+            }
+        }
+        
+        function displayInfoButtons(data) {
+            // Téléphone
+            const phoneBtn = document.getElementById('infoPhone');
+            const phoneText = document.getElementById('infoPhoneText');
+            if (phoneBtn && data.phone) {
+                const cleanPhone = data.phone.replace(/\s/g, '');
+                phoneBtn.href = `tel:${cleanPhone}`;
+                if (phoneText) phoneText.textContent = data.phone;
+                phoneBtn.style.display = 'inline-flex';
+            } else if (phoneBtn) {
+                phoneBtn.style.display = 'none';
+            }
+            
+            // WhatsApp
+            const whatsappBtn = document.getElementById('infoWhatsApp');
+            if (whatsappBtn && data.whatsapp) {
+                whatsappBtn.href = `https://wa.me/${data.whatsapp}`;
+                whatsappBtn.style.display = 'inline-flex';
+            } else if (whatsappBtn) {
+                whatsappBtn.style.display = 'none';
+            }
+            
+            // Itinéraire
+            const mapsBtn = document.getElementById('infoMaps');
+            if (mapsBtn && data.mapsUrl) {
+                mapsBtn.href = data.mapsUrl;
+                mapsBtn.style.display = 'inline-flex';
+            } else if (mapsBtn) {
+                mapsBtn.style.display = 'none';
+            }
+            
+            // Facebook
+            const fbBtn = document.getElementById('infoFacebook');
+            if (fbBtn && data.facebook) {
+                fbBtn.href = data.facebook;
+                fbBtn.style.display = 'inline-flex';
+            } else if (fbBtn) {
+                fbBtn.style.display = 'none';
+            }
+            
+            // Instagram
+            const igBtn = document.getElementById('infoInstagram');
+            if (igBtn && data.instagram) {
+                igBtn.href = data.instagram;
+                igBtn.style.display = 'inline-flex';
+            } else if (igBtn) {
+                igBtn.style.display = 'none';
+            }
+            
+            // Site web
+            const webBtn = document.getElementById('infoWebsite');
+            if (webBtn && data.website) {
+                webBtn.href = data.website;
+                webBtn.style.display = 'inline-flex';
+            } else if (webBtn) {
+                webBtn.style.display = 'none';
+            }
+            
+            // Livraison
+            const deliveryDiv = document.getElementById('infoDelivery');
+            const deliveryPrice = document.getElementById('deliveryPrice');
+            if (deliveryDiv && data.deliveryAvailable) {
+                deliveryDiv.style.display = 'inline-flex';
+                if (deliveryPrice && data.deliveryPrice) {
+                    deliveryPrice.textContent = `(${data.deliveryPrice}€)`;
+                } else if (deliveryPrice) {
+                    deliveryPrice.textContent = '';
+                }
+            } else if (deliveryDiv) {
+                deliveryDiv.style.display = 'none';
             }
         }
         
@@ -1398,7 +1651,7 @@
         }
         
         // ============================================
-        // 11. AFFICHAGE DU PANIER (MODAL)
+        // 11. AFFICHAGE DU PANIER
         // ============================================
         function openCart() {
             const overlay = document.getElementById('cartOverlay');
@@ -1472,7 +1725,7 @@
         }
         
         // ============================================
-        // 12. COMMANDE SUR WHATSAPP ET FIREBASE
+        // 12. COMMANDE
         // ============================================
         function placeOrder() {
             if (cart.length === 0) {
@@ -1511,16 +1764,11 @@
                 restaurantName: restaurantData.name || 'Mon Restaurant'
             };
             
-            // 1. Envoyer à Firebase
             const newOrderRef = ordersRef.push();
             newOrderRef.set(orderData)
                 .then(() => {
                     console.log('✅ Commande enregistrée dans Firebase');
-                    
-                    // 2. Envoyer sur WhatsApp
                     sendWhatsAppOrder(orderData);
-                    
-                    // 3. Vider le panier
                     cart = [];
                     saveCart();
                     renderCart();
@@ -1534,15 +1782,12 @@
         }
         
         function sendWhatsAppOrder(orderData) {
-            // Récupérer le numéro WhatsApp depuis les données du restaurant
             const phone = restaurantData.whatsapp || '';
             if (!phone) {
-                console.warn('⚠️ Numéro WhatsApp non configuré dans les données du restaurant');
-                showToast('⚠️ WhatsApp non configuré');
+                console.warn('⚠️ Numéro WhatsApp non configuré');
                 return;
             }
             
-            // Construire le message
             let message = `🍽️ *NOUVELLE COMMANDE*\n`;
             message += `━━━━━━━━━━━━━━━━━\n`;
             message += `📋 Table n°${orderData.table}\n`;
@@ -1569,8 +1814,6 @@
             
             const encodedMessage = encodeURIComponent(message);
             const url = `https://wa.me/${phone}?text=${encodedMessage}`;
-            
-            // Ouvrir WhatsApp dans un nouvel onglet
             window.open(url, '_blank');
         }
         
@@ -1615,7 +1858,7 @@
         window.placeOrder = placeOrder;
         window.renderCart = renderCart;
         
-        console.log('✅ Menu chargé - Logo, Table et WhatsApp');
+        console.log('✅ Menu chargé - Tous les boutons et informations');
         console.log('🍽️ Table n°:', tableNumber);
         console.log('📱 Session ID:', sessionId);
     </script>
