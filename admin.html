@@ -1571,7 +1571,6 @@ async function loadPicXImages() {
         const data = await response.json();
         console.log('📦 Fichiers trouvés:', data.length);
         
-        // Filtrer les images
         const extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
         const images = data
             .filter(item => item.type === 'file')
@@ -1625,7 +1624,6 @@ async function loadPicXImagesForGallery() {
                  onerror="this.parentElement.innerHTML='<div style=\\'padding:20px;color:#999;font-size:12px;\\'>❌</div>'">
             <span class="picx-name">${item.name}</span>
         `;
-        // ✅ Pour le mode produit, on utilise selectPicXImage
         div.onclick = () => selectPicXImage(item.download_url);
         grid.appendChild(div);
     });
@@ -1675,15 +1673,14 @@ async function loadPicXImagesForGallery() {
 
 function loadPicXImagesForAdd() {
     imageSelectorMode = null;
-    // Ouvrir l'onglet Images
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelector('[data-tab="tab-images"]')?.classList.add('active');
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     document.getElementById('tab-images')?.classList.add('active');
     
-    // Charger les images
+    // ✅ Appel de la fonction async
     loadPicXImagesForGallery();
-    showToast('📷 Sélectionnez une image pour le produit', 'info');
+    showToast('📷 Cliquez sur une image pour la sélectionner pour le produit', 'info');
 }
         
         function selectPicXImage(imageUrl) {
@@ -1738,16 +1735,13 @@ function loadPicXImagesForAdd() {
 }
         
 function loadPicXImagesForAdd() {
-    // ✅ Mode produit
     imageSelectorMode = null;
-    
-    // ✅ Ouvrir l'onglet Images
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelector('[data-tab="tab-images"]')?.classList.add('active');
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     document.getElementById('tab-images')?.classList.add('active');
     
-    // ✅ Charger les images
+    // ✅ Appel de la fonction async
     loadPicXImagesForGallery();
     showToast('📷 Cliquez sur une image pour la sélectionner pour le produit', 'info');
 }
