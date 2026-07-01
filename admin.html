@@ -11,26 +11,53 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     
     <!-- ============================================ -->
-    <!-- 🔥 CONFIGURATION FIREBASE (générée automatiquement) -->
+    <!-- 🔥 CONFIGURATION FIREBASE - DOUBLE SÉCURITÉ -->
     <!-- ============================================ -->
-<script>
+    <script>
+        // 🔥 Configuration Firebase (intégrée - utilisée si config.js est absent)
+        const FALLBACK_CONFIG = {
+            apiKey: "AIzaSyAp9akZE9yGLmZAVkcZ7YB4pM1kUP8cJWM",
+            authDomain: "restaurant-menu-9179b.firebaseapp.com",
+            databaseURL: "https://restaurant-menu-9179b-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "restaurant-menu-9179b",
+            storageBucket: "restaurant-menu-9179b.appspot.com",
+            messagingSenderId: "57456460201",
+            appId: "1:57456460201:web:VOTRE_APP_ID" // ⚠️ REMPLACEZ PAR VOTRE APP_ID
+        };
 
-    const firebaseConfig = {
-  apiKey: "AIzaSyAp9akZE9yGLmZAVkcZ7YB4pM1kUP8cJWM",
-  authDomain: "restaurant-menu-9179b.firebaseapp.com",
-  databaseURL: "https://restaurant-menu-9179b-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "restaurant-menu-9179b",
-  storageBucket: "restaurant-menu-9179b.firebasestorage.app",
-  messagingSenderId: "57456460201",
-  appId: "1:57456460201:web:8b40ceeffe81eea918c4b8"
-    };
-        // Initialiser Firebase
-    if (typeof firebase !== 'undefined' && !firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-        console.log('✅ Firebase initialisé (config intégrée)');
-    }
-</script>
+        // Fonction pour initialiser Firebase avec une config
+        function initFirebase(config) {
+            if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+                try {
+                    firebase.initializeApp(config);
+                    console.log('✅ Firebase initialisé avec succès');
+                    return true;
+                } catch (e) {
+                    console.error('❌ Erreur initialisation:', e);
+                    return false;
+                }
+            }
+            return false;
+        }
 
+        // Essayer d'abord avec la config intégrée
+        console.log('🔧 Initialisation Firebase...');
+        
+        if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+            initFirebase(FALLBACK_CONFIG);
+            console.log('📌 Utilisation de la config intégrée (fallback)');
+        } else if (typeof firebase !== 'undefined' && firebase.apps.length) {
+            console.log('✅ Firebase déjà initialisé (probablement via config.js)');
+        } else {
+            console.error('❌ Firebase SDK non chargé');
+        }
+
+        // Fonction pour gérer l'erreur si config.js est absent
+        function handleConfigError() {
+            console.log('ℹ️ config.js non trouvé - utilisation de la config intégrée');
+        }
+    </script>
+    
     <style>
         /* ============ STYLES ============ */
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -668,7 +695,7 @@
                             <label style="display: block; font-weight: 600; margin-bottom: 5px;">📷 Image</label>
                             <div style="display: flex; gap: 10px;">
                                 <input type="text" id="productImage" placeholder="https://..." style="flex: 1;">
-                                <button type="button" onclick="loadPicXImagesForAdd()" style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer;">📂 Parcourir</button>
+                                <button type="button" onclick="loadPicXImagesForAdd()" style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer;">📂 Parcourir PicX</button>
                             </div>
                             <div id="picxPreview" style="display: none; margin-top: 10px; padding: 10px; background: #f8f9ff; border-radius: 8px; align-items: center; gap: 15px;">
                                 <img id="picxPreviewImg" src="" style="max-width: 100px; max-height: 100px; border-radius: 5px; border: 2px solid #4caf50;">
@@ -688,18 +715,21 @@
             <!-- ============ TAB 4: IMAGES ============ -->
             <div class="tab-content" id="tab-images">
                 <div class="admin-section">
-                    <h2>📷 Gestion des images</h2>
+                    <h2>📷 Gestion des images - PicX</h2>
                     <div style="background: #f8f9ff; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; margin-bottom: 15px;">
                         <h4>📁 Configuration PicX</h4>
                         <input type="text" id="githubUsername" placeholder="GitHub" value="simou-rayane" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:5px; margin-bottom:8px;">
                         <input type="text" id="githubRepo" placeholder="Dépôt" value="picx-images-hosting" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:5px; margin-bottom:8px;">
                         <input type="text" id="githubBranch" placeholder="Branche" value="master" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:5px;">
+                        <div style="font-size:12px; color:#666; margin-top:8px;">
+                            💡 Images chargées depuis : <strong>simou-rayane/picx-images-hosting</strong>
+                        </div>
                     </div>
-                    <button type="button" onclick="loadPicXImagesForGallery()" style="background: #667eea; color: white; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; margin-bottom: 12px;">🔄 Charger les images</button>
-                    <div id="picxGalleryGrid" class="picx-modal-grid" style="max-height: 400px; border: 2px solid #e0e0e0; border-radius: 8px; background: #fafafa;">
+                    <button type="button" onclick="loadPicXImagesForGallery()" style="background: #667eea; color: white; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; margin-bottom: 12px;">🔄 Charger les images depuis PicX</button>
+                    <div id="picxGalleryGrid" class="picx-modal-grid" style="max-height: 400px; border: 2px solid #e0e0e0; border-radius: 8px; background: #fafafa; padding: 15px; overflow-y: auto;">
                         <div style="grid-column: 1 / -1; text-align: center; padding: 30px; color: #999;">
-                            <div style="font-size: 48px;">📂</div>
-                            <p>Aucune image chargée</p>
+                            <div style="font-size: 48px; margin-bottom: 10px;">📂</div>
+                            <p>Cliquez sur <strong>"Charger les images depuis PicX"</strong> pour afficher vos images</p>
                         </div>
                     </div>
                 </div>
@@ -713,7 +743,7 @@
     <!-- ============================================ -->
     <script>
         // ============================================
-        // ADMIN.JS - VERSION FINALE AVEC CONFIG.JS
+        // ADMIN.JS - VERSION COMPLÈTE ET FINALE
         // ============================================
         
         // ============================================
@@ -724,28 +754,15 @@
         let restaurantData = {};
         let picxImages = [];
         let imageSelectorMode = null;
+        let pendingProductId = null;
         let currentRestaurantId = 'default';
         let database, restaurantsRef, categoriesRef, productsRef;
-        let configLoaded = false;
         
         // 🔐 UID attendu (celui de votre compte admin)
         const EXPECTED_UID = 'kW1jJa76EuVPg53pwBuk58nCs1e2';
         
         // ============================================
-        // 2. GESTIONNAIRE D'ERREUR CONFIG.JS
-        // ============================================
-        function handleConfigError() {
-            console.error('❌ Erreur: config.js non trouvé');
-            const status = document.getElementById('connectionStatus');
-            if (status) {
-                status.innerHTML = '❌ Erreur: config.js manquant - Vérifiez le déploiement';
-                status.className = 'disconnected';
-            }
-            showToast('❌ config.js manquant. Contactez l\'administrateur.', 'error');
-        }
-        
-        // ============================================
-        // 3. TOAST
+        // 2. TOAST
         // ============================================
         function showToast(message, type = 'info') {
             const colors = { 'success': '#4caf50', 'error': '#dc3545', 'warning': '#ff9800', 'info': '#2196F3' };
@@ -761,7 +778,7 @@
         }
         
         // ============================================
-        // 4. AUTHENTIFICATION
+        // 3. AUTHENTIFICATION
         // ============================================
         function loginUser(email, password) {
             return firebase.auth().signInWithEmailAndPassword(email, password);
@@ -806,43 +823,10 @@
         }
         
         // ============================================
-        // 5. VÉRIFICATION DE CONFIG.JS
-        // ============================================
-        function checkConfigLoaded() {
-            if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0) {
-                configLoaded = true;
-                console.log('✅ config.js chargé et Firebase initialisé');
-                return true;
-            }
-            
-            // Si config.js n'est pas chargé après 3 secondes, afficher une erreur
-            if (!configLoaded) {
-                console.warn('⏳ Attente de config.js...');
-                setTimeout(() => {
-                    if (!configLoaded && typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length === 0) {
-                        const status = document.getElementById('connectionStatus');
-                        if (status) {
-                            status.innerHTML = '❌ config.js non chargé - Vérifiez le déploiement';
-                            status.className = 'disconnected';
-                        }
-                        showToast('❌ config.js non chargé', 'error');
-                    }
-                }, 3000);
-                return false;
-            }
-            return true;
-        }
-        
-        // ============================================
-        // 6. AUTH STATE AVEC VÉRIFICATION UID
+        // 4. AUTH STATE AVEC VÉRIFICATION UID
         // ============================================
         firebase.auth().onAuthStateChanged((user) => {
             const status = document.getElementById('connectionStatus');
-            
-            // Vérifier que config.js est chargé
-            if (!checkConfigLoaded()) {
-                return;
-            }
             
             if (user) {
                 console.log('✅ Utilisateur connecté:', user.email);
@@ -869,8 +853,6 @@
                     
                 } else {
                     console.warn('⚠️ UID ne correspond pas!');
-                    console.warn(`📌 Attendu: ${EXPECTED_UID}`);
-                    console.warn(`📌 Reçu: ${user.uid}`);
                     if (status) {
                         status.innerHTML = `⚠️ UID non autorisé - Contactez l'admin`;
                         status.className = 'disconnected';
@@ -886,7 +868,7 @@
         });
         
         // ============================================
-        // 7. FORMULAIRE DE CONNEXION
+        // 5. FORMULAIRE DE CONNEXION
         // ============================================
         const loginFormElement = document.getElementById('loginFormElement');
         if (loginFormElement) {
@@ -931,7 +913,7 @@
         }
         
         // ============================================
-        // 8. INITIALISATION FIREBASE
+        // 6. INITIALISATION FIREBASE
         // ============================================
         function initializeFirebase() {
             if (typeof firebase === 'undefined' || firebase.apps.length === 0) {
@@ -955,7 +937,7 @@
         }
         
         // ============================================
-        // 9. RECHARGEMENT DES DONNÉES
+        // 7. RECHARGEMENT DES DONNÉES
         // ============================================
         function reloadAllData() {
             console.log('🔄 Rechargement des données...');
@@ -974,7 +956,7 @@
         }
         
         // ============================================
-        // 10. CHARGEMENT DU RESTAURANT
+        // 8. CHARGEMENT DU RESTAURANT
         // ============================================
         function loadRestaurant() {
             if (!restaurantsRef) {
@@ -1053,7 +1035,7 @@
         }
         
         // ============================================
-        // 11. LOGO ET BANNIÈRE
+        // 9. LOGO ET BANNIÈRE
         // ============================================
         function updateLogoPreview(logoUrl) {
             const img = document.getElementById('logoPreviewImg');
@@ -1146,7 +1128,7 @@
         }
         
         // ============================================
-        // 12. SAUVEGARDER LE RESTAURANT
+        // 10. SAUVEGARDER LE RESTAURANT
         // ============================================
         const restaurantForm = document.getElementById('restaurantForm');
         if (restaurantForm) {
@@ -1193,7 +1175,7 @@
         }
         
         // ============================================
-        // 13. GESTION DES CATÉGORIES
+        // 11. GESTION DES CATÉGORIES
         // ============================================
         function loadCategories() {
             if (!categoriesRef) return;
@@ -1371,7 +1353,7 @@
         }
         
         // ============================================
-        // 14. GESTION DES PRODUITS
+        // 12. GESTION DES PRODUITS
         // ============================================
         function loadProducts() {
             if (!productsRef) return;
@@ -1554,7 +1536,7 @@
         }
         
         // ============================================
-        // 15. PICX - GESTION DES IMAGES
+        // 13. PICX - GESTION DES IMAGES (simou-rayane/picx-images-hosting)
         // ============================================
         async function loadPicXImages() {
             try {
@@ -1562,18 +1544,30 @@
                 const repo = document.getElementById('githubRepo')?.value.trim() || 'picx-images-hosting';
                 const branch = document.getElementById('githubBranch')?.value.trim() || 'master';
                 
-                const response = await fetch(`https://api.github.com/repos/${username}/${repo}/contents?ref=${branch}`);
-                if (!response.ok) throw new Error('Erreur chargement');
+                const url = `https://api.github.com/repos/${username}/${repo}/contents?ref=${branch}`;
+                console.log(`📡 Chargement des images depuis: ${url}`);
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP: ${response.status} - ${response.statusText}`);
+                }
                 
                 const data = await response.json();
-                const extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
-                picxImages = data.filter(item => 
-                    item.type === 'file' && extensions.some(ext => item.name.toLowerCase().endsWith(ext))
+                
+                // Filtrer uniquement les images
+                const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
+                const images = data.filter(item => 
+                    item.type === 'file' && 
+                    imageExtensions.some(ext => item.name.toLowerCase().endsWith(ext))
                 );
-                return picxImages;
+                
+                console.log(`✅ ${images.length} images trouvées dans ${username}/${repo}`);
+                return images;
+                
             } catch (error) {
-                console.error('Erreur PicX:', error);
-                showToast('❌ Erreur: ' + error.message, 'error');
+                console.error('❌ Erreur chargement PicX:', error);
+                showToast('❌ Erreur chargement images: ' + error.message, 'error');
                 return [];
             }
         }
@@ -1584,8 +1578,15 @@
             if (!grid) return;
             
             if (!images || images.length === 0) {
-                grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:#999;">
-                    <div style="font-size:48px;">📂</div><p>Aucune image trouvée</p></div>`;
+                grid.innerHTML = `
+                    <div style="grid-column:1/-1;text-align:center;padding:30px;color:#999;">
+                        <div style="font-size:48px;">📂</div>
+                        <p>Aucune image trouvée dans <strong>simou-rayane/picx-images-hosting</strong></p>
+                        <p style="font-size:12px;margin-top:10px;">
+                            💡 Vérifiez que votre dépôt contient des images (jpg, png, gif, etc.)
+                        </p>
+                    </div>
+                `;
                 return;
             }
             
@@ -1593,12 +1594,14 @@
             images.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'picx-item';
-                div.innerHTML = `<img src="${item.download_url}" onerror="this.parentElement.style.display='none'">
-                    <span class="picx-name">${item.name}</span>`;
+                div.innerHTML = `
+                    <img src="${item.download_url}" onerror="this.parentElement.style.display='none'">
+                    <span class="picx-name">${item.name}</span>
+                `;
                 div.onclick = () => selectPicXImage(item.download_url);
                 grid.appendChild(div);
             });
-            showToast(`✅ ${images.length} images chargées`, 'success');
+            showToast(`✅ ${images.length} images chargées depuis PicX`, 'success');
         }
         
         function selectPicXImage(imageUrl) {
@@ -1625,13 +1628,14 @@
                     previewImg.src = imageUrl;
                     preview.style.display = 'flex';
                 }
-                showToast('✅ Image sélectionnée', 'success');
+                showToast('✅ Image sélectionnée pour le produit', 'success');
             }
         }
         
         function loadPicXImagesForAdd() {
             imageSelectorMode = null;
             loadPicXImagesForGallery();
+            showToast('📷 Sélectionnez une image pour le produit', 'info');
         }
         
         function clearPicXImage() {
@@ -1643,12 +1647,13 @@
         
         function changeImage(productId) {
             imageSelectorMode = null;
+            pendingProductId = productId;
             loadPicXImagesForGallery();
-            showToast('📷 Sélectionnez une image', 'info');
+            showToast('📷 Sélectionnez une nouvelle image', 'info');
         }
         
         // ============================================
-        // 16. EXPORT / IMPORT / RÉINITIALISATION
+        // 14. EXPORT / IMPORT / RÉINITIALISATION
         // ============================================
         function exportProducts() {
             if (products.length === 0) { showToast('❌ Aucun produit', 'error'); return; }
@@ -1706,7 +1711,7 @@
         }
         
         // ============================================
-        // 17. TABS
+        // 15. TABS
         // ============================================
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -1719,9 +1724,8 @@
         });
         
         // ============================================
-        // 18. INITIALISATION
+        // 16. INITIALISATION
         // ============================================
-        // Démarrer l'initialisation après le chargement de la page
         if (document.readyState === 'complete') {
             initializeFirebase();
         } else {
@@ -1729,7 +1733,7 @@
         }
         
         // ============================================
-        // 19. EXPOSER LES FONCTIONS
+        // 17. EXPOSER LES FONCTIONS
         // ============================================
         window.reloadAllData = reloadAllData;
         window.logoutUser = logoutUser;
@@ -1757,9 +1761,9 @@
         window.initializeFirebase = initializeFirebase;
         window.handleConfigError = handleConfigError;
         
-        console.log('✅ Admin initialisé - Version finale avec config.js');
+        console.log('✅ Admin initialisé - Version complète et finale');
         console.log('🔐 UID attendu:', EXPECTED_UID);
-        console.log('📁 config.js doit être généré automatiquement par deploy.yml');
+        console.log('📷 Images depuis: simou-rayane/picx-images-hosting');
     </script>
 </body>
 </html>
