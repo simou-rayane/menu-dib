@@ -1371,45 +1371,56 @@
             });
         }
         
-        function displayProducts() {
-            const container = document.getElementById('productsList');
-            if (!container) return;
-            
-            if (products.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:#999;">Aucun produit</p>';
-                return;
-            }
-            
-            container.innerHTML = '';
-            products.forEach(p => {
-                const catName = categories[p.category]?.name || p.category || 'Non catégorisé';
-                const catIcon = categories[p.category]?.icon || '';
-                const div = document.createElement('div');
-                div.className = 'product-item';
-                div.innerHTML = `
-                    <div class="product-info">
-                        ${p.image ? `<img src="${p.image}" class="product-thumbnail" onerror="this.style.display='none'">` : '<div class="product-thumbnail-placeholder">📷</div>'}
-                        <div class="product-details">
-                            <div>
-                                <span class="name">${p.name}</span>
-                                <span class="price">${parseFloat(p.price).toFixed(2)} €</span>
-                                <span class="category">(${catIcon} ${catName})</span>
-                            </div>
-                            <div class="description">${p.description || ''}</div>
-                        </div>
-                    </div>
-                    <div class="product-actions">
-                        <button class="${p.visible !== false ? 'status-visible' : 'status-hidden'}" onclick="toggleVisibility('${p.id}')">
-                            ${p.visible !== false ? '✓ Visible' : '✗ Masqué'}
-                        </button>
-                        <button class="btn-edit" onclick="editProduct('${p.id}')">✏️</button>
-                        <button class="btn-photo" onclick="changeImage('${p.id}')">📷</button>
-                        <button class="btn-delete" onclick="deleteProduct('${p.id}')">🗑</button>
-                    </div>
-                `;
-                container.appendChild(div);
-            });
+function displayProducts() {
+    const container = document.getElementById('productsList');
+    if (!container) return;
+    
+    if (products.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#999;">Aucun produit</p>';
+        return;
+    }
+    
+    container.innerHTML = '';
+    products.forEach(p => {
+        const catName = categories[p.category]?.name || p.category || 'Non catégorisé';
+        const catIcon = categories[p.category]?.icon || '';
+        
+        // ✅ Vérification et affichage de l'image
+        let imageHtml = '';
+        if (p.image && p.image.trim() !== '') {
+            imageHtml = `<img src="${p.image}" class="product-thumbnail" 
+                           onerror="this.style.display='none'; this.parentElement.querySelector('.product-thumbnail-placeholder').style.display='flex';">`;
+        } else {
+            imageHtml = `<div class="product-thumbnail-placeholder">📷</div>`;
         }
+        
+        const div = document.createElement('div');
+        div.className = 'product-item';
+        div.innerHTML = `
+            <div class="product-info">
+                ${imageHtml}
+                <div class="product-details">
+                    <div>
+                        <span class="name">${p.name}</span>
+                        <span class="price">${parseFloat(p.price).toFixed(2)} €</span>
+                        <span class="category">(${catIcon} ${catName})</span>
+                    </div>
+                    <div class="description">${p.description || ''}</div>
+                    ${p.image ? `<div style="font-size:10px; color:#999; margin-top:3px;">📷 Image présente</div>` : ''}
+                </div>
+            </div>
+            <div class="product-actions">
+                <button class="${p.visible !== false ? 'status-visible' : 'status-hidden'}" onclick="toggleVisibility('${p.id}')">
+                    ${p.visible !== false ? '✓ Visible' : '✗ Masqué'}
+                </button>
+                <button class="btn-edit" onclick="editProduct('${p.id}')">✏️</button>
+                <button class="btn-photo" onclick="changeImage('${p.id}')">📷</button>
+                <button class="btn-delete" onclick="deleteProduct('${p.id}')">🗑</button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
         
         function validateProduct(p) {
             if (!p.name?.trim()) { showToast('❌ Nom requis', 'error'); return false; }
