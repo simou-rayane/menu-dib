@@ -3,730 +3,1151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📋 Commandes</title>
+    <title>📋 Commandes - Restaurant</title>
     
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <!-- ============================================ -->
+    <!-- 🔥 CONFIGURATION FIREBASE -->
+    <!-- ============================================ -->
+    <script>
+        const FIREBASE_CONFIG = {
+            apiKey: "AIzaSyAp9akZE9yGLmZAVkcZ7YB4pM1kUP8cJWM",
+            authDomain: "restaurant-menu-9179b.firebaseapp.com",
+            databaseURL: "https://restaurant-menu-9179b-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "restaurant-menu-9179b",
+            storageBucket: "restaurant-menu-9179b.appspot.com",
+            messagingSenderId: "57456460201",
+            appId: "1:57456460201:web:VOTRE_APP_ID"
+        };
+
+        if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+            firebase.initializeApp(FIREBASE_CONFIG);
+            console.log('✅ Firebase initialisé');
+        }
+    </script>
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* ============================================ */
+        /* 🎨 STYLES - MODE SOMBRE PROFESSIONNEL */
+        /* ============================================ */
+        
+        :root {
+            --bg-primary: #0d0d0d;
+            --bg-secondary: #1a1a1a;
+            --bg-card: #242424;
+            --bg-card-hover: #2d2d2d;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --text-muted: #777777;
+            --accent: #e8a838;
+            --accent-hover: #f5c14a;
+            --accent-glow: rgba(232, 168, 56, 0.15);
+            --border-color: #333333;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            --radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            --status-waiting: #f39c12;
+            --status-preparing: #3498db;
+            --status-ready: #2ecc71;
+            --status-served: #27ae60;
+            --status-cancelled: #e74c3c;
         }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f7fa;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
             padding: 20px;
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        header {
+        
+        /* ============================================ */
+        /* 📋 EN-TÊTE */
+        /* ============================================ */
+        .header {
+            max-width: 1400px;
+            margin: 0 auto 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: white;
-            padding: 20px 30px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            margin-bottom: 25px;
             flex-wrap: wrap;
             gap: 15px;
+            padding: 20px 30px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
         }
-        header h1 {
-            color: #333;
+        
+        .header h1 {
+            font-size: 1.8rem;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
-        header h1 span {
-            color: #667eea;
+        
+        .header h1 span {
+            color: var(--accent);
         }
-        .header-actions {
+        
+        .header-stats {
             display: flex;
-            gap: 10px;
+            gap: 20px;
             flex-wrap: wrap;
         }
-        .header-actions button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            font-size: 14px;
-        }
-        .header-actions button:hover {
-            transform: scale(1.05);
-        }
-        .btn-export {
-            background: #2196F3;
-            color: white;
-        }
-        .btn-reset {
-            background: #dc3545;
-            color: white;
-        }
-        .btn-refresh-orders {
-            background: #6c757d;
-            color: white;
-        }
-        #connectionStatus {
-            padding: 10px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-weight: 500;
-        }
-        #connectionStatus.connected {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        #connectionStatus.disconnected {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        .stats-bar {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-            background: white;
-            padding: 15px 25px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        }
+        
         .stat-item {
             display: flex;
             align-items: center;
             gap: 8px;
+            background: var(--bg-card);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            border: 1px solid var(--border-color);
         }
+        
         .stat-item .number {
             font-weight: 700;
-            font-size: 20px;
-            color: #667eea;
+            color: var(--accent);
+            font-size: 1.1rem;
         }
+        
         .stat-item .label {
-            color: #666;
-            font-size: 14px;
+            color: var(--text-secondary);
         }
-        .stat-item .badge {
-            padding: 2px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .stat-item .badge.pending {
-            background: #ff6b6b;
-            color: white;
-        }
-        .stat-item .badge.prepare {
-            background: #ffa94d;
-            color: white;
-        }
-        .stat-item .badge.prepared {
-            background: #4caf50;
-            color: white;
-        }
-        .stat-item .badge.served {
-            background: #6c757d;
-            color: white;
-        }
-        .stat-item .badge.cancelled {
-            background: #dc3545;
-            color: white;
-        }
-        .stat-item .badge.whatsapp {
-            background: #25D366;
-            color: white;
-        }
-        .filters {
+        
+        .header-actions {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            background: white;
-            padding: 15px 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
-        .filter-btn {
-            padding: 8px 20px;
-            border: 2px solid #667eea;
-            background: white;
-            color: #667eea;
-            border-radius: 20px;
+        
+        .header-actions button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.3s;
+            transition: var(--transition);
+            font-size: 0.9rem;
         }
+        
+        .btn-refresh {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+        
+        .btn-refresh:hover {
+            background: var(--accent-hover);
+            transform: scale(1.02);
+        }
+        
+        .btn-logout {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .btn-logout:hover {
+            background: #c0392b;
+            transform: scale(1.02);
+        }
+        
+        /* ============================================ */
+        /* 🔐 FORMULAIRE DE CONNEXION */
+        /* ============================================ */
+        #loginForm {
+            max-width: 400px;
+            margin: 60px auto;
+            background: var(--bg-secondary);
+            padding: 30px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+        }
+        
+        #loginForm h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+        
+        #loginForm label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        #loginForm input {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            margin-bottom: 15px;
+            transition: var(--transition);
+        }
+        
+        #loginForm input:focus {
+            border-color: var(--accent);
+            outline: none;
+            box-shadow: 0 0 0 4px var(--accent-glow);
+        }
+        
+        #loginForm .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: var(--accent);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        #loginForm .btn-login:hover {
+            background: var(--accent-hover);
+            transform: scale(1.02);
+        }
+        
+        #loginForm .btn-login:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        #loginError {
+            color: var(--danger);
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+        
+        /* ============================================ */
+        /* 📋 FILTRES DES COMMANDES */
+        /* ============================================ */
+        .filters {
+            max-width: 1400px;
+            margin: 0 auto 25px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 15px 20px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+        }
+        
+        .filter-btn {
+            padding: 8px 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 30px;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        
         .filter-btn:hover {
-            background: #667eea;
-            color: white;
+            border-color: var(--accent);
+            color: var(--text-primary);
         }
+        
         .filter-btn.active {
-            background: #667eea;
-            color: white;
+            background: var(--accent);
+            color: var(--bg-primary);
+            border-color: var(--accent);
         }
+        
+        .filter-btn .count {
+            background: var(--bg-card);
+            padding: 0 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            margin-left: 4px;
+        }
+        
+        .filter-btn.active .count {
+            background: rgba(0,0,0,0.2);
+        }
+        
+        /* ============================================ */
+        /* 📋 GRILLE DES COMMANDES */
+        /* ============================================ */
         .orders-grid {
+            max-width: 1400px;
+            margin: 0 auto;
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
             gap: 20px;
         }
+        
         .order-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            border-left: 5px solid #667eea;
-            transition: transform 0.3s, box-shadow 0.3s;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: var(--transition);
+            animation: fadeIn 0.3s ease;
         }
+        
         .order-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+            border-color: var(--accent);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
         }
-        .order-card.status-en_attente {
-            border-left-color: #ff6b6b;
-            animation: pulse 2s infinite;
-        }
-        .order-card.status-en_attente .order-status {
-            background: #ff6b6b;
-            color: white;
-        }
-        .order-card.status-prepare {
-            border-left-color: #ffa94d;
-        }
-        .order-card.status-prepare .order-status {
-            background: #ffa94d;
-            color: white;
-        }
-        .order-card.status-prepared {
-            border-left-color: #4caf50;
-        }
-        .order-card.status-prepared .order-status {
-            background: #4caf50;
-            color: white;
-        }
-        .order-card.status-served {
-            border-left-color: #6c757d;
-            opacity: 0.8;
-        }
-        .order-card.status-served .order-status {
-            background: #6c757d;
-            color: white;
-        }
-        .order-card.status-cancelled {
-            border-left-color: #dc3545;
-            opacity: 0.6;
-        }
-        .order-card.status-cancelled .order-status {
-            background: #dc3545;
-            color: white;
-        }
-        .order-card.status-envoye_whatsapp {
-            border-left-color: #25D366;
-        }
-        .order-card.status-envoye_whatsapp .order-status {
-            background: #25D366;
-            color: white;
-        }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(255, 107, 107, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0); }
-        }
-        .order-header {
+        
+        .order-card .order-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 10px;
+            align-items: center;
+            padding: 15px 20px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
             flex-wrap: wrap;
             gap: 8px;
         }
-        .order-number {
+        
+        .order-card .order-number {
             font-weight: 700;
-            color: #667eea;
-            font-size: 14px;
+            font-size: 1.1rem;
+            color: var(--accent);
         }
-        .order-table {
-            font-weight: 600;
-            color: #333;
-        }
-        .order-time {
-            font-size: 12px;
-            color: #999;
-        }
-        .order-status {
+        
+        .order-card .order-table {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-card);
             padding: 4px 14px;
-            border-radius: 12px;
-            font-size: 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .order-card .order-time {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+        
+        .order-card .order-status {
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
             font-weight: 600;
             text-transform: uppercase;
-            display: inline-block;
+            letter-spacing: 0.5px;
         }
-        .order-items {
-            margin: 12px 0;
-            padding: 10px 12px;
-            background: #f8f9fa;
-            border-radius: 8px;
+        
+        .order-status.waiting {
+            background: rgba(243, 156, 18, 0.2);
+            color: var(--status-waiting);
         }
-        .order-item {
+        .order-status.preparing {
+            background: rgba(52, 152, 219, 0.2);
+            color: var(--status-preparing);
+        }
+        .order-status.ready {
+            background: rgba(46, 204, 113, 0.2);
+            color: var(--status-ready);
+        }
+        .order-status.served {
+            background: rgba(39, 174, 96, 0.2);
+            color: var(--status-served);
+        }
+        .order-status.cancelled {
+            background: rgba(231, 76, 60, 0.2);
+            color: var(--status-cancelled);
+        }
+        
+        .order-card .order-body {
+            padding: 15px 20px;
+        }
+        
+        .order-card .order-items {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .order-card .order-items li {
             display: flex;
             justify-content: space-between;
-            padding: 4px 0;
-            border-bottom: 1px solid #eee;
-            font-size: 14px;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.9rem;
         }
-        .order-item:last-child {
+        
+        .order-card .order-items li:last-child {
             border-bottom: none;
         }
-        .order-item .item-name {
-            color: #333;
+        
+        .order-card .order-items .item-name {
+            color: var(--text-primary);
         }
-        .order-item .item-price {
-            color: #667eea;
+        
+        .order-card .order-items .item-quantity {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+        
+        .order-card .order-items .item-price {
+            color: var(--accent);
             font-weight: 600;
         }
-        .order-total {
-            font-size: 18px;
-            font-weight: 700;
-            text-align: right;
-            color: #667eea;
+        
+        .order-card .order-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
             margin-top: 10px;
+            border-top: 2px solid var(--border-color);
+            font-weight: 700;
+            font-size: 1.1rem;
         }
-        .order-notes {
-            margin-top: 8px;
-            padding: 8px 12px;
-            background: #fff3cd;
-            border-radius: 6px;
-            font-size: 13px;
-            color: #856404;
+        
+        .order-card .order-total .total-label {
+            color: var(--text-secondary);
         }
-        .order-actions {
+        
+        .order-card .order-total .total-price {
+            color: var(--accent);
+            font-size: 1.3rem;
+        }
+        
+        .order-card .order-actions {
             display: flex;
             gap: 8px;
-            margin-top: 15px;
+            padding: 12px 20px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
             flex-wrap: wrap;
         }
-        .order-actions button {
-            padding: 8px 16px;
+        
+        .order-card .order-actions button {
+            flex: 1;
+            min-width: 80px;
+            padding: 8px 14px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 13px;
-            transition: all 0.3s;
-            flex: 1;
-            min-width: 80px;
+            font-size: 0.8rem;
+            transition: var(--transition);
         }
-        .order-actions button:hover {
+        
+        .order-card .order-actions button:hover {
             transform: scale(1.02);
         }
-        .btn-prepare {
-            background: #ffa94d;
-            color: white;
+        
+        .btn-status {
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
         }
-        .btn-prepare:hover {
-            background: #ff8c00;
+        
+        .btn-status:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
         }
-        .btn-prepared {
-            background: #4caf50;
-            color: white;
+        
+        .btn-status.preparing {
+            background: rgba(52, 152, 219, 0.2);
+            color: var(--status-preparing);
+            border-color: var(--status-preparing);
         }
-        .btn-prepared:hover {
-            background: #388e3c;
+        
+        .btn-status.ready {
+            background: rgba(46, 204, 113, 0.2);
+            color: var(--status-ready);
+            border-color: var(--status-ready);
         }
-        .btn-served {
-            background: #2196F3;
-            color: white;
+        
+        .btn-status.served {
+            background: rgba(39, 174, 96, 0.2);
+            color: var(--status-served);
+            border-color: var(--status-served);
         }
-        .btn-served:hover {
-            background: #1976D2;
+        
+        .btn-status.cancelled {
+            background: rgba(231, 76, 60, 0.2);
+            color: var(--status-cancelled);
+            border-color: var(--status-cancelled);
         }
-        .btn-cancel {
-            background: #dc3545;
-            color: white;
-        }
-        .btn-cancel:hover {
-            background: #c62828;
-        }
+        
         .btn-whatsapp {
             background: #25D366;
             color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
+        
         .btn-whatsapp:hover {
-            background: #128C7E;
+            background: #1da851;
         }
+        
+        /* ============================================ */
+        /* 📋 ÉTAT VIDE */
+        /* ============================================ */
         .empty-state {
+            max-width: 1400px;
+            margin: 60px auto;
             text-align: center;
             padding: 60px 20px;
-            background: white;
-            border-radius: 12px;
-            grid-column: 1 / -1;
+            color: var(--text-muted);
         }
+        
         .empty-state .icon {
             font-size: 64px;
-            margin-bottom: 15px;
+            display: block;
+            margin-bottom: 20px;
         }
+        
         .empty-state h2 {
-            color: #999;
-            font-size: 24px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
         }
-        .empty-state p {
-            color: #bbb;
-            margin-top: 10px;
+        
+        /* ============================================ */
+        /* 🔄 CHARGEMENT */
+        /* ============================================ */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
         }
-        .notification-badge {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #ff6b6b;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
-            animation: slideIn 0.5s ease;
-            z-index: 1000;
-            display: none;
-            font-weight: 500;
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
         }
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
-        .toast {
+        
+        .loading-text {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+        
+        /* ============================================ */
+        /* 📱 RESPONSIVE */
+        /* ============================================ */
+        @media (max-width: 768px) {
+            .header { flex-direction: column; text-align: center; }
+            .header-stats { justify-content: center; }
+            .orders-grid { grid-template-columns: 1fr; }
+            .order-card .order-header { flex-direction: column; align-items: stretch; text-align: center; }
+            .order-card .order-actions { flex-direction: column; }
+            .order-card .order-actions button { flex: 1; }
+            .filters { justify-content: center; }
+        }
+        
+        @media (max-width: 480px) {
+            body { padding: 12px; }
+            .header h1 { font-size: 1.3rem; }
+            .stat-item { font-size: 0.8rem; padding: 6px 12px; }
+            .filter-btn { font-size: 0.75rem; padding: 6px 14px; }
+            .orders-grid { grid-template-columns: 1fr; }
+        }
+        
+        /* ============================================ */
+        /* 🔄 ANIMATIONS */
+        /* ============================================ */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* ============================================ */
+        /* 🏷️ SCROLLBAR */
+        /* ============================================ */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+        
+        /* ============================================ */
+        /* 💬 TOAST */
+        /* ============================================ */
+        .toast-message {
             position: fixed;
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            padding: 15px 30px;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            padding: 14px 28px;
             border-radius: 12px;
-            color: white;
-            font-weight: 500;
-            z-index: 10000;
-            animation: slideUpToast 0.5s ease;
+            border: 1px solid var(--accent);
+            box-shadow: var(--shadow);
+            font-size: 0.95rem;
+            z-index: 99999;
+            animation: fadeIn 0.3s ease;
             max-width: 90%;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
-        .toast.success { background: #4caf50; }
-        .toast.error { background: #dc3545; }
-        .toast.info { background: #2196F3; }
-        .toast.warning { background: #ff9800; }
-        @keyframes slideUpToast {
-            from { transform: translateX(-50%) translateY(100px); opacity: 0; }
-            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        
+        /* ============================================ */
+        /* 🔐 DÉCONNEXION */
+        /* ============================================ */
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
         }
-        @media (max-width: 768px) {
-            .orders-grid { grid-template-columns: 1fr; }
-            header { flex-direction: column; text-align: center; }
-            .stats-bar { justify-content: center; }
-            .filters { justify-content: center; }
-            .order-actions { flex-direction: column; }
-            .order-actions button { min-width: unset; }
+        
+        .logout-btn:hover {
+            background: #c0392b;
+            transform: scale(1.02);
+        }
+        
+        /* ============================================ */
+        /* 🎵 SONNERIE (Notification) */
+        /* ============================================ */
+        .notification-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>📋 <span>Commandes</span> en temps réel</h1>
-            <div class="header-actions">
-                <button class="btn-export" onclick="exportOrders()">📤 Exporter</button>
-                <button class="btn-reset" onclick="resetOrders()">🗑 Réinitialiser</button>
-                <button class="btn-refresh-orders" onclick="refreshOrders()">🔄 Actualiser</button>
-            </div>
-        </header>
-        
-        <div id="connectionStatus" class="connected">✅ Connecté à Firebase</div>
-        
-        <div class="stats-bar">
-            <div class="stat-item"><span class="badge pending">🆕</span><span class="number" id="pendingCount">0</span><span class="label">En attente</span></div>
-            <div class="stat-item"><span class="badge prepare">⏳</span><span class="number" id="prepareCount">0</span><span class="label">En préparation</span></div>
-            <div class="stat-item"><span class="badge prepared">✅</span><span class="number" id="preparedCount">0</span><span class="label">Préparées</span></div>
-            <div class="stat-item"><span class="badge served">📤</span><span class="number" id="servedCount">0</span><span class="label">Servies</span></div>
-            <div class="stat-item"><span class="badge cancelled">❌</span><span class="number" id="cancelledCount">0</span><span class="label">Annulées</span></div>
-            <div class="stat-item"><span class="badge whatsapp">📱</span><span class="number" id="whatsappCount">0</span><span class="label">WhatsApp</span></div>
-            <div class="stat-item"><span class="number" id="totalCount">0</span><span class="label">Total</span></div>
-        </div>
-        
-        <div class="filters">
-            <button class="filter-btn active" data-filter="all">📊 Toutes</button>
-            <button class="filter-btn" data-filter="en_attente">🆕 En attente</button>
-            <button class="filter-btn" data-filter="prepare">⏳ En préparation</button>
-            <button class="filter-btn" data-filter="prepared">✅ Préparées</button>
-            <button class="filter-btn" data-filter="served">📤 Servies</button>
-            <button class="filter-btn" data-filter="cancelled">❌ Annulées</button>
-            <button class="filter-btn" data-filter="envoye_whatsapp">📱 WhatsApp</button>
-        </div>
-        
-        <div id="ordersContainer" class="orders-grid">
-            <div class="empty-state"><div class="icon">🔄</div><h2>Chargement des commandes...</h2></div>
-        </div>
+    
+    <!-- ============================================ -->
+    <!-- 🔐 FORMULAIRE DE CONNEXION -->
+    <!-- ============================================ -->
+    <div id="loginForm">
+        <h2>🔐 Administration</h2>
+        <form id="loginFormElement" autocomplete="off">
+            <label>Email</label>
+            <input type="email" id="loginEmail" placeholder="admin@restaurant.com" required>
+            <label>Mot de passe</label>
+            <input type="password" id="loginPassword" placeholder="Votre mot de passe" required>
+            <button type="submit" class="btn-login">🔐 Se connecter</button>
+            <div id="loginError"></div>
+        </form>
     </div>
     
-    <div id="notification" class="notification-badge">🔔 Nouvelle commande !</div>
+    <!-- ============================================ -->
+    <!-- 📋 CONTENU PRINCIPAL -->
+    <!-- ============================================ -->
+    <div id="adminContent" style="display: none;">
+        
+        <!-- EN-TÊTE -->
+        <div class="header">
+            <h1>📋 <span>Commandes</span></h1>
+            <div class="header-stats">
+                <div class="stat-item">
+                    <span class="label">Total</span>
+                    <span class="number" id="totalCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">⏳ En attente</span>
+                    <span class="number" id="waitingCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">👨‍🍳 En préparation</span>
+                    <span class="number" id="preparingCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">✅ Prêtes</span>
+                    <span class="number" id="readyCount">0</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-refresh" onclick="refreshOrders()">🔄 Actualiser</button>
+                <button class="logout-btn" onclick="logoutUser()">🚪 Déconnexion</button>
+            </div>
+        </div>
+        
+        <!-- FILTRES -->
+        <div class="filters" id="filterContainer">
+            <button class="filter-btn active" data-status="all" onclick="filterOrders('all')">
+                🍽️ Toutes <span class="count" id="filterAll">0</span>
+            </button>
+            <button class="filter-btn" data-status="en_attente" onclick="filterOrders('en_attente')">
+                ⏳ En attente <span class="count" id="filterWaiting">0</span>
+            </button>
+            <button class="filter-btn" data-status="prepare" onclick="filterOrders('prepare')">
+                👨‍🍳 En préparation <span class="count" id="filterPreparing">0</span>
+            </button>
+            <button class="filter-btn" data-status="prepared" onclick="filterOrders('prepared')">
+                ✅ Prêtes <span class="count" id="filterReady">0</span>
+            </button>
+            <button class="filter-btn" data-status="served" onclick="filterOrders('served')">
+                🍽️ Servies <span class="count" id="filterServed">0</span>
+            </button>
+            <button class="filter-btn" data-status="cancelled" onclick="filterOrders('cancelled')">
+                ❌ Annulées <span class="count" id="filterCancelled">0</span>
+            </button>
+        </div>
+        
+        <!-- CHARGEMENT -->
+        <div class="loading" id="loadingIndicator">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">📋 Chargement des commandes...</p>
+        </div>
+        
+        <!-- GRILLE DES COMMANDES -->
+        <div class="orders-grid" id="ordersGrid"></div>
+        
+        <!-- ÉTAT VIDE -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <span class="icon">📭</span>
+            <h2>Aucune commande</h2>
+            <p>Les commandes apparaîtront ici dès qu'elles seront passées.</p>
+        </div>
+        
+    </div>
     
-    <!-- ============ FIREBASE CONFIG ============ -->
-    <script src="config.js"></script>
-    
-    <!-- ============ SCRIPT PRINCIPAL ============ -->
+    <!-- ============================================ -->
+    <!-- 📜 SCRIPT PRINCIPAL -->
+    <!-- ============================================ -->
     <script>
-        // ============ ORDERS.JS ============
+        // ============================================
+        // ORDERS.JS - GESTION COMPLÈTE DES COMMANDES
+        // ============================================
+        
+        // ============================================
+        // 1. VARIABLES GLOBALES
+        // ============================================
         let allOrders = [];
         let currentFilter = 'all';
-        let lastOrderCount = 0;
+        let database, ordersRef;
+        let isAuthenticated = false;
         
-        // ============ ÉTAT DE CONNEXION ============
-        function updateConnectionStatus(connected) {
-            const statusEl = document.getElementById('connectionStatus');
-            if (connected) {
-                statusEl.className = 'connected';
-                statusEl.innerHTML = '✅ Connecté à Firebase - Synchronisation en temps réel active';
-            } else {
-                statusEl.className = 'disconnected';
-                statusEl.innerHTML = '❌ Déconnecté - Vérifiez votre configuration Firebase';
-            }
+        const EXPECTED_UID = 'kW1jJa76EuVPg53pwBuk58nCs1e2';
+        const STATUS_LABELS = {
+            'en_attente': { label: 'En attente', icon: '⏳', color: 'waiting' },
+            'prepare': { label: 'En préparation', icon: '👨‍🍳', color: 'preparing' },
+            'prepared': { label: 'Prête', icon: '✅', color: 'ready' },
+            'served': { label: 'Servie', icon: '🍽️', color: 'served' },
+            'cancelled': { label: 'Annulée', icon: '❌', color: 'cancelled' }
+        };
+        
+        // ============================================
+        // 2. AUTHENTIFICATION
+        // ============================================
+        function loginUser(email, password) {
+            return firebase.auth().signInWithEmailAndPassword(email, password);
         }
         
-        database.ref('.info/connected').on('value', (snapshot) => {
-            updateConnectionStatus(snapshot.val());
+        function logoutUser() {
+            firebase.auth().signOut()
+                .then(() => {
+                    console.log('👋 Déconnecté');
+                    showToast('👋 Déconnecté');
+                    showLoginForm();
+                })
+                .catch(error => {
+                    console.error('❌ Erreur déconnexion:', error);
+                    showToast('❌ Erreur: ' + error.message);
+                });
+        }
+        
+        function showLoginForm() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('adminContent').style.display = 'none';
+            document.getElementById('loginError').textContent = '';
+            isAuthenticated = false;
+        }
+        
+        function showAdminContent() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('adminContent').style.display = 'block';
+            isAuthenticated = true;
+            initializeFirebase();
+        }
+        
+        // Gestion du formulaire de connexion
+        document.getElementById('loginFormElement').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const btn = this.querySelector('.btn-login');
+            const errorEl = document.getElementById('loginError');
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ Connexion...';
+            errorEl.textContent = '';
+            
+            loginUser(email, password)
+                .then((userCredential) => {
+                    console.log('✅ Connexion réussie:', userCredential.user.email);
+                    this.reset();
+                    showToast('✅ Bienvenue ' + userCredential.user.email);
+                    showAdminContent();
+                })
+                .catch((error) => {
+                    console.error('❌ Erreur connexion:', error);
+                    let errorMessage = '❌ ' + error.message;
+                    if (error.code === 'auth/user-not-found') {
+                        errorMessage = '❌ Utilisateur non trouvé.';
+                    } else if (error.code === 'auth/wrong-password') {
+                        errorMessage = '❌ Mot de passe incorrect.';
+                    } else if (error.code === 'auth/invalid-email') {
+                        errorMessage = '❌ Email invalide.';
+                    } else if (error.code === 'auth/too-many-requests') {
+                        errorMessage = '❌ Trop de tentatives. Réessayez plus tard.';
+                    }
+                    errorEl.textContent = errorMessage;
+                    showToast(errorMessage);
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.textContent = '🔐 Se connecter';
+                });
         });
         
-        // ============ ÉCOUTER LES COMMANDES ============
-        function listenToOrders() {
-            const ordersRef = database.ref('orders/commandes');
-            ordersRef.orderByChild('timestamp').on('value', (snapshot) => {
-                const data = snapshot.val();
-                console.log('📦 Commandes reçues:', data);
-                if (data) {
-                    allOrders = Object.keys(data).map(key => ({ id: key, ...data[key] })).sort((a, b) => b.timestamp - a.timestamp);
-                    const newOrders = allOrders.filter(o => o.status === 'en_attente');
-                    if (newOrders.length > lastOrderCount) {
-                        showNotification(`🆕 ${newOrders.length - lastOrderCount} nouvelle(s) commande(s) !`);
-                        playNotificationSound();
-                    }
-                    lastOrderCount = newOrders.length;
-                    console.log(`📊 ${allOrders.length} commandes totales, ${newOrders.length} en attente`);
+        // Vérification de l'authentification
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                console.log('✅ Utilisateur connecté:', user.email);
+                console.log('🆔 UID:', user.uid);
+                
+                if (user.uid === EXPECTED_UID) {
+                    console.log('✅ UID autorisé');
+                    showAdminContent();
                 } else {
-                    allOrders = [];
-                    console.log('📭 Aucune commande dans Firebase');
+                    console.warn('⚠️ UID non autorisé');
+                    showToast('⛔ Accès refusé - UID non autorisé');
+                    firebase.auth().signOut();
                 }
-                displayOrders();
-                updateStats();
-                updateTitle();
-            }, (error) => {
-                console.error('❌ Erreur Firebase:', error);
-                document.getElementById('ordersContainer').innerHTML = `<div class="empty-state"><div class="icon">❌</div><h2>Erreur de connexion</h2><p>${error.message}</p></div>`;
-            });
-        }
-        
-        function playNotificationSound() {
-            try {
-                const audio = new Audio('https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3');
-                audio.volume = 0.5;
-                audio.play().catch(() => {});
-            } catch (e) {}
-        }
-        
-        function showNotification(message) {
-            const notification = document.getElementById('notification');
-            notification.textContent = message || '🔔 Nouvelle commande !';
-            notification.style.display = 'block';
-            clearTimeout(notification._timeout);
-            notification._timeout = setTimeout(() => { notification.style.display = 'none'; }, 5000);
-        }
-        
-        function displayOrders() {
-            const container = document.getElementById('ordersContainer');
-            if (!container) return;
-            let filteredOrders = allOrders;
-            if (currentFilter !== 'all') {
-                filteredOrders = filteredOrders.filter(o => o.status === currentFilter);
+            } else {
+                console.log('🔐 Non connecté');
+                showLoginForm();
             }
-            if (filteredOrders.length === 0) {
-                container.innerHTML = `<div class="empty-state"><div class="icon">📭</div><h2>Aucune commande</h2><p>${currentFilter === 'all' ? 'En attente de la première commande...' : 'Aucune commande avec ce statut'}</p></div>`;
+        });
+        
+        // ============================================
+        // 3. INITIALISATION FIREBASE
+        // ============================================
+        function initializeFirebase() {
+            if (typeof firebase === 'undefined' || firebase.apps.length === 0) {
+                console.log('⏳ Attente de Firebase...');
+                setTimeout(initializeFirebase, 500);
                 return;
             }
-            container.innerHTML = '';
-            filteredOrders.forEach(order => {
-                const card = document.createElement('div');
-                card.className = `order-card status-${order.status}`;
-                const date = new Date(order.timestamp);
-                const timeStr = date.toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-                const statusLabels = { 'en_attente': '🆕 En attente', 'prepare': '⏳ En préparation', 'prepared': '✅ Prête', 'served': '📤 Servie', 'cancelled': '❌ Annulée', 'envoye_whatsapp': '📱 WhatsApp' };
-                const statusLabel = statusLabels[order.status] || order.status;
-                let actionsHTML = '';
-                if (order.status === 'en_attente' || order.status === 'envoye_whatsapp') {
-                    actionsHTML = `
-                        <button class="btn-prepare" onclick="updateOrderStatus('${order.id}', 'prepare')">⏳ Préparer</button>
-                        <button class="btn-whatsapp" onclick="resendWhatsApp('${order.id}')">📱 WhatsApp</button>
-                        <button class="btn-cancel" onclick="updateOrderStatus('${order.id}', 'cancelled')">❌ Annuler</button>
-                    `;
-                } else if (order.status === 'prepare') {
-                    actionsHTML = `
-                        <button class="btn-prepared" onclick="updateOrderStatus('${order.id}', 'prepared')">✅ Prêt</button>
-                        <button class="btn-whatsapp" onclick="resendWhatsApp('${order.id}')">📱 WhatsApp</button>
-                        <button class="btn-cancel" onclick="updateOrderStatus('${order.id}', 'cancelled')">❌ Annuler</button>
-                    `;
-                } else if (order.status === 'prepared') {
-                    actionsHTML = `
-                        <button class="btn-served" onclick="updateOrderStatus('${order.id}', 'served')">📤 Servir</button>
-                        <button class="btn-whatsapp" onclick="resendWhatsApp('${order.id}')">📱 WhatsApp</button>
-                    `;
+            
+            console.log('✅ Firebase prêt');
+            database = firebase.database();
+            ordersRef = database.ref('orders/commandes');
+            
+            loadOrders();
+        }
+        
+        // ============================================
+        // 4. CHARGEMENT DES COMMANDES
+        // ============================================
+        function loadOrders() {
+            const loading = document.getElementById('loadingIndicator');
+            if (loading) loading.style.display = 'flex';
+            
+            ordersRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    allOrders = Object.keys(data).map(key => ({
+                        id: key,
+                        ...data[key]
+                    })).sort((a, b) => b.timestamp - a.timestamp); // Plus récent en premier
                 } else {
-                    actionsHTML = `<button class="btn-whatsapp" onclick="resendWhatsApp('${order.id}')">📱 WhatsApp</button>`;
+                    allOrders = [];
                 }
-                card.innerHTML = `
-                    <div class="order-header">
-                        <div>
-                            <div class="order-number">📋 ${order.orderNumber || order.id.slice(-6)}</div>
-                            <div class="order-table">🪑 Table ${order.table}</div>
-                            <div class="order-time">${timeStr}</div>
+                
+                if (loading) loading.style.display = 'none';
+                renderOrders();
+                updateStats();
+                updateFilters();
+            }, (error) => {
+                console.error('❌ Erreur chargement commandes:', error);
+                if (loading) loading.style.display = 'none';
+                showToast('❌ Erreur: ' + error.message);
+            });
+        }
+        
+        // ============================================
+        // 5. AFFICHAGE DES COMMANDES
+        // ============================================
+        function renderOrders() {
+            const grid = document.getElementById('ordersGrid');
+            const empty = document.getElementById('emptyState');
+            
+            if (!grid) return;
+            
+            // Filtrer
+            let filtered = allOrders;
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(order => order.status === currentFilter);
+            }
+            
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+            empty.style.display = 'none';
+            
+            let html = '';
+            filtered.forEach((order, index) => {
+                const statusInfo = STATUS_LABELS[order.status] || STATUS_LABELS['en_attente'];
+                const date = new Date(order.timestamp);
+                const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                const dateStr = date.toLocaleDateString('fr-FR');
+                
+                html += `
+                    <div class="order-card fade-in" style="animation-delay: ${index * 0.05}s">
+                        <div class="order-header">
+                            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                                <span class="order-number">#${order.orderNumber || 'N/A'}</span>
+                                <span class="order-table">🍽️ Table ${order.table || '?'}</span>
+                                <span class="order-status ${statusInfo.color}">${statusInfo.icon} ${statusInfo.label}</span>
+                            </div>
+                            <span class="order-time">${dateStr} ${timeStr}</span>
                         </div>
-                        <span class="order-status">${statusLabel}</span>
+                        <div class="order-body">
+                            <ul class="order-items">
+                                ${order.items.map(item => `
+                                    <li>
+                                        <span class="item-name">${item.name}</span>
+                                        <span>
+                                            <span class="item-quantity">x${item.quantity}</span>
+                                            <span class="item-price">${item.subtotal.toFixed(2)} €</span>
+                                        </span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                            <div class="order-total">
+                                <span class="total-label">Total</span>
+                                <span class="total-price">${order.total.toFixed(2)} €</span>
+                            </div>
+                        </div>
+                        <div class="order-actions">
+                            ${getStatusButtons(order)}
+                            <button class="btn-whatsapp" onclick="openWhatsApp('${order.id}')">
+                                💬 WhatsApp
+                            </button>
+                        </div>
                     </div>
-                    <div class="order-items">
-                        ${order.items.map(item => `<div class="order-item"><span class="item-name">${item.name} × ${item.quantity}</span><span class="item-price">${item.subtotal.toFixed(2)}Dhs</span></div>`).join('')}
-                    </div>
-                    ${order.notes ? `<div class="order-notes">📝 ${order.notes}</div>` : ''}
-                    <div class="order-total">Total: ${order.total.toFixed(2)}Dhs</div>
-                    ${order.customerName ? `<div style="margin-top: 8px; color: #666; font-size: 14px;">👤 ${order.customerName}</div>` : ''}
-                    ${order.customerPhone ? `<div style="color: #666; font-size: 14px;">📞 ${order.customerPhone}</div>` : ''}
-                    <div class="order-actions">${actionsHTML}</div>
                 `;
-                container.appendChild(card);
             });
-            console.log(`✅ ${filteredOrders.length} commandes affichées`);
+            
+            grid.innerHTML = html;
         }
         
-        function updateOrderStatus(orderId, status) {
-            const ordersRef = database.ref(`orders/commandes/${orderId}`);
-            ordersRef.update({ status: status, updatedAt: Date.now() })
-                .then(() => {
-                    console.log(`✅ Commande ${orderId} → ${status}`);
-                    const statusLabels = { 'en_attente': '🆕 en attente', 'prepare': '⏳ en préparation', 'prepared': '✅ préparée', 'served': '📤 servie', 'cancelled': '❌ annulée', 'envoye_whatsapp': '📱 WhatsApp' };
-                    showToast(`✅ Commande mise à jour : ${statusLabels[status] || status}`, 'success');
-                })
-                .catch(error => { console.error('❌ Erreur:', error); showToast('❌ Erreur: ' + error.message, 'error'); });
+        function getStatusButtons(order) {
+            const status = order.status;
+            const buttons = [];
+            
+            if (status === 'en_attente') {
+                buttons.push(`<button class="btn-status preparing" onclick="updateOrderStatus('${order.id}', 'prepare')">👨‍🍳 Préparer</button>`);
+                buttons.push(`<button class="btn-status cancelled" onclick="updateOrderStatus('${order.id}', 'cancelled')">❌ Annuler</button>`);
+            } else if (status === 'prepare') {
+                buttons.push(`<button class="btn-status ready" onclick="updateOrderStatus('${order.id}', 'prepared')">✅ Prête</button>`);
+                buttons.push(`<button class="btn-status cancelled" onclick="updateOrderStatus('${order.id}', 'cancelled')">❌ Annuler</button>`);
+            } else if (status === 'prepared') {
+                buttons.push(`<button class="btn-status served" onclick="updateOrderStatus('${order.id}', 'served')">🍽️ Servie</button>`);
+                buttons.push(`<button class="btn-status cancelled" onclick="updateOrderStatus('${order.id}', 'cancelled')">❌ Annuler</button>`);
+            } else if (status === 'served') {
+                buttons.push(`<button class="btn-status" disabled style="opacity:0.5;">✅ Terminée</button>`);
+            } else if (status === 'cancelled') {
+                buttons.push(`<button class="btn-status" disabled style="opacity:0.5;">❌ Annulée</button>`);
+            }
+            
+            return buttons.join('');
         }
         
-        function resendWhatsApp(orderId) {
+        // ============================================
+        // 6. MISE À JOUR DU STATUT
+        // ============================================
+        function updateOrderStatus(orderId, newStatus) {
+            if (!confirm(`Passer cette commande en "${STATUS_LABELS[newStatus]?.label || newStatus}" ?`)) {
+                return;
+            }
+            
+            ordersRef.child(orderId).update({
+                status: newStatus,
+                updatedAt: Date.now()
+            })
+            .then(() => {
+                showToast(`✅ Statut mis à jour : ${STATUS_LABELS[newStatus]?.label || newStatus}`);
+            })
+            .catch(error => {
+                console.error('❌ Erreur mise à jour:', error);
+                showToast('❌ Erreur: ' + error.message);
+            });
+        }
+        
+        // ============================================
+        // 7. WHATSAPP
+        // ============================================
+        function openWhatsApp(orderId) {
             const order = allOrders.find(o => o.id === orderId);
-            if (!order) { showToast('❌ Commande non trouvée', 'error'); return; }
-            let whatsappNumber = "1234567890";
-            let message = `🍽️ *Commande*\n📋 Réf: ${order.orderNumber || orderId.slice(-6)}\n📌 Table: ${order.table}\n⏰ ${new Date(order.timestamp).toLocaleString('fr-FR')}\n\n*Détails:*\n`;
-            order.items.forEach(item => { message += `• ${item.name} x${item.quantity} = ${item.subtotal.toFixed(2)}Dhs\n`; });
-            message += `\n*Total: ${order.total.toFixed(2)}Dhs*`;
-            const encodedMessage = encodeURIComponent(message);
-            window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
-            showToast(`📱 Message WhatsApp envoyé`, 'success');
-        }
-        
-        function updateStats() {
-            const pending = allOrders.filter(o => o.status === 'en_attente').length;
-            const prepare = allOrders.filter(o => o.status === 'prepare').length;
-            const prepared = allOrders.filter(o => o.status === 'prepared').length;
-            const served = allOrders.filter(o => o.status === 'served').length;
-            const cancelled = allOrders.filter(o => o.status === 'cancelled').length;
-            const whatsapp = allOrders.filter(o => o.status === 'envoye_whatsapp').length;
-            const total = allOrders.length;
-            document.getElementById('pendingCount').textContent = pending;
-            document.getElementById('prepareCount').textContent = prepare;
-            document.getElementById('preparedCount').textContent = prepared;
-            document.getElementById('servedCount').textContent = served;
-            document.getElementById('cancelledCount').textContent = cancelled;
-            document.getElementById('whatsappCount').textContent = whatsapp;
-            document.getElementById('totalCount').textContent = total;
-            console.log(`📊 Stats: En attente=${pending}, Préparation=${prepare}, Prêtes=${prepared}, Servies=${served}, Annulées=${cancelled}, WhatsApp=${whatsapp}, Total=${total}`);
-        }
-        
-        function updateTitle() {
-            const pending = allOrders.filter(o => o.status === 'en_attente').length;
-            document.title = pending > 0 ? `📋 ${pending} nouvelle(s) commande(s)` : '📋 Commandes en temps réel';
-        }
-        
-        function exportOrders() {
-            if (allOrders.length === 0) { showToast('❌ Aucune commande à exporter', 'error'); return; }
-            const statusLabels = { 'en_attente': 'En attente', 'prepare': 'En préparation', 'prepared': 'Préparée', 'served': 'Servie', 'cancelled': 'Annulée', 'envoye_whatsapp': 'WhatsApp' };
-            const exportData = allOrders.map(order => ({
-                orderNumber: order.orderNumber || order.id,
-                table: order.table,
-                date: new Date(order.timestamp).toLocaleString('fr-FR'),
-                items: order.items.map(item => `${item.name} x${item.quantity}`).join(', '),
-                total: order.total.toFixed(2),
-                status: statusLabels[order.status] || order.status,
-                customerName: order.customerName || '',
-                customerPhone: order.customerPhone || '',
-                notes: order.notes || ''
-            }));
-            const headers = ['Numéro', 'Table', 'Date', 'Articles', 'Total', 'Statut', 'Client', 'Téléphone', 'Notes'];
-            const rows = exportData.map(order => [order.orderNumber, order.table, order.date, order.items, order.total + ' Dhs', order.status, order.customerName, order.customerPhone, order.notes]);
-            const csvContent = [headers.join(';'), ...rows.map(row => row.join(';'))].join('\n');
-            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `commandes_${new Date().toISOString().slice(0,10)}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showToast(`✅ ${allOrders.length} commandes exportées !`, 'success');
-        }
-        
-        function resetOrders() {
-            const pendingOrders = allOrders.filter(o => o.status === 'en_attente' || o.status === 'prepare');
-            let confirmMessage = '⚠️ Réinitialiser toutes les commandes ?\n\nCette action est irréversible.';
-            if (pendingOrders.length > 0) { confirmMessage += `\n⚠️ ${pendingOrders.length} commande(s) en attente seront supprimées.`; }
-            if (!confirm(confirmMessage)) return;
-            const ordersRef = database.ref('orders/commandes');
-            const promises = allOrders.map(order => ordersRef.child(order.id).remove());
-            Promise.all(promises)
-                .then(() => { showToast(`✅ ${allOrders.length} commandes supprimées !`, 'success'); allOrders = []; displayOrders(); updateStats(); updateTitle(); })
-                .catch(error => { console.error('❌ Erreur:', error); showToast('❌ Erreur: ' + error.message, 'error'); });
-        }
-        
-        function refreshOrders() {
-            showToast('🔄 Actualisation en cours...', 'info');
-            listenToOrders();
-        }
-        
-        function setupFilters() {
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    currentFilter = this.dataset.filter;
-                    displayOrders();
+            if (!order) {
+                showToast('❌ Commande non trouvée');
+                return;
+            }
+            
+            // Récupérer le numéro WhatsApp depuis les données du restaurant
+            const restaurantRef = firebase.database().ref('restaurants/default');
+            restaurantRef.once('value')
+                .then((snapshot) => {
+                    const data = snapshot.val();
+                    const phone = data?.whatsapp || '';
+                    
+                    if (!phone) {
+                        showToast('⚠️ Numéro WhatsApp non configuré');
+                        return;
+                    }
+                    
+                    // Construire le message
+                    let message = `🍽️ *COMMANDE #${order.orderNumber || 'N/A'}*\n`;
+                    message += `━━━━━━━━━━━━━━━━━\n`;
+                    message += `📋 Table n°${order.table}\n`;
+                    message += `🕐 ${new Date(order.timestamp).toLocaleString()}\n`;
+                    message += `📊 Statut: ${STATUS_LABELS[order.status]?.label || order.status}\n`;
+                    message += `━━━━━━━━━━━━━━━━━\n\n`;
+                    
+                    message += `📦 *DÉTAILS*\n`;
+                    order.items.forEach((item, i) => {
+                        message += `${i+1}. ${item.name} x${item.quantity} = ${item.subtotal.toFixed(2)}€\n`;
+                    });
+                    
+                    message += `\n━━━━━━━━━━━━━━━━━\n`;
+                    message += `💰 *Total : ${order.total.toFixed(2)} €*\n`;
+                    message += `━━━━━━━━━━━━━━━━━\n`;
+                    message += `📱 Commande en ligne`;
+                    
+                    const encodedMessage = encodeURIComponent(message);
+                    const url = `https://wa.me/${phone}?text=${encodedMessage}`;
+                    window.open(url, '_blank');
+                })
+                .catch(error => {
+                    console.error('❌ Erreur:', error);
+                    showToast('❌ Erreur: ' + error.message);
                 });
-            });
         }
         
-        function showToast(message, type = 'info') {
-            const colors = { 'success': '#4caf50', 'error': '#dc3545', 'warning': '#ff9800', 'info': '#2196F3' };
+        // ============================================
+        // 8. STATISTIQUES
+        // ============================================
+        function updateStats() {
+            const total = allOrders.length;
+            const waiting = allOrders.filter(o => o.status === 'en_attente').length;
+            const preparing = allOrders.filter(o => o.status === 'prepare').length;
+            const ready = allOrders.filter(o => o.status === 'prepared').length;
+            
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('waitingCount').textContent = waiting;
+            document.getElementById('preparingCount').textContent = preparing;
+            document.getElementById('readyCount').textContent = ready;
+        }
+        
+        function updateFilters() {
+            const counts = {
+                all: allOrders.length,
+                en_attente: allOrders.filter(o => o.status === 'en_attente').length,
+                prepare: allOrders.filter(o => o.status === 'prepare').length,
+                prepared: allOrders.filter(o => o.status === 'prepared').length,
+                served: allOrders.filter(o => o.status === 'served').length,
+                cancelled: allOrders.filter(o => o.status === 'cancelled').length
+            };
+            
+            document.getElementById('filterAll').textContent = counts.all;
+            document.getElementById('filterWaiting').textContent = counts.en_attente;
+            document.getElementById('filterPreparing').textContent = counts.prepare;
+            document.getElementById('filterReady').textContent = counts.prepared;
+            document.getElementById('filterServed').textContent = counts.served;
+            document.getElementById('filterCancelled').textContent = counts.cancelled;
+        }
+        
+        // ============================================
+        // 9. FILTRES
+        // ============================================
+        function filterOrders(status) {
+            currentFilter = status;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.status === status);
+            });
+            renderOrders();
+        }
+        
+        // ============================================
+        // 10. ACTUALISATION MANUELLE
+        // ============================================
+        function refreshOrders() {
+            showToast('🔄 Actualisation...');
+            loadOrders();
+        }
+        
+        // ============================================
+        // 11. TOAST
+        // ============================================
+        function showToast(message) {
+            const existing = document.querySelector('.toast-message');
+            if (existing) existing.remove();
+            
             const toast = document.createElement('div');
-            toast.className = 'toast ' + type;
-            toast.style.background = colors[type] || '#667eea';
+            toast.className = 'toast-message';
             toast.textContent = message;
             document.body.appendChild(toast);
-            setTimeout(() => { toast.style.animation = 'slideUpToast 0.5s ease reverse'; setTimeout(() => toast.remove(), 500); }, 3000);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
         }
         
-        console.log('🚀 Démarrage du gestionnaire de commandes...');
-        listenToOrders();
-        setupFilters();
-        
-        window.updateOrderStatus = updateOrderStatus;
-        window.resendWhatsApp = resendWhatsApp;
-        window.exportOrders = exportOrders;
-        window.resetOrders = resetOrders;
+        // ============================================
+        // 12. EXPOSER LES FONCTIONS
+        // ============================================
+        window.filterOrders = filterOrders;
         window.refreshOrders = refreshOrders;
-        console.log('✅ Commandes initialisées');
+        window.updateOrderStatus = updateOrderStatus;
+        window.openWhatsApp = openWhatsApp;
+        window.logoutUser = logoutUser;
+        
+        console.log('✅ Orders.html chargé');
     </script>
 </body>
 </html>
