@@ -16,13 +16,13 @@
     <script>
         // 🔥 Configuration Firebase (intégrée - utilisée si config.js est absent)
         const FALLBACK_CONFIG = {
-  apiKey: "AIzaSyAp9akZE9yGLmZAVkcZ7YB4pM1kUP8cJWM",
-  authDomain: "restaurant-menu-9179b.firebaseapp.com",
-  databaseURL: "https://restaurant-menu-9179b-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "restaurant-menu-9179b",
-  storageBucket: "restaurant-menu-9179b.firebasestorage.app",
-  messagingSenderId: "57456460201",
-  appId: "1:57456460201:web:8b40ceeffe81eea918c4b8"
+            apiKey: "AIzaSyAp9akZE9yGLmZAVkcZ7YB4pM1kUP8cJWM",
+            authDomain: "restaurant-menu-9179b.firebaseapp.com",
+            databaseURL: "https://restaurant-menu-9179b-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "restaurant-menu-9179b",
+            storageBucket: "restaurant-menu-9179b.appspot.com",
+            messagingSenderId: "57456460201",
+            appId: "1:57456460201:web:VOTRE_APP_ID" // ⚠️ REMPLACEZ PAR VOTRE APP_ID
         };
 
         // Fonction pour initialiser Firebase avec une config
@@ -1371,56 +1371,55 @@
             });
         }
         
-function displayProducts() {
-    const container = document.getElementById('productsList');
-    if (!container) return;
-    
-    if (products.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color:#999;">Aucun produit</p>';
-        return;
-    }
-    
-    container.innerHTML = '';
-    products.forEach(p => {
-        const catName = categories[p.category]?.name || p.category || 'Non catégorisé';
-        const catIcon = categories[p.category]?.icon || '';
-        
-        // ✅ Vérification et affichage de l'image
-        let imageHtml = '';
-        if (p.image && p.image.trim() !== '') {
-            imageHtml = `<img src="${p.image}" class="product-thumbnail" 
-                           onerror="this.style.display='none'; this.parentElement.querySelector('.product-thumbnail-placeholder').style.display='flex';">`;
-        } else {
-            imageHtml = `<div class="product-thumbnail-placeholder">📷</div>`;
-        }
-        
-        const div = document.createElement('div');
-        div.className = 'product-item';
-        div.innerHTML = `
-            <div class="product-info">
-                ${imageHtml}
-                <div class="product-details">
-                    <div>
-                        <span class="name">${p.name}</span>
-                        <span class="price">${parseFloat(p.price).toFixed(2)} €</span>
-                        <span class="category">(${catIcon} ${catName})</span>
+        function displayProducts() {
+            const container = document.getElementById('productsList');
+            if (!container) return;
+            
+            if (products.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#999;">Aucun produit</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            products.forEach(p => {
+                const catName = categories[p.category]?.name || p.category || 'Non catégorisé';
+                const catIcon = categories[p.category]?.icon || '';
+                
+                let imageHtml = '';
+                if (p.image && p.image.trim() !== '') {
+                    imageHtml = `<img src="${p.image}" class="product-thumbnail" 
+                                   onerror="this.style.display='none'; this.parentElement.querySelector('.product-thumbnail-placeholder').style.display='flex';">`;
+                } else {
+                    imageHtml = `<div class="product-thumbnail-placeholder">📷</div>`;
+                }
+                
+                const div = document.createElement('div');
+                div.className = 'product-item';
+                div.innerHTML = `
+                    <div class="product-info">
+                        ${imageHtml}
+                        <div class="product-details">
+                            <div>
+                                <span class="name">${p.name}</span>
+                                <span class="price">${parseFloat(p.price).toFixed(2)} €</span>
+                                <span class="category">(${catIcon} ${catName})</span>
+                            </div>
+                            <div class="description">${p.description || ''}</div>
+                            ${p.image ? `<div style="font-size:10px; color:#999; margin-top:3px;">📷 Image présente</div>` : ''}
+                        </div>
                     </div>
-                    <div class="description">${p.description || ''}</div>
-                    ${p.image ? `<div style="font-size:10px; color:#999; margin-top:3px;">📷 Image présente</div>` : ''}
-                </div>
-            </div>
-            <div class="product-actions">
-                <button class="${p.visible !== false ? 'status-visible' : 'status-hidden'}" onclick="toggleVisibility('${p.id}')">
-                    ${p.visible !== false ? '✓ Visible' : '✗ Masqué'}
-                </button>
-                <button class="btn-edit" onclick="editProduct('${p.id}')">✏️</button>
-                <button class="btn-photo" onclick="changeImage('${p.id}')">📷</button>
-                <button class="btn-delete" onclick="deleteProduct('${p.id}')">🗑</button>
-            </div>
-        `;
-        container.appendChild(div);
-    });
-}
+                    <div class="product-actions">
+                        <button class="${p.visible !== false ? 'status-visible' : 'status-hidden'}" onclick="toggleVisibility('${p.id}')">
+                            ${p.visible !== false ? '✓ Visible' : '✗ Masqué'}
+                        </button>
+                        <button class="btn-edit" onclick="editProduct('${p.id}')">✏️</button>
+                        <button class="btn-photo" onclick="changeImage('${p.id}')">📷</button>
+                        <button class="btn-delete" onclick="deleteProduct('${p.id}')">🗑</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
         
         function validateProduct(p) {
             if (!p.name?.trim()) { showToast('❌ Nom requis', 'error'); return false; }
@@ -1434,7 +1433,8 @@ function displayProducts() {
                 name: document.getElementById('productName')?.value,
                 price: document.getElementById('productPrice')?.value,
                 category: document.getElementById('productCategory')?.value,
-                description: document.getElementById('productDesc')?.value
+                description: document.getElementById('productDesc')?.value,
+                image: document.getElementById('productImage')?.value.trim() || null
             };
             
             if (!validateProduct(productData)) return;
@@ -1448,7 +1448,7 @@ function displayProducts() {
                 category: productData.category,
                 description: productData.description?.trim() || '',
                 visible: true,
-                image: document.getElementById('productImage')?.value.trim() || null,
+                image: productData.image,
                 createdAt: Date.now()
             };
             
@@ -1547,204 +1547,149 @@ function displayProducts() {
         }
         
         // ============================================
-        // 13. PICX - GESTION DES IMAGES (simou-rayane/picx-images-hosting)
+        // 13. PICX - GESTION DES IMAGES
         // ============================================
-        // ============================================
-// 📷 PICX - GESTION DES IMAGES (CORRIGÉ)
-// ============================================
-
-async function loadPicXImages() {
-    try {
-        const username = document.getElementById('githubUsername')?.value.trim() || 'simou-rayane';
-        const repo = document.getElementById('githubRepo')?.value.trim() || 'picx-images-hosting';
-        const branch = document.getElementById('githubBranch')?.value.trim() || 'master';
-        
-        const url = `https://api.github.com/repos/${username}/${repo}/contents?ref=${branch}`;
-        console.log('📡 Chargement depuis:', url);
-        
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-            throw new Error(`Erreur HTTP: ${response.status}`);
+        async function loadPicXImages() {
+            try {
+                const username = document.getElementById('githubUsername')?.value.trim() || 'simou-rayane';
+                const repo = document.getElementById('githubRepo')?.value.trim() || 'picx-images-hosting';
+                const branch = document.getElementById('githubBranch')?.value.trim() || 'master';
+                
+                const url = `https://api.github.com/repos/${username}/${repo}/contents?ref=${branch}`;
+                console.log('📡 Chargement depuis:', url);
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('📦 Fichiers trouvés:', data.length);
+                
+                const extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
+                const images = data
+                    .filter(item => item.type === 'file')
+                    .filter(item => extensions.some(ext => item.name.toLowerCase().endsWith(ext)))
+                    .map(item => ({
+                        name: item.name,
+                        download_url: item.download_url
+                    }));
+                
+                console.log('🖼️ Images trouvées:', images.length);
+                picxImages = images;
+                return picxImages;
+                
+            } catch (error) {
+                console.error('❌ Erreur chargement PicX:', error);
+                showToast('❌ Erreur: ' + error.message, 'error');
+                return [];
+            }
         }
         
-        const data = await response.json();
-        console.log('📦 Fichiers trouvés:', data.length);
+        async function loadPicXImagesForGallery() {
+            const grid = document.getElementById('picxGalleryGrid');
+            if (!grid) {
+                console.error('❌ Élément picxGalleryGrid introuvable');
+                return;
+            }
+            
+            // Afficher un message de chargement
+            grid.innerHTML = `
+                <div style="grid-column:1/-1;text-align:center;padding:30px;color:#999;">
+                    <div style="font-size:48px;">⏳</div>
+                    <p>Chargement des images...</p>
+                </div>
+            `;
+            
+            const images = await loadPicXImages();
+            
+            if (!images || images.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column:1/-1;text-align:center;padding:30px;color:#999;">
+                        <div style="font-size:48px;">📂</div>
+                        <p>Aucune image trouvée dans <strong>simou-rayane/picx-images-hosting</strong></p>
+                        <p style="font-size:12px;margin-top:10px;">
+                            💡 Vérifiez que votre dépôt contient des images (jpg, png, gif, etc.)
+                        </p>
+                        <p style="font-size:12px;color:#666;">
+                            🔗 <a href="https://github.com/simou-rayane/picx-images-hosting" target="_blank">Voir le dépôt</a>
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+            
+            grid.innerHTML = '';
+            images.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'picx-item';
+                div.innerHTML = `
+                    <img src="${item.download_url}" 
+                         onerror="this.parentElement.innerHTML='<div style=\\'padding:20px;color:#999;font-size:12px;\\'>❌</div>'">
+                    <span class="picx-name">${item.name}</span>
+                `;
+                div.onclick = () => selectPicXImage(item.download_url);
+                grid.appendChild(div);
+            });
+            showToast(`✅ ${images.length} images chargées depuis PicX`, 'success');
+        }
         
-        const extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
-        const images = data
-            .filter(item => item.type === 'file')
-            .filter(item => extensions.some(ext => item.name.toLowerCase().endsWith(ext)))
-            .map(item => ({
-                name: item.name,
-                download_url: item.download_url
-            }));
-        
-        console.log('🖼️ Images trouvées:', images.length);
-        picxImages = images;
-        return picxImages;
-        
-    } catch (error) {
-        console.error('❌ Erreur chargement PicX:', error);
-        showToast('❌ Erreur: ' + error.message, 'error');
-        return [];
-    }
-}
-
-async function loadPicXImagesForGallery() {
-    const images = await loadPicXImages();
-    const grid = document.getElementById('picxGalleryGrid');
-    if (!grid) {
-        console.error('❌ Élément picxGalleryGrid introuvable');
-        return;
-    }
-    
-    if (!images || images.length === 0) {
-        grid.innerHTML = `
-            <div style="grid-column:1/-1;text-align:center;padding:30px;color:#999;">
-                <div style="font-size:48px;">📂</div>
-                <p>Aucune image trouvée dans <strong>simou-rayane/picx-images-hosting</strong></p>
-                <p style="font-size:12px;margin-top:10px;">
-                    💡 Vérifiez que votre dépôt contient des images (jpg, png, gif, etc.)
-                </p>
-                <p style="font-size:12px;color:#666;">
-                    🔗 <a href="https://github.com/simou-rayane/picx-images-hosting" target="_blank">Voir le dépôt</a>
-                </p>
-            </div>
-        `;
-        return;
-    }
-    
-    grid.innerHTML = '';
-    images.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'picx-item';
-        div.innerHTML = `
-            <img src="${item.download_url}" 
-                 onerror="this.parentElement.innerHTML='<div style=\\'padding:20px;color:#999;font-size:12px;\\'>❌</div>'">
-            <span class="picx-name">${item.name}</span>
-        `;
-        div.onclick = () => selectPicXImage(item.download_url);
-        grid.appendChild(div);
-    });
-    showToast(`✅ ${images.length} images chargées depuis PicX`, 'success');
-}
-    
-    // Afficher un message de chargement
-    grid.innerHTML = `
-        <div style="grid-column:1/-1;text-align:center;padding:30px;color:#999;">
-            <div style="font-size:48px;">⏳</div>
-            <p>Chargement des images...</p>
-        </div>
-    `;
-    
-    const images = await loadPicXImages();
-    
-    if (!images || images.length === 0) {
-        grid.innerHTML = `
-            <div style="grid-column:1/-1;text-align:center;padding:30px;color:#999;">
-                <div style="font-size:48px;">📂</div>
-                <p>Aucune image trouvée dans <strong>simou-rayane/picx-images-hosting</strong></p>
-                <p style="font-size:12px;margin-top:10px;">
-                    💡 Vérifiez que votre dépôt contient des images uploadées via PicX
-                </p>
-                <p style="font-size:12px;color:#666;">
-                    🔗 <a href="https://github.com/simou-rayane/picx-images-hosting" target="_blank">Voir le dépôt</a>
-                </p>
-            </div>
-        `;
-        return;
-    }
-    
-    grid.innerHTML = '';
-    images.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'picx-item';
-        div.innerHTML = `
-            <img src="${item.download_url}" 
-                 onerror="this.parentElement.innerHTML='<div style=\\'padding:20px;color:#999;\\'>❌ Image non trouvée</div>'">
-            <span class="picx-name">${item.name}</span>
-        `;
-        div.onclick = () => selectPicXImage(item.download_url);
-        grid.appendChild(div);
-    });
-    showToast(`✅ ${images.length} images chargées depuis PicX`, 'success');
-}
-
-function loadPicXImagesForAdd() {
-    imageSelectorMode = null;
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelector('[data-tab="tab-images"]')?.classList.add('active');
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    document.getElementById('tab-images')?.classList.add('active');
-    
-    // ✅ Appel de la fonction async
-    loadPicXImagesForGallery();
-    showToast('📷 Cliquez sur une image pour la sélectionner pour le produit', 'info');
-}
+        function loadPicXImagesForAdd() {
+            imageSelectorMode = null;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-tab="tab-images"]')?.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById('tab-images')?.classList.add('active');
+            loadPicXImagesForGallery();
+            showToast('📷 Cliquez sur une image pour la sélectionner pour le produit', 'info');
+        }
         
         function selectPicXImage(imageUrl) {
-    console.log('🖼️ Image sélectionnée:', imageUrl);
-    
-    // ✅ Mode LOGO
-    if (imageSelectorMode === 'logo') {
-        updateLogoPreview(imageUrl);
-        const hidden = document.getElementById('restaurantLogo');
-        if (hidden) hidden.value = imageUrl;
-        showToast('✅ Logo sélectionné ! N\'oubliez pas d\'enregistrer.', 'success');
-        imageSelectorMode = null;
-        document.querySelector('[data-tab="tab-restaurant"]')?.click();
-        return;
-    }
-    
-    // ✅ Mode BANNIÈRE
-    if (imageSelectorMode === 'banner') {
-        updateBannerPreview(imageUrl);
-        const hidden = document.getElementById('restaurantBanner');
-        if (hidden) hidden.value = imageUrl;
-        showToast('✅ Bannière sélectionnée ! N\'oubliez pas d\'enregistrer.', 'success');
-        imageSelectorMode = null;
-        document.querySelector('[data-tab="tab-restaurant"]')?.click();
-        return;
-    }
-    
-    // ✅ Mode PRODUIT (par défaut)
-    // Mettre l'URL dans le champ
-    const input = document.getElementById('productImage');
-    if (input) {
-        input.value = imageUrl;
-        console.log('✅ URL image mise dans le champ produit');
-    }
-    
-    // Afficher l'aperçu
-    const preview = document.getElementById('picxPreview');
-    const previewImg = document.getElementById('picxPreviewImg');
-    if (preview && previewImg) {
-        previewImg.src = imageUrl;
-        preview.style.display = 'flex';
-        console.log('✅ Aperçu affiché');
-    }
-    
-    // ✅ Retourner à l'onglet Produits
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelector('[data-tab="tab-products"]')?.classList.add('active');
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    document.getElementById('tab-products')?.classList.add('active');
-    
-    showToast('✅ Image sélectionnée pour le produit !', 'success');
-}
-        
-function loadPicXImagesForAdd() {
-    imageSelectorMode = null;
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelector('[data-tab="tab-images"]')?.classList.add('active');
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    document.getElementById('tab-images')?.classList.add('active');
-    
-    // ✅ Appel de la fonction async
-    loadPicXImagesForGallery();
-    showToast('📷 Cliquez sur une image pour la sélectionner pour le produit', 'info');
-}
+            console.log('🖼️ Image sélectionnée:', imageUrl);
+            
+            if (imageSelectorMode === 'logo') {
+                updateLogoPreview(imageUrl);
+                const hidden = document.getElementById('restaurantLogo');
+                if (hidden) hidden.value = imageUrl;
+                showToast('✅ Logo sélectionné !', 'success');
+                imageSelectorMode = null;
+                document.querySelector('[data-tab="tab-restaurant"]')?.click();
+                return;
+            }
+            
+            if (imageSelectorMode === 'banner') {
+                updateBannerPreview(imageUrl);
+                const hidden = document.getElementById('restaurantBanner');
+                if (hidden) hidden.value = imageUrl;
+                showToast('✅ Bannière sélectionnée !', 'success');
+                imageSelectorMode = null;
+                document.querySelector('[data-tab="tab-restaurant"]')?.click();
+                return;
+            }
+            
+            // ✅ Mode PRODUIT
+            const input = document.getElementById('productImage');
+            if (input) {
+                input.value = imageUrl;
+                console.log('✅ URL image mise dans le champ produit');
+            }
+            
+            const preview = document.getElementById('picxPreview');
+            const previewImg = document.getElementById('picxPreviewImg');
+            if (preview && previewImg) {
+                previewImg.src = imageUrl;
+                preview.style.display = 'flex';
+                console.log('✅ Aperçu affiché');
+            }
+            
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-tab="tab-products"]')?.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById('tab-products')?.classList.add('active');
+            
+            showToast('✅ Image sélectionnée pour le produit !', 'success');
+        }
         
         function clearPicXImage() {
             const input = document.getElementById('productImage');
