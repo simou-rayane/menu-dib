@@ -1559,96 +1559,78 @@ async function loadPicXImages() {
         const repo = document.getElementById('githubRepo')?.value.trim() || 'picx-images-hosting';
         const branch = document.getElementById('githubBranch')?.value.trim() || 'master';
         
-        // URL API GitHub
         const url = `https://api.github.com/repos/${username}/${repo}/contents?ref=${branch}`;
         console.log('📡 Chargement depuis:', url);
         
         const response = await fetch(url);
         
         if (!response.ok) {
-            throw new Error(`Erreur HTTP: ${response.status} - ${response.statusText}`);
+            throw new Error(`Erreur HTTP: ${response.status}`);
         }
         
         const data = await response.json();
-        console.log('📦 Données reçues:', data.length, 'fichiers');
+        console.log('📦 Fichiers trouvés:', data.length);
         
-        // 🔥 IMPORTANT: Les images uploadées via PicX sont des fichiers .json
-        // qui contiennent l'URL de l'image
-        const imageFiles = data.filter(item => 
-            item.type === 'file' && 
-            (item.name.endsWith('.jpg') || 
-             item.name.endsWith('.jpeg') || 
-             item.name.endsWith('.png') || 
-             item.name.endsWith('.gif') || 
-             item.name.endsWith('.webp') || 
-             item.name.endsWith('.svg') || 
-             item.name.endsWith('.bmp') ||
-             item.name.endsWith('.json')) // ✅ Les fichiers JSON de PicX
-        );
+        // Filtrer les images
+        const extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
+        const images = data
+            .filter(item => item.type === 'file')
+            .filter(item => extensions.some(ext => item.name.toLowerCase().endsWith(ext)))
+            .map(item => ({
+                name: item.name,
+                download_url: item.download_url
+            }));
         
-        console.log('🖼️ Fichiers images trouvés:', imageFiles.length);
-        
-        // 🔥 Pour chaque fichier, on récupère l'URL de l'image
-        // Si c'est un fichier JSON, on le parse pour extraire l'URL
-        const images = [];
-        for (const item of imageFiles) {
-            if (item.name.endsWith('.json')) {
-                try {
-                    // Charger le contenu du fichier JSON
-                    const jsonResponse = await fetch(item.download_url);
-                    const jsonData = await jsonResponse.json();
-                    
-                    // PicX stocke l'URL dans différents formats
-                    let imageUrl = null;
-                    if (jsonData.url) {
-                        imageUrl = jsonData.url;
-                    } else if (jsonData.download_url) {
-                        imageUrl = jsonData.download_url;
-                    } else if (jsonData.content) {
-                        // Certaines versions stockent l'URL dans content
-                        imageUrl = jsonData.content;
-                    } else if (typeof jsonData === 'string') {
-                        imageUrl = jsonData;
-                    }
-                    
-                    if (imageUrl) {
-                        images.push({
-                            name: item.name.replace('.json', ''),
-                            download_url: imageUrl,
-                            raw_url: imageUrl
-                        });
-                        console.log('✅ Image chargée:', item.name, '->', imageUrl);
-                    }
-                } catch (e) {
-                    console.warn('⚠️ Impossible de charger:', item.name, e);
-                }
-            } else {
-                // C'est une image directe
-                images.push({
-                    name: item.name,
-                    download_url: item.download_url,
-                    raw_url: item.download_url
-                });
-            }
-        }
-        
+        console.log('🖼️ Images trouvées:', images.length);
         picxImages = images;
-        console.log('✅ Total images chargées:', picxImages.length);
         return picxImages;
         
     } catch (error) {
         console.error('❌ Erreur chargement PicX:', error);
-        showToast('❌ Erreur chargement images: ' + error.message, 'error');
+        showToast('❌ Erreur: ' + error.message, 'error');
         return [];
     }
 }
 
 async function loadPicXImagesForGallery() {
+    const images = await loadPicXImages();
     const grid = document.getElementById('picxGalleryGrid');
     if (!grid) {
         console.error('❌ Élément picxGalleryGrid introuvable');
         return;
     }
+    
+    if (!images || images.length === 0) {
+        grid.innerHTML = `
+            <div style="grid-column:1/-1;text-align:center;padding:30px;color:#999;">
+                <div style="font-size:48px;">📂</div>
+                <p>Aucune image trouvée dans <strong>simou-rayane/picx-images-hosting</strong></p>
+                <p style="font-size:12px;margin-top:10px;">
+                    💡 Vérifiez que votre dépôt contient des images (jpg, png, gif, etc.)
+                </p>
+                <p style="font-size:12px;color:#666;">
+                    🔗 <a href="https://github.com/simou-rayane/picx-images-hosting" target="_blank">Voir le dépôt</a>
+                </p>
+            </div>
+        `;
+        return;
+    }
+    
+    grid.innerHTML = '';
+    images.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'picx-item';
+        div.innerHTML = `
+            <img src="${item.download_url}" 
+                 onerror="this.parentElement.innerHTML='<div style=\\'padding:20px;color:#999;font-size:12px;\\'>❌</div>'">
+            <span class="picx-name">${item.name}</span>
+        `;
+        // ✅ Pour le mode produit, on utilise selectPicXImage
+        div.onclick = () => selectPicXImage(item.download_url);
+        grid.appendChild(div);
+    });
+    showToast(`✅ ${images.length} images chargées depuis PicX`, 'success');
+}
     
     // Afficher un message de chargement
     grid.innerHTML = `
@@ -1705,38 +1687,70 @@ function loadPicXImagesForAdd() {
 }
         
         function selectPicXImage(imageUrl) {
-            if (imageSelectorMode === 'logo') {
-                updateLogoPreview(imageUrl);
-                const hidden = document.getElementById('restaurantLogo');
-                if (hidden) hidden.value = imageUrl;
-                showToast('✅ Logo sélectionné !', 'success');
-                imageSelectorMode = null;
-                document.querySelector('[data-tab="tab-restaurant"]')?.click();
-            } else if (imageSelectorMode === 'banner') {
-                updateBannerPreview(imageUrl);
-                const hidden = document.getElementById('restaurantBanner');
-                if (hidden) hidden.value = imageUrl;
-                showToast('✅ Bannière sélectionnée !', 'success');
-                imageSelectorMode = null;
-                document.querySelector('[data-tab="tab-restaurant"]')?.click();
-            } else {
-                const input = document.getElementById('productImage');
-                if (input) input.value = imageUrl;
-                const preview = document.getElementById('picxPreview');
-                const previewImg = document.getElementById('picxPreviewImg');
-                if (preview && previewImg) {
-                    previewImg.src = imageUrl;
-                    preview.style.display = 'flex';
-                }
-                showToast('✅ Image sélectionnée pour le produit', 'success');
-            }
-        }
+    console.log('🖼️ Image sélectionnée:', imageUrl);
+    
+    // ✅ Mode LOGO
+    if (imageSelectorMode === 'logo') {
+        updateLogoPreview(imageUrl);
+        const hidden = document.getElementById('restaurantLogo');
+        if (hidden) hidden.value = imageUrl;
+        showToast('✅ Logo sélectionné ! N\'oubliez pas d\'enregistrer.', 'success');
+        imageSelectorMode = null;
+        document.querySelector('[data-tab="tab-restaurant"]')?.click();
+        return;
+    }
+    
+    // ✅ Mode BANNIÈRE
+    if (imageSelectorMode === 'banner') {
+        updateBannerPreview(imageUrl);
+        const hidden = document.getElementById('restaurantBanner');
+        if (hidden) hidden.value = imageUrl;
+        showToast('✅ Bannière sélectionnée ! N\'oubliez pas d\'enregistrer.', 'success');
+        imageSelectorMode = null;
+        document.querySelector('[data-tab="tab-restaurant"]')?.click();
+        return;
+    }
+    
+    // ✅ Mode PRODUIT (par défaut)
+    // Mettre l'URL dans le champ
+    const input = document.getElementById('productImage');
+    if (input) {
+        input.value = imageUrl;
+        console.log('✅ URL image mise dans le champ produit');
+    }
+    
+    // Afficher l'aperçu
+    const preview = document.getElementById('picxPreview');
+    const previewImg = document.getElementById('picxPreviewImg');
+    if (preview && previewImg) {
+        previewImg.src = imageUrl;
+        preview.style.display = 'flex';
+        console.log('✅ Aperçu affiché');
+    }
+    
+    // ✅ Retourner à l'onglet Produits
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('[data-tab="tab-products"]')?.classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('tab-products')?.classList.add('active');
+    
+    showToast('✅ Image sélectionnée pour le produit !', 'success');
+}
         
-        function loadPicXImagesForAdd() {
-            imageSelectorMode = null;
-            loadPicXImagesForGallery();
-            showToast('📷 Sélectionnez une image pour le produit', 'info');
-        }
+function loadPicXImagesForAdd() {
+    // ✅ Mode produit
+    imageSelectorMode = null;
+    
+    // ✅ Ouvrir l'onglet Images
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('[data-tab="tab-images"]')?.classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('tab-images')?.classList.add('active');
+    
+    // ✅ Charger les images
+    loadPicXImagesForGallery();
+    showToast('📷 Cliquez sur une image pour la sélectionner pour le produit', 'info');
+}
         
         function clearPicXImage() {
             const input = document.getElementById('productImage');
