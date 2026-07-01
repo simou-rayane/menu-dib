@@ -451,7 +451,7 @@
         }
         
         /* ============================================ */
-        /* 🍽️ GRILLE DES PRODUITS */
+        /* 🍽️ GRILLE DES PRODUITS AVEC IMAGES EN ENTIER */
         /* ============================================ */
         .products-grid {
             display: grid;
@@ -475,16 +475,31 @@
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 20px var(--accent-glow);
         }
         
+        /* ✅ IMAGE EN ENTIER - SANS RECADRAGE */
         .product-image {
             width: 100%;
-            height: 180px;
-            object-fit: cover;
+            height: auto;
+            aspect-ratio: 16/9;
+            object-fit: contain;
             background: var(--bg-secondary);
             transition: var(--transition);
+            display: block;
         }
         
         .product-card:hover .product-image {
             transform: scale(1.02);
+        }
+        
+        /* Fallback pour les images sans aspect-ratio */
+        .product-image-fallback {
+            width: 100%;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: var(--text-muted);
+            background: var(--bg-secondary);
         }
         
         .product-body {
@@ -953,7 +968,11 @@
             
             .products-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
             
-            .product-image { height: 140px; }
+            /* ✅ Ajustement pour mobile */
+            .product-image {
+                aspect-ratio: 4/3;
+            }
+            
             .product-body { padding: 14px; }
             .product-name { font-size: 0.95rem; }
             .product-price { font-size: 1rem; }
@@ -989,6 +1008,11 @@
             .info-btn, .info-text {
                 width: 100%;
                 justify-content: center;
+            }
+            
+            /* ✅ Ajustement pour très petits écrans */
+            .product-image {
+                aspect-ratio: 1/1;
             }
         }
         
@@ -1103,37 +1127,24 @@
     <!-- 📋 BARRE D'INFORMATIONS RESTAURANT -->
     <!-- ============================================ -->
     <div class="restaurant-info-bar" id="restaurantInfoBar">
-        <!-- Téléphone -->
         <a id="infoPhone" class="info-btn phone" style="display:none;">
             <span class="icon">📞</span> <span id="infoPhoneText">Appeler</span>
         </a>
-        
-        <!-- WhatsApp -->
         <a id="infoWhatsApp" class="info-btn whatsapp" style="display:none;">
             <span class="icon">💬</span> WhatsApp
         </a>
-        
-        <!-- Itinéraire -->
         <a id="infoMaps" class="info-btn maps" style="display:none;">
             <span class="icon">📍</span> Itinéraire
         </a>
-        
-        <!-- Facebook -->
         <a id="infoFacebook" class="info-btn facebook" style="display:none;">
             <span class="icon">📘</span> Facebook
         </a>
-        
-        <!-- Instagram -->
         <a id="infoInstagram" class="info-btn instagram" style="display:none;">
             <span class="icon">📸</span> Instagram
         </a>
-        
-        <!-- Site web -->
         <a id="infoWebsite" class="info-btn website" style="display:none;">
             <span class="icon">🌐</span> Site web
         </a>
-        
-        <!-- Livraison -->
         <div id="infoDelivery" class="info-text" style="display:none;">
             <span class="icon">🚚</span>
             Livraison disponible <span class="highlight" id="deliveryPrice"></span>
@@ -1224,7 +1235,7 @@
     <!-- ============================================ -->
     <script>
         // ============================================
-        // MENU.JS - VERSION AVEC TOUS LES BOUTONS
+        // MENU.JS - VERSION AVEC IMAGES EN ENTIER
         // ============================================
         
         // ============================================
@@ -1315,7 +1326,7 @@
         }
         
         // ============================================
-        // 5. CHARGEMENT DU RESTAURANT (AVEC TOUS LES BOUTONS)
+        // 5. CHARGEMENT DU RESTAURANT
         // ============================================
         function loadRestaurant() {
             restaurantsRef.child(DEFAULT_RESTAURANT).on('value', (snapshot) => {
@@ -1495,7 +1506,7 @@
         }
         
         // ============================================
-        // 8. AFFICHAGE DU MENU
+        // 8. AFFICHAGE DU MENU AVEC IMAGES EN ENTIER
         // ============================================
         function renderMenu() {
             const container = document.getElementById('menuContent');
@@ -1549,10 +1560,19 @@
                 
                 products.forEach(p => {
                     const price = parseFloat(p.price) || 0;
+                    
+                    // ✅ Affichage image en entier avec fallback
+                    let imageHtml = '';
+                    if (p.image && p.image.trim() !== '') {
+                        imageHtml = `<img src="${p.image}" class="product-image" alt="${p.name}" onerror="this.style.display='none'; this.parentElement.querySelector('.product-image-fallback').style.display='flex';">`;
+                        imageHtml += `<div class="product-image-fallback" style="display:none;">🍽️</div>`;
+                    } else {
+                        imageHtml = `<div class="product-image-fallback">🍽️</div>`;
+                    }
+                    
                     html += `
                         <div class="product-card fade-in" onclick="addToCart('${p.id}')">
-                            ${p.image ? `<img src="${p.image}" class="product-image" alt="${p.name}" onerror="this.style.display='none'">` : 
-                                `<div class="product-image" style="display:flex;align-items:center;justify-content:center;font-size:48px;color:var(--text-muted);background:var(--bg-secondary);">🍽️</div>`}
+                            ${imageHtml}
                             <div class="product-body">
                                 <div class="product-header">
                                     <span class="product-name">${p.name}</span>
@@ -1858,7 +1878,7 @@
         window.placeOrder = placeOrder;
         window.renderCart = renderCart;
         
-        console.log('✅ Menu chargé - Tous les boutons et informations');
+        console.log('✅ Menu chargé - Images des produits en entier');
         console.log('🍽️ Table n°:', tableNumber);
         console.log('📱 Session ID:', sessionId);
     </script>
