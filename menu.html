@@ -14,7 +14,6 @@
     <!-- 🔥 CONFIGURATION FIREBASE -->
     <!-- ============================================ -->
     <script>
-        // 🔥 Configuration Firebase (intégrée)
         const FIREBASE_CONFIG = {
             apiKey: "AIzaSyAp9akZE9yGLmZAVkcZ7YB4pM1kUP8cJWM",
             authDomain: "restaurant-menu-9179b.firebaseapp.com",
@@ -22,7 +21,7 @@
             projectId: "restaurant-menu-9179b",
             storageBucket: "restaurant-menu-9179b.appspot.com",
             messagingSenderId: "57456460201",
-            appId: "1:57456460201:web:VOTRE_APP_ID" // ⚠️ REMPLACEZ PAR VOTRE APP_ID
+            appId: "1:57456460201:web:VOTRE_APP_ID"
         };
 
         if (typeof firebase !== 'undefined' && !firebase.apps.length) {
@@ -36,12 +35,12 @@
         /* 🎨 STYLES - MODE SOMBRE PROFESSIONNEL */
         /* ============================================ */
         
-        /* Variables */
         :root {
             --bg-primary: #0d0d0d;
             --bg-secondary: #1a1a1a;
             --bg-card: #242424;
             --bg-card-hover: #2d2d2d;
+            --bg-modal: #1a1a1a;
             --text-primary: #ffffff;
             --text-secondary: #b0b0b0;
             --text-muted: #777777;
@@ -52,9 +51,10 @@
             --shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
             --radius: 16px;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --danger: #e74c3c;
+            --success: #2ecc71;
         }
         
-        /* Reset */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
@@ -64,6 +64,73 @@
             min-height: 100vh;
             line-height: 1.6;
             padding: 20px;
+            padding-bottom: 120px;
+        }
+        
+        /* ============================================ */
+        /* 🖼️ BANNIÈRE */
+        /* ============================================ */
+        .banner-container {
+            max-width: 1200px;
+            margin: 0 auto 30px;
+            border-radius: var(--radius);
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+        
+        .banner-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            display: block;
+            transition: var(--transition);
+        }
+        
+        .banner-image:hover {
+            transform: scale(1.01);
+        }
+        
+        .banner-placeholder {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            gap: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .banner-placeholder .icon {
+            font-size: 64px;
+            opacity: 0.5;
+        }
+        
+        .banner-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 40px 30px 25px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            pointer-events: none;
+        }
+        
+        .banner-overlay .restaurant-name-banner {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-shadow: 0 2px 20px rgba(0,0,0,0.8);
+        }
+        
+        .banner-overlay .restaurant-slogan {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
         }
         
         /* ============================================ */
@@ -79,6 +146,7 @@
             padding: 20px;
             border-radius: var(--radius);
             box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
         }
         
         .search-bar {
@@ -154,87 +222,10 @@
         }
         
         /* ============================================ */
-        /* 🏪 EN-TÊTE DU RESTAURANT */
-        /* ============================================ */
-        .restaurant-header {
-            text-align: center;
-            padding: 40px 20px;
-            margin-bottom: 40px;
-            background: var(--bg-secondary);
-            border-radius: var(--radius);
-            border: 1px solid var(--border-color);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .restaurant-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(circle at 30% 20%, var(--accent-glow), transparent 70%);
-            opacity: 0.3;
-            pointer-events: none;
-        }
-        
-        .restaurant-logo {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid var(--accent);
-            box-shadow: 0 0 30px var(--accent-glow);
-            margin-bottom: 20px;
-            position: relative;
-        }
-        
-        .restaurant-name {
-            font-size: 2.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--accent), #f5d37a);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
-            position: relative;
-        }
-        
-        .restaurant-address {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-            margin-bottom: 15px;
-            position: relative;
-        }
-        
-        .restaurant-info {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            flex-wrap: wrap;
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            position: relative;
-        }
-        
-        .restaurant-info a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .restaurant-info a:hover {
-            color: var(--accent);
-        }
-        
-        /* ============================================ */
         /* 📂 CATÉGORIES */
         /* ============================================ */
         .category-section {
-            margin-bottom: 50px;
+            margin-bottom: 40px;
         }
         
         .category-header {
@@ -245,7 +236,7 @@
             background: var(--bg-secondary);
             border-radius: 12px;
             border-left: 4px solid var(--accent);
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
         
         .category-icon {
@@ -272,7 +263,7 @@
         /* ============================================ */
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
         }
         
@@ -283,6 +274,7 @@
             transition: var(--transition);
             border: 1px solid var(--border-color);
             position: relative;
+            cursor: pointer;
         }
         
         .product-card:hover {
@@ -293,7 +285,7 @@
         
         .product-image {
             width: 100%;
-            height: 200px;
+            height: 180px;
             object-fit: cover;
             background: var(--bg-secondary);
             transition: var(--transition);
@@ -304,7 +296,7 @@
         }
         
         .product-body {
-            padding: 20px;
+            padding: 18px 20px;
         }
         
         .product-header {
@@ -312,18 +304,18 @@
             justify-content: space-between;
             align-items: flex-start;
             gap: 10px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
         
         .product-name {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 600;
             color: var(--text-primary);
             flex: 1;
         }
         
         .product-price {
-            font-size: 1.2rem;
+            font-size: 1.15rem;
             font-weight: 700;
             color: var(--accent);
             white-space: nowrap;
@@ -334,32 +326,332 @@
         
         .product-description {
             color: var(--text-secondary);
-            font-size: 0.92rem;
+            font-size: 0.9rem;
             line-height: 1.5;
-            margin-top: 5px;
+            margin-top: 4px;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
         
-        /* Badge "Nouveau" ou "Disponible" */
-        .product-badge {
-            position: absolute;
-            top: 12px;
-            right: 12px;
+        /* ============================================ */
+        /* 🛒 PANIER - MODAL */
+        /* ============================================ */
+        .cart-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: none;
+            justify-content: flex-end;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .cart-overlay.active {
+            display: flex;
+        }
+        
+        .cart-modal {
+            background: var(--bg-modal);
+            width: 100%;
+            max-width: 500px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid var(--border-color);
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            flex-shrink: 0;
+        }
+        
+        .cart-header h2 {
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .cart-header .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 28px;
+            cursor: pointer;
+            transition: var(--transition);
+            padding: 0 8px;
+        }
+        
+        .cart-header .close-btn:hover {
+            color: var(--text-primary);
+            transform: rotate(90deg);
+        }
+        
+        /* Numéro de table */
+        .table-selector {
+            padding: 15px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            background: var(--bg-card);
+        }
+        
+        .table-selector label {
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        
+        .table-selector input {
+            padding: 8px 14px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            width: 80px;
+            text-align: center;
+            transition: var(--transition);
+        }
+        
+        .table-selector input:focus {
+            border-color: var(--accent);
+            outline: none;
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        
+        /* Liste des produits du panier */
+        .cart-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px 20px;
+        }
+        
+        .cart-items::-webkit-scrollbar {
+            width: 4px;
+        }
+        .cart-items::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+        .cart-items::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 10px;
+        }
+        
+        .cart-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .cart-item:hover {
+            border-color: var(--accent);
+        }
+        
+        .cart-item-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            object-fit: cover;
+            background: var(--bg-card);
+            flex-shrink: 0;
+        }
+        
+        .cart-item-image-placeholder {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            background: var(--bg-card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+        
+        .cart-item-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .cart-item-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+        
+        .cart-item-price {
+            color: var(--accent);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .cart-item-quantity {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 4px;
+        }
+        
+        .cart-item-quantity button {
+            width: 28px;
+            height: 28px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 700;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .cart-item-quantity button:hover {
+            border-color: var(--accent);
+            background: var(--accent-glow);
+        }
+        
+        .cart-item-quantity span {
+            min-width: 24px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .cart-item-remove {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 18px;
+            transition: var(--transition);
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+        
+        .cart-item-remove:hover {
+            background: rgba(231, 76, 60, 0.15);
+            transform: scale(1.1);
+        }
+        
+        /* Total et actions */
+        .cart-footer {
+            padding: 20px 24px;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            flex-shrink: 0;
+        }
+        
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+            padding: 10px 0;
+        }
+        
+        .cart-total .total-price {
+            color: var(--accent);
+            font-size: 1.4rem;
+        }
+        
+        .cart-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .cart-actions button {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            min-width: 120px;
+        }
+        
+        .cart-actions .btn-order {
             background: var(--accent);
             color: var(--bg-primary);
-            padding: 4px 14px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            flex: 2;
+        }
+        
+        .cart-actions .btn-order:hover {
+            background: var(--accent-hover);
+            transform: scale(1.02);
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+        
+        .cart-actions .btn-order:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .cart-actions .btn-clear {
+            background: var(--danger);
+            color: white;
+            flex: 1;
+        }
+        
+        .cart-actions .btn-clear:hover {
+            background: #c0392b;
+            transform: scale(1.02);
+        }
+        
+        .cart-empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+        
+        .cart-empty .icon {
+            font-size: 64px;
+            display: block;
+            margin-bottom: 15px;
+        }
+        
+        .cart-empty h3 {
+            color: var(--text-secondary);
+            margin-bottom: 8px;
         }
         
         /* ============================================ */
-        /* 🛒 PANIER - FLOTTANT */
+        /* 🛒 BOUTON PANIER FLOTTANT */
         /* ============================================ */
         .cart-button {
             position: fixed;
@@ -378,7 +670,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            z-index: 999;
+            z-index: 1000;
         }
         
         .cart-button:hover {
@@ -432,22 +724,30 @@
         /* ============================================ */
         /* 📱 RESPONSIVE */
         /* ============================================ */
+        @media (max-width: 992px) {
+            .banner-image, .banner-placeholder { height: 220px; }
+            .banner-overlay .restaurant-name-banner { font-size: 1.6rem; }
+        }
+        
         @media (max-width: 768px) {
-            body { padding: 12px; }
+            body { padding: 12px; padding-bottom: 100px; }
             
-            .restaurant-header { padding: 25px 15px; }
-            .restaurant-name { font-size: 1.8rem; }
+            .banner-image, .banner-placeholder { height: 180px; }
+            .banner-overlay { padding: 20px 20px 15px; }
+            .banner-overlay .restaurant-name-banner { font-size: 1.3rem; }
+            .banner-overlay .restaurant-slogan { font-size: 0.85rem; }
             
             .search-container { padding: 15px; margin-bottom: 20px; }
             .search-bar input { font-size: 14px; padding: 12px 16px; }
             
             .products-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
             
-            .product-image { height: 150px; }
+            .product-image { height: 140px; }
             .product-body { padding: 14px; }
             .product-name { font-size: 0.95rem; }
             .product-price { font-size: 1rem; }
             
+            .cart-modal { max-width: 100%; }
             .cart-button { 
                 bottom: 20px; 
                 right: 20px; 
@@ -460,8 +760,11 @@
         
         @media (max-width: 480px) {
             .products-grid { grid-template-columns: 1fr; }
-            .restaurant-info { flex-direction: column; gap: 8px; }
+            .banner-image, .banner-placeholder { height: 150px; }
             .filter-buttons { justify-content: center; }
+            
+            .cart-actions { flex-direction: column; }
+            .cart-actions button { flex: 1; }
         }
         
         /* ============================================ */
@@ -477,7 +780,7 @@
         }
         
         /* ============================================ */
-        /* 🏷️ SCROLLBAR PERSONNALISÉE */
+        /* 🏷️ SCROLLBAR */
         /* ============================================ */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: var(--bg-secondary); }
@@ -485,7 +788,7 @@
         ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
         
         /* ============================================ */
-        /* 🌟 EFFET DE GLOW SUR LES CARTES */
+        /* 🌟 GLOW */
         /* ============================================ */
         .product-card::after {
             content: '';
@@ -504,7 +807,7 @@
         }
         
         /* ============================================ */
-        /* 📋 STATUS MESSAGE */
+        /* 📋 STATUS */
         /* ============================================ */
         .status-message {
             text-align: center;
@@ -522,9 +825,45 @@
             color: var(--text-primary);
             margin-bottom: 8px;
         }
+        
+        /* ============================================ */
+        /* 💬 TOAST */
+        /* ============================================ */
+        .toast-message {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            padding: 14px 28px;
+            border-radius: 12px;
+            border: 1px solid var(--accent);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+            font-size: 0.95rem;
+            z-index: 99999;
+            animation: fadeIn 0.3s ease;
+            max-width: 90%;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
+    
+    <!-- ============================================ -->
+    <!-- 🖼️ BANNIÈRE -->
+    <!-- ============================================ -->
+    <div class="banner-container">
+        <img id="bannerImage" class="banner-image" src="" alt="Bannière du restaurant" style="display: none;">
+        <div id="bannerPlaceholder" class="banner-placeholder">
+            <div class="icon">🍽️</div>
+            <span>Bannière du restaurant</span>
+        </div>
+        <div class="banner-overlay">
+            <div class="restaurant-name-banner" id="bannerRestaurantName">Mon Restaurant</div>
+            <div class="restaurant-slogan" id="bannerRestaurantSlogan">Découvrez notre carte</div>
+        </div>
+    </div>
     
     <!-- ============================================ -->
     <!-- 🔍 BARRE DE RECHERCHE -->
@@ -542,18 +881,6 @@
     <!-- 🏪 MENU PRINCIPAL -->
     <!-- ============================================ -->
     <div class="menu-container">
-        
-        <!-- EN-TÊTE RESTAURANT -->
-        <div class="restaurant-header" id="restaurantHeader">
-            <img id="restaurantLogo" src="" alt="Logo" class="restaurant-logo" style="display: none;">
-            <h1 class="restaurant-name" id="restaurantName">Chargement...</h1>
-            <p class="restaurant-address" id="restaurantAddress"></p>
-            <div class="restaurant-info" id="restaurantInfo">
-                <a id="restaurantPhoneLink" href="#"><span>📞</span> Appeler</a>
-                <a id="restaurantWhatsAppLink" href="#"><span>💬</span> WhatsApp</a>
-                <span id="restaurantDeliveryInfo">🚚 Livraison disponible</span>
-            </div>
-        </div>
         
         <!-- CHARGEMENT -->
         <div id="loadingIndicator" class="loading">
@@ -573,7 +900,7 @@
     </div>
     
     <!-- ============================================ -->
-    <!-- 🛒 BOUTON PANIER -->
+    <!-- 🛒 BOUTON PANIER FLOTTANT -->
     <!-- ============================================ -->
     <button class="cart-button" id="cartButton" onclick="openCart()">
         🛒 Panier
@@ -581,11 +908,52 @@
     </button>
     
     <!-- ============================================ -->
+    <!-- 🛒 MODAL PANIER -->
+    <!-- ============================================ -->
+    <div class="cart-overlay" id="cartOverlay" onclick="closeCartOutside(event)">
+        <div class="cart-modal" id="cartModal">
+            <!-- En-tête -->
+            <div class="cart-header">
+                <h2>🛒 Mon panier</h2>
+                <button class="close-btn" onclick="closeCart()">✕</button>
+            </div>
+            
+            <!-- Numéro de table -->
+            <div class="table-selector">
+                <label>🍽️ Table n°</label>
+                <input type="number" id="tableNumber" value="1" min="1" max="50">
+                <span style="font-size:12px; color:var(--text-muted);">(Saisissez votre numéro de table)</span>
+            </div>
+            
+            <!-- Liste des produits -->
+            <div class="cart-items" id="cartItems">
+                <div class="cart-empty">
+                    <span class="icon">🛒</span>
+                    <h3>Votre panier est vide</h3>
+                    <p>Ajoutez des plats depuis le menu</p>
+                </div>
+            </div>
+            
+            <!-- Footer avec total et actions -->
+            <div class="cart-footer">
+                <div class="cart-total">
+                    <span>Total</span>
+                    <span class="total-price" id="cartTotal">0.00 €</span>
+                </div>
+                <div class="cart-actions">
+                    <button class="btn-order" id="orderBtn" onclick="placeOrder()">📤 Commander</button>
+                    <button class="btn-clear" onclick="clearCart()">🗑️ Vider</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ============================================ -->
     <!-- 📜 SCRIPT PRINCIPAL -->
     <!-- ============================================ -->
     <script>
         // ============================================
-        // MENU.JS - GESTION COMPLÈTE DU MENU
+        // MENU.JS - VERSION AVEC PANIER COMPLET
         // ============================================
         
         // ============================================
@@ -595,17 +963,42 @@
         let allCategories = {};
         let restaurantData = {};
         let currentCategory = 'all';
-        let cart = JSON.parse(localStorage.getItem('menuCart')) || [];
-        let database, restaurantsRef, categoriesRef, productsRef;
+        let cart = [];
+        let sessionId = '';
+        let database, restaurantsRef, categoriesRef, productsRef, ordersRef;
         
         const DEFAULT_RESTAURANT = 'default';
+        const STORAGE_KEY = 'menuCart';
+        const SESSION_KEY = 'menuSessionId';
         
         // ============================================
-        // 2. INITIALISATION FIREBASE
+        // 2. GESTION DE SESSION (panier unique par appareil)
+        // ============================================
+        function getSessionId() {
+            let id = localStorage.getItem(SESSION_KEY);
+            if (!id) {
+                id = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem(SESSION_KEY, id);
+            }
+            return id;
+        }
+        
+        function getCart() {
+            const data = localStorage.getItem(STORAGE_KEY);
+            return data ? JSON.parse(data) : [];
+        }
+        
+        function saveCart() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
+            updateCartBadge();
+            renderCart();
+        }
+        
+        // ============================================
+        // 3. INITIALISATION FIREBASE
         // ============================================
         function initializeFirebase() {
             if (typeof firebase === 'undefined' || firebase.apps.length === 0) {
-                console.log('⏳ Attente de Firebase...');
                 setTimeout(initializeFirebase, 500);
                 return;
             }
@@ -615,87 +1008,70 @@
             restaurantsRef = database.ref('restaurants');
             categoriesRef = database.ref('categories');
             productsRef = database.ref('products');
+            ordersRef = database.ref('orders/commandes');
             
-            // Charger les données
+            sessionId = getSessionId();
+            cart = getCart();
+            updateCartBadge();
+            
             loadRestaurant();
             loadCategories();
             loadProducts();
+            
+            // Restaurer le numéro de table
+            const savedTable = localStorage.getItem('tableNumber');
+            if (savedTable) {
+                document.getElementById('tableNumber').value = savedTable;
+            }
         }
         
         // ============================================
-        // 3. CHARGEMENT DU RESTAURANT
+        // 4. CHARGEMENT DU RESTAURANT
         // ============================================
         function loadRestaurant() {
             restaurantsRef.child(DEFAULT_RESTAURANT).on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
                     restaurantData = data;
-                    displayRestaurant(data);
-                } else {
-                    console.log('📝 Aucune donnée restaurant');
+                    displayBanner(data);
                 }
             });
         }
         
-        function displayRestaurant(data) {
-            // Nom
-            const nameEl = document.getElementById('restaurantName');
-            if (nameEl) nameEl.textContent = data.name || 'Mon Restaurant';
+        function displayBanner(data) {
+            const bannerImg = document.getElementById('bannerImage');
+            const bannerPlaceholder = document.getElementById('bannerPlaceholder');
+            const bannerName = document.getElementById('bannerRestaurantName');
+            const bannerSlogan = document.getElementById('bannerRestaurantSlogan');
             
-            // Logo
-            const logoEl = document.getElementById('restaurantLogo');
-            if (logoEl && data.logo) {
-                logoEl.src = data.logo;
-                logoEl.style.display = 'block';
-                logoEl.onerror = function() { this.style.display = 'none'; };
-            } else if (logoEl) {
-                logoEl.style.display = 'none';
+            if (bannerName) bannerName.textContent = data.name || 'Mon Restaurant';
+            
+            if (bannerSlogan) {
+                const address = data.address || '';
+                bannerSlogan.textContent = address || 'Découvrez notre carte';
             }
             
-            // Adresse
-            const addressEl = document.getElementById('restaurantAddress');
-            if (addressEl) addressEl.textContent = data.address || '';
-            
-            // Téléphone
-            const phoneLink = document.getElementById('restaurantPhoneLink');
-            if (phoneLink && data.phoneLink) {
-                phoneLink.href = `tel:${data.phoneLink}`;
-                phoneLink.innerHTML = `<span>📞</span> ${data.phone || data.phoneLink}`;
-            } else if (phoneLink && data.phone) {
-                phoneLink.href = `tel:${data.phone}`;
-                phoneLink.innerHTML = `<span>📞</span> ${data.phone}`;
-            }
-            
-            // WhatsApp
-            const whatsappLink = document.getElementById('restaurantWhatsAppLink');
-            if (whatsappLink && data.whatsapp) {
-                whatsappLink.href = `https://wa.me/${data.whatsapp}`;
-                whatsappLink.innerHTML = `<span>💬</span> WhatsApp`;
-            }
-            
-            // Livraison
-            const deliveryInfo = document.getElementById('restaurantDeliveryInfo');
-            if (deliveryInfo) {
-                if (data.deliveryAvailable) {
-                    const price = data.deliveryPrice ? ` (${data.deliveryPrice}€)` : '';
-                    deliveryInfo.textContent = `🚚 Livraison disponible${price}`;
-                } else {
-                    deliveryInfo.textContent = '🚫 Livraison non disponible';
-                }
+            if (bannerImg && data.banner) {
+                bannerImg.src = data.banner;
+                bannerImg.style.display = 'block';
+                bannerPlaceholder.style.display = 'none';
+                bannerImg.onerror = function() {
+                    this.style.display = 'none';
+                    bannerPlaceholder.style.display = 'flex';
+                };
+            } else if (bannerImg) {
+                bannerImg.style.display = 'none';
+                bannerPlaceholder.style.display = 'flex';
             }
         }
         
         // ============================================
-        // 4. CHARGEMENT DES CATÉGORIES
+        // 5. CHARGEMENT DES CATÉGORIES
         // ============================================
         function loadCategories() {
             categoriesRef.on('value', (snapshot) => {
                 const data = snapshot.val();
-                if (data) {
-                    allCategories = data;
-                } else {
-                    allCategories = {};
-                }
+                allCategories = data || {};
                 updateFilterButtons();
             });
         }
@@ -704,12 +1080,10 @@
             const container = document.getElementById('filterButtons');
             if (!container) return;
             
-            // Garder le bouton "Tous"
             const allBtn = container.querySelector('[data-category="all"]');
             container.innerHTML = '';
             container.appendChild(allBtn);
             
-            // Ajouter les catégories actives
             const sortedKeys = Object.keys(allCategories)
                 .filter(key => allCategories[key].active !== false)
                 .sort((a, b) => (allCategories[a].order || 0) - (allCategories[b].order || 0));
@@ -726,7 +1100,7 @@
         }
         
         // ============================================
-        // 5. CHARGEMENT DES PRODUITS
+        // 6. CHARGEMENT DES PRODUITS
         // ============================================
         function loadProducts() {
             productsRef.on('value', (snapshot) => {
@@ -743,7 +1117,7 @@
         }
         
         // ============================================
-        // 6. AFFICHAGE DU MENU
+        // 7. AFFICHAGE DU MENU
         // ============================================
         function renderMenu() {
             const container = document.getElementById('menuContent');
@@ -751,11 +1125,8 @@
             const empty = document.getElementById('emptyState');
             
             if (!container) return;
-            
-            // Cacher le chargement
             if (loading) loading.style.display = 'none';
             
-            // Filtrer les produits
             const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
             const filtered = allProducts.filter(p => {
                 const matchCategory = currentCategory === 'all' || p.category === currentCategory;
@@ -764,7 +1135,6 @@
                 return matchCategory && matchSearch;
             });
             
-            // Si aucun produit
             if (filtered.length === 0) {
                 container.innerHTML = '';
                 if (empty) empty.style.display = 'block';
@@ -774,7 +1144,6 @@
             if (empty) empty.style.display = 'none';
             container.style.display = 'block';
             
-            // Grouper par catégorie
             const grouped = {};
             filtered.forEach(p => {
                 const catKey = p.category || 'autres';
@@ -782,11 +1151,9 @@
                 grouped[catKey].push(p);
             });
             
-            // Trier les catégories
             const sortedCategories = Object.keys(grouped)
                 .sort((a, b) => (allCategories[a]?.order || 999) - (allCategories[b]?.order || 999));
             
-            // Générer le HTML
             let html = '';
             sortedCategories.forEach(catKey => {
                 const cat = allCategories[catKey] || { name: catKey, icon: '📁' };
@@ -826,11 +1193,10 @@
             });
             
             container.innerHTML = html;
-            updateCartBadge();
         }
         
         // ============================================
-        // 7. FILTRES ET RECHERCHE
+        // 8. FILTRES ET RECHERCHE
         // ============================================
         function filterByCategory(category) {
             currentCategory = category;
@@ -845,7 +1211,7 @@
         }
         
         // ============================================
-        // 8. PANIER
+        // 9. GESTION DU PANIER
         // ============================================
         function addToCart(productId) {
             const product = allProducts.find(p => p.id === productId);
@@ -864,9 +1230,38 @@
                 });
             }
             
-            localStorage.setItem('menuCart', JSON.stringify(cart));
-            updateCartBadge();
+            saveCart();
             showToast(`✅ ${product.name} ajouté au panier`);
+        }
+        
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            saveCart();
+            renderCart();
+            showToast('🗑️ Produit retiré du panier');
+        }
+        
+        function updateQuantity(productId, delta) {
+            const item = cart.find(p => p.id === productId);
+            if (!item) return;
+            
+            item.quantity += delta;
+            if (item.quantity <= 0) {
+                removeFromCart(productId);
+                return;
+            }
+            saveCart();
+            renderCart();
+        }
+        
+        function clearCart() {
+            if (cart.length === 0) return;
+            if (confirm('🗑️ Vider tout le panier ?')) {
+                cart = [];
+                saveCart();
+                renderCart();
+                showToast('🗑️ Panier vidé');
+            }
         }
         
         function updateCartBadge() {
@@ -877,25 +1272,170 @@
             }
         }
         
+        // ============================================
+        // 10. AFFICHAGE DU PANIER (MODAL)
+        // ============================================
         function openCart() {
+            const overlay = document.getElementById('cartOverlay');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            renderCart();
+        }
+        
+        function closeCart() {
+            const overlay = document.getElementById('cartOverlay');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        function closeCartOutside(event) {
+            if (event.target === event.currentTarget) {
+                closeCart();
+            }
+        }
+        
+        function renderCart() {
+            const container = document.getElementById('cartItems');
+            const totalEl = document.getElementById('cartTotal');
+            const orderBtn = document.getElementById('orderBtn');
+            
+            if (!container) return;
+            
             if (cart.length === 0) {
-                showToast('🛒 Votre panier est vide');
+                container.innerHTML = `
+                    <div class="cart-empty">
+                        <span class="icon">🛒</span>
+                        <h3>Votre panier est vide</h3>
+                        <p>Ajoutez des plats depuis le menu</p>
+                    </div>
+                `;
+                if (totalEl) totalEl.textContent = '0.00 €';
+                if (orderBtn) orderBtn.disabled = true;
                 return;
             }
             
+            if (orderBtn) orderBtn.disabled = false;
+            
+            let html = '';
             let total = 0;
-            let items = cart.map(item => {
+            
+            cart.forEach((item, index) => {
                 const subtotal = item.price * item.quantity;
                 total += subtotal;
-                return `${item.name} x${item.quantity} = ${subtotal.toFixed(2)}€`;
-            }).join('\n');
+                
+                html += `
+                    <div class="cart-item fade-in" style="animation-delay: ${index * 0.05}s">
+                        ${item.image ? 
+                            `<img src="${item.image}" class="cart-item-image" onerror="this.style.display='none'">` : 
+                            `<div class="cart-item-image-placeholder">🍽️</div>`}
+                        <div class="cart-item-info">
+                            <div class="cart-item-name">${item.name}</div>
+                            <div class="cart-item-price">${(item.price * item.quantity).toFixed(2)} €</div>
+                            <div class="cart-item-quantity">
+                                <button onclick="updateQuantity('${item.id}', -1)">−</button>
+                                <span>${item.quantity}</span>
+                                <button onclick="updateQuantity('${item.id}', 1)">+</button>
+                            </div>
+                        </div>
+                        <button class="cart-item-remove" onclick="removeFromCart('${item.id}')" title="Supprimer">✕</button>
+                    </div>
+                `;
+            });
             
-            const message = `🛒 Mon panier :\n\n${items}\n\nTotal : ${total.toFixed(2)}€`;
-            alert(message);
+            container.innerHTML = html;
+            if (totalEl) totalEl.textContent = total.toFixed(2) + ' €';
         }
         
         // ============================================
-        // 9. TOAST
+        // 11. COMMANDE
+        // ============================================
+        function placeOrder() {
+            if (cart.length === 0) {
+                showToast('❌ Votre panier est vide');
+                return;
+            }
+            
+            const tableNumber = parseInt(document.getElementById('tableNumber').value) || 1;
+            if (tableNumber < 1 || tableNumber > 50) {
+                showToast('❌ Numéro de table invalide (1-50)');
+                return;
+            }
+            
+            // Sauvegarder le numéro de table
+            localStorage.setItem('tableNumber', tableNumber);
+            
+            const orderData = {
+                table: tableNumber,
+                items: cart.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    quantity: item.quantity,
+                    subtotal: item.price * item.quantity,
+                    image: item.image || null
+                })),
+                total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                timestamp: Date.now(),
+                status: 'en_attente',
+                orderNumber: 'CMD-' + Date.now().toString().slice(-6),
+                sessionId: sessionId,
+                restaurant: DEFAULT_RESTAURANT,
+                restaurantName: restaurantData.name || 'Mon Restaurant'
+            };
+            
+            // Envoyer à Firebase
+            const newOrderRef = ordersRef.push();
+            newOrderRef.set(orderData)
+                .then(() => {
+                    console.log('✅ Commande enregistrée dans Firebase');
+                    
+                    // Envoyer sur WhatsApp
+                    sendWhatsAppOrder(orderData);
+                    
+                    // Vider le panier
+                    cart = [];
+                    saveCart();
+                    renderCart();
+                    closeCart();
+                    showToast('✅ Commande envoyée !');
+                })
+                .catch(error => {
+                    console.error('❌ Erreur commande:', error);
+                    showToast('❌ Erreur: ' + error.message);
+                });
+        }
+        
+        function sendWhatsAppOrder(orderData) {
+            const phone = restaurantData.whatsapp || '';
+            if (!phone) {
+                console.warn('⚠️ Numéro WhatsApp non configuré');
+                return;
+            }
+            
+            // Construire le message
+            let message = `🍽️ *Nouvelle commande*\n`;
+            message += `📋 Table n°${orderData.table}\n`;
+            message += `🆔 ${orderData.orderNumber}\n`;
+            message += `━━━━━━━━━━━━━━━━━\n\n`;
+            
+            orderData.items.forEach((item, i) => {
+                message += `${i+1}. ${item.name} x${item.quantity} = ${item.subtotal.toFixed(2)}€\n`;
+            });
+            
+            message += `\n━━━━━━━━━━━━━━━━━\n`;
+            message += `💰 *Total : ${orderData.total.toFixed(2)} €*\n`;
+            message += `━━━━━━━━━━━━━━━━━\n`;
+            message += `📱 Commande depuis le menu en ligne`;
+            
+            const encodedMessage = encodeURIComponent(message);
+            const url = `https://wa.me/${phone}?text=${encodedMessage}`;
+            
+            // Ouvrir WhatsApp dans un nouvel onglet
+            window.open(url, '_blank');
+        }
+        
+        // ============================================
+        // 12. TOAST
         // ============================================
         function showToast(message) {
             const existing = document.querySelector('.toast-message');
@@ -904,23 +1444,6 @@
             const toast = document.createElement('div');
             toast.className = 'toast-message';
             toast.textContent = message;
-            toast.style.cssText = `
-                position: fixed;
-                bottom: 100px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: var(--bg-card);
-                color: var(--text-primary);
-                padding: 14px 28px;
-                border-radius: 12px;
-                border: 1px solid var(--accent);
-                box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-                font-size: 0.95rem;
-                z-index: 9999;
-                animation: fadeIn 0.3s ease;
-                max-width: 90%;
-                text-align: center;
-            `;
             document.body.appendChild(toast);
             
             setTimeout(() => {
@@ -931,7 +1454,7 @@
         }
         
         // ============================================
-        // 10. INITIALISATION
+        // 13. INITIALISATION
         // ============================================
         if (document.readyState === 'complete') {
             initializeFirebase();
@@ -943,9 +1466,17 @@
         window.filterByCategory = filterByCategory;
         window.filterProducts = filterProducts;
         window.addToCart = addToCart;
+        window.removeFromCart = removeFromCart;
+        window.updateQuantity = updateQuantity;
+        window.clearCart = clearCart;
         window.openCart = openCart;
+        window.closeCart = closeCart;
+        window.closeCartOutside = closeCartOutside;
+        window.placeOrder = placeOrder;
+        window.renderCart = renderCart;
         
-        console.log('✅ Menu chargé - Mode sombre professionnel');
+        console.log('✅ Menu chargé - Panier complet avec commande WhatsApp');
+        console.log('📱 Session ID:', sessionId);
     </script>
 </body>
 </html>
