@@ -1549,71 +1549,160 @@ function displayProducts() {
         // ============================================
         // 13. PICX - GESTION DES IMAGES (simou-rayane/picx-images-hosting)
         // ============================================
-        async function loadPicXImages() {
-            try {
-                const username = document.getElementById('githubUsername')?.value.trim() || 'simou-rayane';
-                const repo = document.getElementById('githubRepo')?.value.trim() || 'picx-images-hosting';
-                const branch = document.getElementById('githubBranch')?.value.trim() || 'master';
-                
-                const url = `https://api.github.com/repos/${username}/${repo}/contents?ref=${branch}`;
-                console.log(`📡 Chargement des images depuis: ${url}`);
-                
-                const response = await fetch(url);
-                
-                if (!response.ok) {
-                    throw new Error(`Erreur HTTP: ${response.status} - ${response.statusText}`);
+        // ============================================
+// 📷 PICX - GESTION DES IMAGES (CORRIGÉ)
+// ============================================
+
+async function loadPicXImages() {
+    try {
+        const username = document.getElementById('githubUsername')?.value.trim() || 'simou-rayane';
+        const repo = document.getElementById('githubRepo')?.value.trim() || 'picx-images-hosting';
+        const branch = document.getElementById('githubBranch')?.value.trim() || 'master';
+        
+        // URL API GitHub
+        const url = `https://api.github.com/repos/${username}/${repo}/contents?ref=${branch}`;
+        console.log('📡 Chargement depuis:', url);
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status} - ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('📦 Données reçues:', data.length, 'fichiers');
+        
+        // 🔥 IMPORTANT: Les images uploadées via PicX sont des fichiers .json
+        // qui contiennent l'URL de l'image
+        const imageFiles = data.filter(item => 
+            item.type === 'file' && 
+            (item.name.endsWith('.jpg') || 
+             item.name.endsWith('.jpeg') || 
+             item.name.endsWith('.png') || 
+             item.name.endsWith('.gif') || 
+             item.name.endsWith('.webp') || 
+             item.name.endsWith('.svg') || 
+             item.name.endsWith('.bmp') ||
+             item.name.endsWith('.json')) // ✅ Les fichiers JSON de PicX
+        );
+        
+        console.log('🖼️ Fichiers images trouvés:', imageFiles.length);
+        
+        // 🔥 Pour chaque fichier, on récupère l'URL de l'image
+        // Si c'est un fichier JSON, on le parse pour extraire l'URL
+        const images = [];
+        for (const item of imageFiles) {
+            if (item.name.endsWith('.json')) {
+                try {
+                    // Charger le contenu du fichier JSON
+                    const jsonResponse = await fetch(item.download_url);
+                    const jsonData = await jsonResponse.json();
+                    
+                    // PicX stocke l'URL dans différents formats
+                    let imageUrl = null;
+                    if (jsonData.url) {
+                        imageUrl = jsonData.url;
+                    } else if (jsonData.download_url) {
+                        imageUrl = jsonData.download_url;
+                    } else if (jsonData.content) {
+                        // Certaines versions stockent l'URL dans content
+                        imageUrl = jsonData.content;
+                    } else if (typeof jsonData === 'string') {
+                        imageUrl = jsonData;
+                    }
+                    
+                    if (imageUrl) {
+                        images.push({
+                            name: item.name.replace('.json', ''),
+                            download_url: imageUrl,
+                            raw_url: imageUrl
+                        });
+                        console.log('✅ Image chargée:', item.name, '->', imageUrl);
+                    }
+                } catch (e) {
+                    console.warn('⚠️ Impossible de charger:', item.name, e);
                 }
-                
-                const data = await response.json();
-                
-                // Filtrer uniquement les images
-                const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
-                const images = data.filter(item => 
-                    item.type === 'file' && 
-                    imageExtensions.some(ext => item.name.toLowerCase().endsWith(ext))
-                );
-                
-                console.log(`✅ ${images.length} images trouvées dans ${username}/${repo}`);
-                return images;
-                
-            } catch (error) {
-                console.error('❌ Erreur chargement PicX:', error);
-                showToast('❌ Erreur chargement images: ' + error.message, 'error');
-                return [];
+            } else {
+                // C'est une image directe
+                images.push({
+                    name: item.name,
+                    download_url: item.download_url,
+                    raw_url: item.download_url
+                });
             }
         }
         
-        async function loadPicXImagesForGallery() {
-            const images = await loadPicXImages();
-            const grid = document.getElementById('picxGalleryGrid');
-            if (!grid) return;
-            
-            if (!images || images.length === 0) {
-                grid.innerHTML = `
-                    <div style="grid-column:1/-1;text-align:center;padding:30px;color:#999;">
-                        <div style="font-size:48px;">📂</div>
-                        <p>Aucune image trouvée dans <strong>simou-rayane/picx-images-hosting</strong></p>
-                        <p style="font-size:12px;margin-top:10px;">
-                            💡 Vérifiez que votre dépôt contient des images (jpg, png, gif, etc.)
-                        </p>
-                    </div>
-                `;
-                return;
-            }
-            
-            grid.innerHTML = '';
-            images.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'picx-item';
-                div.innerHTML = `
-                    <img src="${item.download_url}" onerror="this.parentElement.style.display='none'">
-                    <span class="picx-name">${item.name}</span>
-                `;
-                div.onclick = () => selectPicXImage(item.download_url);
-                grid.appendChild(div);
-            });
-            showToast(`✅ ${images.length} images chargées depuis PicX`, 'success');
-        }
+        picxImages = images;
+        console.log('✅ Total images chargées:', picxImages.length);
+        return picxImages;
+        
+    } catch (error) {
+        console.error('❌ Erreur chargement PicX:', error);
+        showToast('❌ Erreur chargement images: ' + error.message, 'error');
+        return [];
+    }
+}
+
+async function loadPicXImagesForGallery() {
+    const grid = document.getElementById('picxGalleryGrid');
+    if (!grid) {
+        console.error('❌ Élément picxGalleryGrid introuvable');
+        return;
+    }
+    
+    // Afficher un message de chargement
+    grid.innerHTML = `
+        <div style="grid-column:1/-1;text-align:center;padding:30px;color:#999;">
+            <div style="font-size:48px;">⏳</div>
+            <p>Chargement des images...</p>
+        </div>
+    `;
+    
+    const images = await loadPicXImages();
+    
+    if (!images || images.length === 0) {
+        grid.innerHTML = `
+            <div style="grid-column:1/-1;text-align:center;padding:30px;color:#999;">
+                <div style="font-size:48px;">📂</div>
+                <p>Aucune image trouvée dans <strong>simou-rayane/picx-images-hosting</strong></p>
+                <p style="font-size:12px;margin-top:10px;">
+                    💡 Vérifiez que votre dépôt contient des images uploadées via PicX
+                </p>
+                <p style="font-size:12px;color:#666;">
+                    🔗 <a href="https://github.com/simou-rayane/picx-images-hosting" target="_blank">Voir le dépôt</a>
+                </p>
+            </div>
+        `;
+        return;
+    }
+    
+    grid.innerHTML = '';
+    images.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'picx-item';
+        div.innerHTML = `
+            <img src="${item.download_url}" 
+                 onerror="this.parentElement.innerHTML='<div style=\\'padding:20px;color:#999;\\'>❌ Image non trouvée</div>'">
+            <span class="picx-name">${item.name}</span>
+        `;
+        div.onclick = () => selectPicXImage(item.download_url);
+        grid.appendChild(div);
+    });
+    showToast(`✅ ${images.length} images chargées depuis PicX`, 'success');
+}
+
+function loadPicXImagesForAdd() {
+    imageSelectorMode = null;
+    // Ouvrir l'onglet Images
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('[data-tab="tab-images"]')?.classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('tab-images')?.classList.add('active');
+    
+    // Charger les images
+    loadPicXImagesForGallery();
+    showToast('📷 Sélectionnez une image pour le produit', 'info');
+}
         
         function selectPicXImage(imageUrl) {
             if (imageSelectorMode === 'logo') {
