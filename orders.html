@@ -10,6 +10,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     
+    <!-- SheetJS pour l'export Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
     <!-- ============================================ -->
     <!-- 🔥 CONFIGURATION FIREBASE -->
     <!-- ============================================ -->
@@ -50,12 +53,9 @@
             --shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
             --radius: 16px;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            
-            --status-waiting: #f39c12;
-            --status-preparing: #3498db;
-            --status-ready: #2ecc71;
-            --status-served: #27ae60;
-            --status-cancelled: #e74c3c;
+            --danger: #e74c3c;
+            --success: #2ecc71;
+            --warning: #f39c12;
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -126,6 +126,7 @@
         .header-actions {
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
         }
         
         .header-actions button {
@@ -138,6 +139,10 @@
             font-size: 0.9rem;
         }
         
+        .header-actions button:hover {
+            transform: scale(1.02);
+        }
+        
         .btn-refresh {
             background: var(--accent);
             color: var(--bg-primary);
@@ -145,17 +150,33 @@
         
         .btn-refresh:hover {
             background: var(--accent-hover);
-            transform: scale(1.02);
         }
         
-        .btn-logout {
+        .btn-export {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-export:hover {
+            background: #219a52;
+        }
+        
+        .btn-reset {
             background: var(--danger);
             color: white;
         }
         
-        .btn-logout:hover {
+        .btn-reset:hover {
             background: #c0392b;
-            transform: scale(1.02);
+        }
+        
+        .btn-logout {
+            background: #7f8c8d;
+            color: white;
+        }
+        
+        .btn-logout:hover {
+            background: #6c7a7b;
         }
         
         /* ============================================ */
@@ -350,23 +371,23 @@
         
         .order-status.waiting {
             background: rgba(243, 156, 18, 0.2);
-            color: var(--status-waiting);
+            color: var(--warning);
         }
         .order-status.preparing {
             background: rgba(52, 152, 219, 0.2);
-            color: var(--status-preparing);
+            color: #3498db;
         }
         .order-status.ready {
             background: rgba(46, 204, 113, 0.2);
-            color: var(--status-ready);
+            color: var(--success);
         }
         .order-status.served {
             background: rgba(39, 174, 96, 0.2);
-            color: var(--status-served);
+            color: var(--success);
         }
         .order-status.cancelled {
             background: rgba(231, 76, 60, 0.2);
-            color: var(--status-cancelled);
+            color: var(--danger);
         }
         
         .order-card .order-body {
@@ -464,26 +485,26 @@
         
         .btn-status.preparing {
             background: rgba(52, 152, 219, 0.2);
-            color: var(--status-preparing);
-            border-color: var(--status-preparing);
+            color: #3498db;
+            border-color: #3498db;
         }
         
         .btn-status.ready {
             background: rgba(46, 204, 113, 0.2);
-            color: var(--status-ready);
-            border-color: var(--status-ready);
+            color: var(--success);
+            border-color: var(--success);
         }
         
         .btn-status.served {
             background: rgba(39, 174, 96, 0.2);
-            color: var(--status-served);
-            border-color: var(--status-served);
+            color: var(--success);
+            border-color: var(--success);
         }
         
         .btn-status.cancelled {
             background: rgba(231, 76, 60, 0.2);
-            color: var(--status-cancelled);
-            border-color: var(--status-cancelled);
+            color: var(--danger);
+            border-color: var(--danger);
         }
         
         .btn-whatsapp {
@@ -565,6 +586,7 @@
             .order-card .order-actions { flex-direction: column; }
             .order-card .order-actions button { flex: 1; }
             .filters { justify-content: center; }
+            .header-actions { justify-content: center; }
         }
         
         @media (max-width: 480px) {
@@ -613,40 +635,74 @@
         }
         
         /* ============================================ */
-        /* 🔐 DÉCONNEXION */
+        /* 🔔 CONFIRMATION MODAL */
         /* ============================================ */
-        .logout-btn {
-            background: #e74c3c;
-            color: white;
+        .confirm-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .confirm-modal.active {
+            display: flex;
+        }
+        
+        .confirm-modal .modal-content {
+            background: var(--bg-secondary);
+            padding: 30px;
+            border-radius: var(--radius);
+            max-width: 450px;
+            width: 90%;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+        
+        .confirm-modal .modal-content h3 {
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+        
+        .confirm-modal .modal-content p {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+        
+        .confirm-modal .modal-content .modal-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .confirm-modal .modal-content .modal-actions button {
+            flex: 1;
+            padding: 12px;
             border: none;
-            padding: 10px 20px;
             border-radius: 10px;
             cursor: pointer;
             font-weight: 600;
             transition: var(--transition);
         }
         
-        .logout-btn:hover {
-            background: #c0392b;
+        .confirm-modal .modal-content .modal-actions button:hover {
             transform: scale(1.02);
         }
         
-        /* ============================================ */
-        /* 🎵 SONNERIE (Notification) */
-        /* ============================================ */
-        .notification-dot {
-            width: 10px;
-            height: 10px;
-            background: var(--accent);
-            border-radius: 50%;
-            display: inline-block;
-            animation: pulse 1s infinite;
+        .confirm-modal .modal-content .btn-confirm {
+            background: var(--danger);
+            color: white;
         }
         
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.3); opacity: 0.7; }
-            100% { transform: scale(1); opacity: 1; }
+        .confirm-modal .modal-content .btn-cancel {
+            background: var(--bg-card);
+            color: var(--text-secondary);
         }
     </style>
 </head>
@@ -695,7 +751,9 @@
             </div>
             <div class="header-actions">
                 <button class="btn-refresh" onclick="refreshOrders()">🔄 Actualiser</button>
-                <button class="logout-btn" onclick="logoutUser()">🚪 Déconnexion</button>
+                <button class="btn-export" onclick="exportToExcel()">📊 Exporter Excel</button>
+                <button class="btn-reset" onclick="showResetConfirm()">🗑️ Réinitialiser</button>
+                <button class="btn-logout" onclick="logoutUser()">🚪 Déconnexion</button>
             </div>
         </div>
         
@@ -737,6 +795,20 @@
             <p>Les commandes apparaîtront ici dès qu'elles seront passées.</p>
         </div>
         
+    </div>
+    
+    <!-- ============================================ -->
+    <!-- 🔔 MODAL DE CONFIRMATION -->
+    <!-- ============================================ -->
+    <div class="confirm-modal" id="confirmModal">
+        <div class="modal-content">
+            <h3>⚠️ Réinitialiser toutes les commandes</h3>
+            <p>Cette action est <strong>irréversible</strong>. Toutes les commandes seront définitivement supprimées.</p>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeConfirm()">❌ Annuler</button>
+                <button class="btn-confirm" onclick="resetOrders()">🗑️ Confirmer la réinitialisation</button>
+            </div>
+        </div>
     </div>
     
     <!-- ============================================ -->
@@ -889,7 +961,7 @@
                     allOrders = Object.keys(data).map(key => ({
                         id: key,
                         ...data[key]
-                    })).sort((a, b) => b.timestamp - a.timestamp); // Plus récent en premier
+                    })).sort((a, b) => b.timestamp - a.timestamp);
                 } else {
                     allOrders = [];
                 }
@@ -914,7 +986,6 @@
             
             if (!grid) return;
             
-            // Filtrer
             let filtered = allOrders;
             if (currentFilter !== 'all') {
                 filtered = filtered.filter(order => order.status === currentFilter);
@@ -1027,7 +1098,6 @@
                 return;
             }
             
-            // Récupérer le numéro WhatsApp depuis les données du restaurant
             const restaurantRef = firebase.database().ref('restaurants/default');
             restaurantRef.once('value')
                 .then((snapshot) => {
@@ -1039,7 +1109,6 @@
                         return;
                     }
                     
-                    // Construire le message
                     let message = `🍽️ *COMMANDE #${order.orderNumber || 'N/A'}*\n`;
                     message += `━━━━━━━━━━━━━━━━━\n`;
                     message += `📋 Table n°${order.table}\n`;
@@ -1112,7 +1181,7 @@
         }
         
         // ============================================
-        // 10. ACTUALISATION MANUELLE
+        // 10. ACTUALISATION
         // ============================================
         function refreshOrders() {
             showToast('🔄 Actualisation...');
@@ -1120,7 +1189,126 @@
         }
         
         // ============================================
-        // 11. TOAST
+        // 11. EXPORT EXCEL
+        // ============================================
+        function exportToExcel() {
+            if (allOrders.length === 0) {
+                showToast('❌ Aucune commande à exporter');
+                return;
+            }
+            
+            try {
+                // Préparer les données pour Excel
+                const excelData = [];
+                
+                // En-têtes
+                excelData.push([
+                    'N° Commande',
+                    'Table',
+                    'Date',
+                    'Heure',
+                    'Statut',
+                    'Total (€)',
+                    'Produits',
+                    'Quantités',
+                    'Session ID'
+                ]);
+                
+                // Données
+                allOrders.forEach(order => {
+                    const date = new Date(order.timestamp);
+                    const dateStr = date.toLocaleDateString('fr-FR');
+                    const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                    
+                    // Liste des produits avec quantités
+                    const itemsList = order.items.map(item => item.name).join('; ');
+                    const quantitiesList = order.items.map(item => `${item.quantity}`).join('; ');
+                    
+                    excelData.push([
+                        order.orderNumber || 'N/A',
+                        order.table || '?',
+                        dateStr,
+                        timeStr,
+                        STATUS_LABELS[order.status]?.label || order.status,
+                        order.total.toFixed(2),
+                        itemsList,
+                        quantitiesList,
+                        order.sessionId || 'N/A'
+                    ]);
+                });
+                
+                // Créer le workbook
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.aoa_to_sheet(excelData);
+                
+                // Ajuster les largeurs des colonnes
+                ws['!cols'] = [
+                    { wch: 15 }, // N° Commande
+                    { wch: 10 }, // Table
+                    { wch: 12 }, // Date
+                    { wch: 10 }, // Heure
+                    { wch: 15 }, // Statut
+                    { wch: 12 }, // Total
+                    { wch: 40 }, // Produits
+                    { wch: 20 }, // Quantités
+                    { wch: 25 }  // Session ID
+                ];
+                
+                XLSX.utils.book_append_sheet(wb, ws, 'Commandes');
+                
+                // Générer le fichier
+                const fileName = `commandes_${new Date().toISOString().slice(0,10)}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+                
+                showToast(`✅ Export terminé : ${allOrders.length} commandes`);
+                
+            } catch (error) {
+                console.error('❌ Erreur export:', error);
+                showToast('❌ Erreur lors de l\'export: ' + error.message);
+            }
+        }
+        
+        // ============================================
+        // 12. RÉINITIALISATION
+        // ============================================
+        function showResetConfirm() {
+            document.getElementById('confirmModal').classList.add('active');
+        }
+        
+        function closeConfirm() {
+            document.getElementById('confirmModal').classList.remove('active');
+        }
+        
+        function resetOrders() {
+            closeConfirm();
+            
+            if (allOrders.length === 0) {
+                showToast('📭 Aucune commande à réinitialiser');
+                return;
+            }
+            
+            // Supprimer toutes les commandes
+            const updates = {};
+            allOrders.forEach(order => {
+                updates[order.id] = null;
+            });
+            
+            ordersRef.update(updates)
+                .then(() => {
+                    showToast(`🗑️ ${allOrders.length} commandes supprimées avec succès`);
+                    allOrders = [];
+                    renderOrders();
+                    updateStats();
+                    updateFilters();
+                })
+                .catch(error => {
+                    console.error('❌ Erreur réinitialisation:', error);
+                    showToast('❌ Erreur: ' + error.message);
+                });
+        }
+        
+        // ============================================
+        // 13. TOAST
         // ============================================
         function showToast(message) {
             const existing = document.querySelector('.toast-message');
@@ -1139,15 +1327,19 @@
         }
         
         // ============================================
-        // 12. EXPOSER LES FONCTIONS
+        // 14. EXPOSER LES FONCTIONS
         // ============================================
         window.filterOrders = filterOrders;
         window.refreshOrders = refreshOrders;
         window.updateOrderStatus = updateOrderStatus;
         window.openWhatsApp = openWhatsApp;
         window.logoutUser = logoutUser;
+        window.exportToExcel = exportToExcel;
+        window.showResetConfirm = showResetConfirm;
+        window.closeConfirm = closeConfirm;
+        window.resetOrders = resetOrders;
         
-        console.log('✅ Orders.html chargé');
+        console.log('✅ Orders.html chargé - avec Export Excel et Réinitialisation');
     </script>
 </body>
 </html>
