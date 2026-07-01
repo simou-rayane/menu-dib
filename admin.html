@@ -25,7 +25,6 @@
             appId: "1:57456460201:web:VOTRE_APP_ID" // ⚠️ REMPLACEZ PAR VOTRE APP_ID
         };
 
-        // Fonction pour initialiser Firebase avec une config
         function initFirebase(config) {
             if (typeof firebase !== 'undefined' && !firebase.apps.length) {
                 try {
@@ -40,26 +39,22 @@
             return false;
         }
 
-        // Essayer d'abord avec la config intégrée
         console.log('🔧 Initialisation Firebase...');
-        
         if (typeof firebase !== 'undefined' && !firebase.apps.length) {
             initFirebase(FALLBACK_CONFIG);
             console.log('📌 Utilisation de la config intégrée (fallback)');
         } else if (typeof firebase !== 'undefined' && firebase.apps.length) {
-            console.log('✅ Firebase déjà initialisé (probablement via config.js)');
+            console.log('✅ Firebase déjà initialisé');
         } else {
             console.error('❌ Firebase SDK non chargé');
         }
 
-        // Fonction pour gérer l'erreur si config.js est absent
         function handleConfigError() {
             console.log('ℹ️ config.js non trouvé - utilisation de la config intégrée');
         }
     </script>
     
     <style>
-        /* ============ STYLES ============ */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
         .container { max-width: 1200px; margin: 0 auto; }
@@ -76,10 +71,8 @@
             flex-wrap: wrap;
             gap: 15px;
         }
-        
         header h1 { color: #333; display: flex; align-items: center; gap: 10px; }
         header h1 span { color: #667eea; }
-        
         .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
         .header-actions button {
             padding: 8px 20px;
@@ -90,7 +83,6 @@
             transition: all 0.3s;
         }
         .header-actions button:hover { transform: scale(1.05); }
-        
         .btn-export { background: #2196F3; color: white; }
         .btn-import { background: #ff9800; color: white; }
         .btn-reset { background: #dc3545; color: white; }
@@ -103,18 +95,9 @@
             margin-bottom: 20px;
             font-weight: 500;
         }
-        #connectionStatus.connected {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        #connectionStatus.disconnected {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
+        #connectionStatus.connected { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        #connectionStatus.disconnected { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
         
-        /* ============ FORMULAIRE DE CONNEXION ============ */
         #loginForm {
             background: white;
             padding: 30px;
@@ -123,7 +106,6 @@
             margin: 0 auto 25px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.08);
         }
-        
         #loginForm h2 { text-align: center; margin-bottom: 20px; color: #333; }
         #loginForm label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; }
         #loginForm input {
@@ -151,7 +133,6 @@
         #loginForm .btn-login:disabled { opacity: 0.6; cursor: not-allowed; }
         #loginError { color: #f44336; margin-top: 10px; text-align: center; font-size: 14px; }
         
-        /* ============ ADMIN SECTION ============ */
         .admin-section {
             background: white;
             padding: 25px;
@@ -165,10 +146,7 @@
             padding-bottom: 10px;
             border-bottom: 2px solid #f0f2f5;
         }
-        
-        .admin-section input,
-        .admin-section select,
-        .admin-section textarea {
+        .admin-section input, .admin-section select, .admin-section textarea {
             width: 100%;
             padding: 10px 12px;
             border: 2px solid #e0e0e0;
@@ -177,9 +155,7 @@
             margin-bottom: 10px;
             transition: border-color 0.3s;
         }
-        .admin-section input:focus,
-        .admin-section select:focus,
-        .admin-section textarea:focus {
+        .admin-section input:focus, .admin-section select:focus, .admin-section textarea:focus {
             border-color: #667eea;
             outline: none;
         }
@@ -197,17 +173,9 @@
             transition: all 0.3s;
             width: 100%;
         }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-        }
-        .btn-primary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
         
-        /* ============ TABS ============ */
         .tabs {
             display: flex;
             gap: 5px;
@@ -218,7 +186,6 @@
             border-radius: 12px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.08);
         }
-        
         .tab-btn {
             padding: 12px 24px;
             border: none;
@@ -230,26 +197,11 @@
             background: transparent;
             color: #666;
         }
+        .tab-btn:hover { background: #f0f4ff; color: #667eea; }
+        .tab-btn.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
         
-        .tab-btn:hover {
-            background: #f0f4ff;
-            color: #667eea;
-        }
-        
-        .tab-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        /* ============ IMAGE PREVIEW ============ */
         .image-preview-container {
             display: flex;
             align-items: center;
@@ -260,7 +212,6 @@
             border: 2px dashed #e0e0e0;
             flex-wrap: wrap;
         }
-        
         .image-preview-container img {
             width: 120px;
             height: 80px;
@@ -269,7 +220,6 @@
             border: 2px solid #667eea;
             background: white;
         }
-        
         .image-preview-container .placeholder-image {
             width: 120px;
             height: 80px;
@@ -283,11 +233,9 @@
             font-weight: 600;
             border: 2px solid #667eea;
         }
-        
         .image-preview-container .image-info { flex: 1; }
         .image-preview-container .image-info .name { font-weight: 600; color: #333; }
         .image-preview-container .image-info .url { font-size: 12px; color: #999; word-break: break-all; }
-        
         .image-preview-container .image-actions { display: flex; gap: 8px; }
         .image-preview-container .image-actions button {
             padding: 6px 16px;
@@ -312,7 +260,6 @@
         .form-group.full-width { grid-column: 1 / -1; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; font-size: 14px; }
         .form-group label .required { color: #dc3545; }
-        
         .form-actions {
             grid-column: 1 / -1;
             display: flex;
@@ -333,7 +280,6 @@
         .form-actions .btn-save:hover { box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); }
         .form-actions .btn-reset { background: #6c757d; color: white; }
         
-        /* ============ CATEGORIES ============ */
         .categories-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -390,7 +336,6 @@
         }
         .add-category-form button:hover { background: #764ba2; }
         
-        /* ============ PRODUCT LIST ============ */
         .product-item {
             display: flex;
             justify-content: space-between;
@@ -417,7 +362,6 @@
         .btn-photo { background: #4CAF50; color: white; }
         .btn-delete { background: #dc3545; color: white; }
         
-        /* ============ TOAST ============ */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -438,7 +382,6 @@
         .toast.info { background: #2196F3; }
         .toast.warning { background: #ff9800; }
         
-        /* ============ MODAL ============ */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -481,7 +424,6 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateX(-50%) translateY(100px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
         
-        /* ============ PICX ============ */
         .picx-modal-grid {
             padding: 15px;
             overflow-y: auto;
@@ -533,7 +475,6 @@
         
         <div id="connectionStatus" class="connected">✅ Connecté à Firebase</div>
         
-        <!-- ============ FORMULAIRE DE CONNEXION ============ -->
         <div id="loginForm" style="display: none;">
             <h2>🔐 Connexion</h2>
             <form id="loginFormElement" autocomplete="off">
@@ -546,10 +487,7 @@
             </form>
         </div>
         
-        <!-- ============ CONTENU ADMIN ============ -->
         <div id="adminContent" style="display: none;">
-            
-            <!-- TABS -->
             <div class="tabs">
                 <button class="tab-btn active" data-tab="tab-restaurant">🏪 Restaurant</button>
                 <button class="tab-btn" data-tab="tab-categories">📂 Catégories</button>
@@ -557,7 +495,7 @@
                 <button class="tab-btn" data-tab="tab-images">📷 Images</button>
             </div>
             
-            <!-- ============ TAB 1: RESTAURANT ============ -->
+            <!-- TAB 1: RESTAURANT -->
             <div class="tab-content active" id="tab-restaurant">
                 <div class="admin-section">
                     <h2>🏪 Informations du restaurant</h2>
@@ -666,7 +604,7 @@
                 </div>
             </div>
             
-            <!-- ============ TAB 2: CATÉGORIES ============ -->
+            <!-- TAB 2: CATÉGORIES -->
             <div class="tab-content" id="tab-categories">
                 <div class="admin-section">
                     <h2>📂 Gestion des catégories (<span id="categoryCount">0</span>)</h2>
@@ -680,7 +618,7 @@
                 </div>
             </div>
             
-            <!-- ============ TAB 3: PRODUITS ============ -->
+            <!-- TAB 3: PRODUITS -->
             <div class="tab-content" id="tab-products">
                 <div class="admin-section">
                     <h2>➕ Ajouter un produit</h2>
@@ -712,7 +650,7 @@
                 </div>
             </div>
             
-            <!-- ============ TAB 4: IMAGES ============ -->
+            <!-- TAB 4: IMAGES -->
             <div class="tab-content" id="tab-images">
                 <div class="admin-section">
                     <h2>📷 Gestion des images - PicX</h2>
@@ -734,13 +672,9 @@
                     </div>
                 </div>
             </div>
-            
         </div>
     </div>
     
-    <!-- ============================================ -->
-    <!-- SCRIPT PRINCIPAL -->
-    <!-- ============================================ -->
     <script>
         // ============================================
         // ADMIN.JS - VERSION COMPLÈTE ET FINALE
@@ -757,8 +691,6 @@
         let pendingProductId = null;
         let currentRestaurantId = 'default';
         let database, restaurantsRef, categoriesRef, productsRef;
-        
-        // 🔐 UID attendu (celui de votre compte admin)
         const EXPECTED_UID = 'kW1jJa76EuVPg53pwBuk58nCs1e2';
         
         // ============================================
@@ -802,21 +734,16 @@
             const adminContent = document.getElementById('adminContent');
             const logoutBtn = document.getElementById('logoutBtn');
             const status = document.getElementById('connectionStatus');
-            
             if (loginForm) loginForm.style.display = 'block';
             if (adminContent) adminContent.style.display = 'none';
             if (logoutBtn) logoutBtn.style.display = 'none';
-            if (status) {
-                status.innerHTML = '🔐 Veuillez vous connecter';
-                status.className = 'disconnected';
-            }
+            if (status) { status.innerHTML = '🔐 Veuillez vous connecter'; status.className = 'disconnected'; }
         }
         
         function showAdminContent() {
             const loginForm = document.getElementById('loginForm');
             const adminContent = document.getElementById('adminContent');
             const logoutBtn = document.getElementById('logoutBtn');
-            
             if (loginForm) loginForm.style.display = 'none';
             if (adminContent) adminContent.style.display = 'block';
             if (logoutBtn) logoutBtn.style.display = 'inline-block';
@@ -827,40 +754,26 @@
         // ============================================
         firebase.auth().onAuthStateChanged((user) => {
             const status = document.getElementById('connectionStatus');
-            
             if (user) {
                 console.log('✅ Utilisateur connecté:', user.email);
                 console.log('🆔 Votre UID:', user.uid);
-                
                 if (user.uid === EXPECTED_UID) {
                     console.log('✅ UID correspond aux règles Firebase');
-                    if (status) {
-                        status.innerHTML = `✅ Connecté en tant que ${user.email}`;
-                        status.className = 'connected';
-                    }
+                    if (status) { status.innerHTML = `✅ Connecté en tant que ${user.email}`; status.className = 'connected'; }
                     showAdminContent();
-                    
-                    // Initialiser les références Firebase
                     initializeFirebase();
-                    
-                    // Charger les données
                     setTimeout(() => {
                         console.log('🔄 Chargement des données...');
                         loadRestaurant();
                         loadCategories();
                         loadProducts();
                     }, 500);
-                    
                 } else {
                     console.warn('⚠️ UID ne correspond pas!');
-                    if (status) {
-                        status.innerHTML = `⚠️ UID non autorisé - Contactez l'admin`;
-                        status.className = 'disconnected';
-                    }
+                    if (status) { status.innerHTML = `⚠️ UID non autorisé - Contactez l'admin`; status.className = 'disconnected'; }
                     showToast('⛔ Accès refusé - UID non autorisé', 'error');
                     firebase.auth().signOut();
                 }
-                
             } else {
                 console.log('🔐 Non connecté');
                 showLoginForm();
@@ -870,65 +783,51 @@
         // ============================================
         // 5. FORMULAIRE DE CONNEXION
         // ============================================
-        const loginFormElement = document.getElementById('loginFormElement');
-        if (loginFormElement) {
-            loginFormElement.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const email = document.getElementById('loginEmail').value;
-                const password = document.getElementById('loginPassword').value;
-                const btn = this.querySelector('.btn-login');
-                const errorEl = document.getElementById('loginError');
-                
-                btn.disabled = true;
-                btn.textContent = '⏳ Connexion...';
-                if (errorEl) errorEl.textContent = '';
-                
-                loginUser(email, password)
-                    .then((userCredential) => {
-                        console.log('✅ Connexion réussie:', userCredential.user.email);
-                        this.reset();
-                        showToast('✅ Bienvenue ' + userCredential.user.email, 'success');
-                    })
-                    .catch((error) => {
-                        console.error('❌ Erreur connexion:', error);
-                        let errorMessage = '❌ ' + error.message;
-                        if (error.code === 'auth/user-not-found') {
-                            errorMessage = '❌ Utilisateur non trouvé.';
-                        } else if (error.code === 'auth/wrong-password') {
-                            errorMessage = '❌ Mot de passe incorrect.';
-                        } else if (error.code === 'auth/invalid-email') {
-                            errorMessage = '❌ Email invalide.';
-                        } else if (error.code === 'auth/too-many-requests') {
-                            errorMessage = '❌ Trop de tentatives. Réessayez plus tard.';
-                        }
-                        if (errorEl) errorEl.textContent = errorMessage;
-                        showToast(errorMessage, 'error');
-                    })
-                    .finally(() => {
-                        btn.disabled = false;
-                        btn.textContent = '🔐 Se connecter';
-                    });
-            });
-        }
+        document.getElementById('loginFormElement')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const btn = this.querySelector('.btn-login');
+            const errorEl = document.getElementById('loginError');
+            btn.disabled = true;
+            btn.textContent = '⏳ Connexion...';
+            if (errorEl) errorEl.textContent = '';
+            loginUser(email, password)
+                .then((userCredential) => {
+                    console.log('✅ Connexion réussie:', userCredential.user.email);
+                    this.reset();
+                    showToast('✅ Bienvenue ' + userCredential.user.email, 'success');
+                })
+                .catch((error) => {
+                    console.error('❌ Erreur connexion:', error);
+                    let errorMessage = '❌ ' + error.message;
+                    if (error.code === 'auth/user-not-found') errorMessage = '❌ Utilisateur non trouvé.';
+                    else if (error.code === 'auth/wrong-password') errorMessage = '❌ Mot de passe incorrect.';
+                    else if (error.code === 'auth/invalid-email') errorMessage = '❌ Email invalide.';
+                    else if (error.code === 'auth/too-many-requests') errorMessage = '❌ Trop de tentatives. Réessayez plus tard.';
+                    if (errorEl) errorEl.textContent = errorMessage;
+                    showToast(errorMessage, 'error');
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.textContent = '🔐 Se connecter';
+                });
+        });
         
         // ============================================
         // 6. INITIALISATION FIREBASE
         // ============================================
         function initializeFirebase() {
             if (typeof firebase === 'undefined' || firebase.apps.length === 0) {
-                console.log('⏳ Attente de Firebase...');
                 setTimeout(initializeFirebase, 500);
                 return;
             }
-            
             if (!database) {
                 console.log('✅ Initialisation des références Firebase');
                 database = firebase.database();
                 restaurantsRef = database.ref('restaurants');
                 categoriesRef = database.ref('categories');
                 productsRef = database.ref('products');
-                
                 window.database = database;
                 window.restaurantsRef = restaurantsRef;
                 window.categoriesRef = categoriesRef;
@@ -945,7 +844,6 @@
             loadRestaurant();
             loadCategories();
             loadProducts();
-            
             setTimeout(() => {
                 console.log('📊 État des données:');
                 console.log('  - Restaurant:', restaurantData ? '✅' : '❌');
@@ -959,11 +857,7 @@
         // 8. CHARGEMENT DU RESTAURANT
         // ============================================
         function loadRestaurant() {
-            if (!restaurantsRef) {
-                console.warn('⏳ RestaurantsRef non initialisé');
-                return;
-            }
-            
+            if (!restaurantsRef) return;
             restaurantsRef.child(currentRestaurantId).on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
@@ -975,20 +869,11 @@
                 } else {
                     console.log('📝 Création du restaurant par défaut');
                     restaurantData = {
-                        name: "Mon Restaurant",
-                        logo: null,
-                        banner: null,
+                        name: "Mon Restaurant", logo: null, banner: null,
                         address: "123 Rue de la Paix, 75001 Paris",
-                        phone: "01 23 45 67 89",
-                        phoneLink: "+33123456789",
-                        whatsapp: "33123456789",
-                        deliveryPrice: 5,
-                        deliveryAvailable: true,
-                        facebook: null,
-                        instagram: null,
-                        website: null,
-                        mapsUrl: null,
-                        active: true
+                        phone: "01 23 45 67 89", phoneLink: "+33123456789",
+                        whatsapp: "33123456789", deliveryPrice: 5, deliveryAvailable: true,
+                        facebook: null, instagram: null, website: null, mapsUrl: null, active: true
                     };
                     populateRestaurantForm(restaurantData);
                     restaurantsRef.child(currentRestaurantId).set(restaurantData);
@@ -1018,7 +903,6 @@
                 'restaurantMapsUrl': data.mapsUrl || '',
                 'restaurantActive': data.active !== false ? 'true' : 'false'
             };
-            
             Object.keys(fields).forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.value = fields[id];
@@ -1043,7 +927,6 @@
             const name = document.getElementById('logoName');
             const url = document.getElementById('logoUrl');
             const hidden = document.getElementById('restaurantLogo');
-            
             if (logoUrl && logoUrl.trim()) {
                 if (img) { img.src = logoUrl; img.style.display = 'block'; }
                 if (placeholder) placeholder.style.display = 'none';
@@ -1060,11 +943,7 @@
                 }
             } else {
                 if (img) img.style.display = 'none';
-                if (placeholder) { 
-                    placeholder.style.display = 'flex';
-                    const nameVal = document.getElementById('restaurantName')?.value || 'R';
-                    placeholder.textContent = nameVal.charAt(0).toUpperCase();
-                }
+                if (placeholder) { placeholder.style.display = 'flex'; const nameVal = document.getElementById('restaurantName')?.value || 'R'; placeholder.textContent = nameVal.charAt(0).toUpperCase(); }
                 if (name) name.textContent = 'Aucun logo';
                 if (url) url.textContent = '-';
                 if (hidden) hidden.value = '';
@@ -1077,7 +956,6 @@
             const name = document.getElementById('bannerName');
             const url = document.getElementById('bannerUrl');
             const hidden = document.getElementById('restaurantBanner');
-            
             if (bannerUrl && bannerUrl.trim()) {
                 if (img) { img.src = bannerUrl; img.style.display = 'block'; }
                 if (placeholder) placeholder.style.display = 'none';
@@ -1130,64 +1008,41 @@
         // ============================================
         // 10. SAUVEGARDER LE RESTAURANT
         // ============================================
-        const restaurantForm = document.getElementById('restaurantForm');
-        if (restaurantForm) {
-            restaurantForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const data = {
-                    name: document.getElementById('restaurantName')?.value.trim() || '',
-                    logo: document.getElementById('restaurantLogo')?.value.trim() || null,
-                    banner: document.getElementById('restaurantBanner')?.value.trim() || null,
-                    address: document.getElementById('restaurantAddress')?.value.trim() || null,
-                    phone: document.getElementById('restaurantPhone')?.value.trim() || null,
-                    phoneLink: document.getElementById('restaurantPhoneLink')?.value.trim() || null,
-                    whatsapp: document.getElementById('restaurantWhatsApp')?.value.trim() || null,
-                    deliveryPrice: parseFloat(document.getElementById('restaurantDeliveryPrice')?.value) || 0,
-                    deliveryAvailable: document.getElementById('restaurantDeliveryAvailable')?.value === 'true',
-                    facebook: document.getElementById('restaurantFacebook')?.value.trim() || null,
-                    instagram: document.getElementById('restaurantInstagram')?.value.trim() || null,
-                    website: document.getElementById('restaurantWebsite')?.value.trim() || null,
-                    mapsUrl: document.getElementById('restaurantMapsUrl')?.value.trim() || null,
-                    active: document.getElementById('restaurantActive')?.value === 'true'
-                };
-                
-                if (!data.name) {
-                    showToast('❌ Le nom est requis', 'error');
-                    return;
-                }
-                
-                const btn = this.querySelector('.btn-save');
-                if (btn) { btn.disabled = true; btn.textContent = '⏳ Sauvegarde...'; }
-                
-                restaurantsRef.child(currentRestaurantId).update(data)
-                    .then(() => {
-                        showToast('✅ Restaurant mis à jour !', 'success');
-                        restaurantData = data;
-                    })
-                    .catch(error => {
-                        showToast('❌ Erreur: ' + error.message, 'error');
-                    })
-                    .finally(() => {
-                        if (btn) { btn.disabled = false; btn.textContent = '💾 Enregistrer'; }
-                    });
-            });
-        }
+        document.getElementById('restaurantForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('restaurantName')?.value.trim() || '',
+                logo: document.getElementById('restaurantLogo')?.value.trim() || null,
+                banner: document.getElementById('restaurantBanner')?.value.trim() || null,
+                address: document.getElementById('restaurantAddress')?.value.trim() || null,
+                phone: document.getElementById('restaurantPhone')?.value.trim() || null,
+                phoneLink: document.getElementById('restaurantPhoneLink')?.value.trim() || null,
+                whatsapp: document.getElementById('restaurantWhatsApp')?.value.trim() || null,
+                deliveryPrice: parseFloat(document.getElementById('restaurantDeliveryPrice')?.value) || 0,
+                deliveryAvailable: document.getElementById('restaurantDeliveryAvailable')?.value === 'true',
+                facebook: document.getElementById('restaurantFacebook')?.value.trim() || null,
+                instagram: document.getElementById('restaurantInstagram')?.value.trim() || null,
+                website: document.getElementById('restaurantWebsite')?.value.trim() || null,
+                mapsUrl: document.getElementById('restaurantMapsUrl')?.value.trim() || null,
+                active: document.getElementById('restaurantActive')?.value === 'true'
+            };
+            if (!data.name) { showToast('❌ Le nom est requis', 'error'); return; }
+            const btn = this.querySelector('.btn-save');
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ Sauvegarde...'; }
+            restaurantsRef.child(currentRestaurantId).update(data)
+                .then(() => { showToast('✅ Restaurant mis à jour !', 'success'); restaurantData = data; })
+                .catch(error => showToast('❌ Erreur: ' + error.message, 'error'))
+                .finally(() => { if (btn) { btn.disabled = false; btn.textContent = '💾 Enregistrer'; } });
+        });
         
         // ============================================
         // 11. GESTION DES CATÉGORIES
         // ============================================
         function loadCategories() {
             if (!categoriesRef) return;
-            
             categoriesRef.on('value', (snapshot) => {
                 const data = snapshot.val();
-                if (data) {
-                    categories = data;
-                } else {
-                    categories = {};
-                    createDefaultCategories();
-                }
+                if (data) { categories = data; } else { categories = {}; createDefaultCategories(); }
                 displayCategories();
                 updateCategorySelect();
                 const count = document.getElementById('categoryCount');
@@ -1208,16 +1063,11 @@
         function displayCategories() {
             const container = document.getElementById('categoriesList');
             if (!container) return;
-            
-            const sortedKeys = Object.keys(categories).sort((a, b) => 
-                (categories[a].order || 0) - (categories[b].order || 0)
-            );
-            
+            const sortedKeys = Object.keys(categories).sort((a, b) => (categories[a].order || 0) - (categories[b].order || 0));
             if (sortedKeys.length === 0) {
                 container.innerHTML = '<p style="text-align:center; color:#999; grid-column:1/-1;">Aucune catégorie</p>';
                 return;
             }
-            
             container.innerHTML = '';
             sortedKeys.forEach(key => {
                 const cat = categories[key];
@@ -1232,9 +1082,7 @@
                     </span>
                     <div class="category-actions">
                         <button class="btn-edit-cat" onclick="editCategory('${key}')">✏️</button>
-                        <button class="btn-toggle-cat" onclick="toggleCategory('${key}')">
-                            ${cat.active !== false ? '⛔' : '✅'}
-                        </button>
+                        <button class="btn-toggle-cat" onclick="toggleCategory('${key}')">${cat.active !== false ? '⛔' : '✅'}</button>
                         <button class="btn-delete-cat" onclick="deleteCategory('${key}')">🗑</button>
                     </div>
                 `;
@@ -1246,20 +1094,9 @@
             const key = document.getElementById('newCategoryKey')?.value.trim();
             const name = document.getElementById('newCategoryName')?.value.trim();
             const icon = document.getElementById('newCategoryIcon')?.value.trim() || '📁';
-            
-            if (!key || !name) {
-                showToast('❌ Clé et nom requis', 'error');
-                return;
-            }
-            if (!/^[a-z0-9_]+$/.test(key)) {
-                showToast('❌ Clé invalide', 'error');
-                return;
-            }
-            if (categories[key]) {
-                showToast('❌ Cette catégorie existe déjà', 'error');
-                return;
-            }
-            
+            if (!key || !name) { showToast('❌ Clé et nom requis', 'error'); return; }
+            if (!/^[a-z0-9_]+$/.test(key)) { showToast('❌ Clé invalide', 'error'); return; }
+            if (categories[key]) { showToast('❌ Cette catégorie existe déjà', 'error'); return; }
             categoriesRef.child(key).set({ name, icon, order: Object.keys(categories).length + 1, active: true })
                 .then(() => {
                     showToast(`✅ Catégorie "${name}" ajoutée !`, 'success');
@@ -1273,34 +1110,20 @@
         function editCategory(key) {
             const cat = categories[key];
             if (!cat) return;
-            
             const overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
             overlay.innerHTML = `
                 <div class="modal-content">
                     <h2>✏️ Modifier la catégorie</h2>
                     <form id="editCategoryForm">
-                        <div style="margin-bottom:15px;">
-                            <label style="display:block; font-weight:600;">Nom</label>
-                            <input type="text" id="editCatName" value="${cat.name}" required>
-                        </div>
-                        <div style="margin-bottom:15px;">
-                            <label style="display:block; font-weight:600;">Icône</label>
-                            <input type="text" id="editCatIcon" value="${cat.icon || '📁'}">
-                        </div>
-                        <div style="margin-bottom:15px;">
-                            <label style="display:block; font-weight:600;">Ordre</label>
-                            <input type="number" id="editCatOrder" value="${cat.order || 0}">
-                        </div>
-                        <div class="modal-actions">
-                            <button type="submit" class="btn-save">✅ Sauvegarder</button>
-                            <button type="button" class="btn-cancel" onclick="this.closest('.modal-overlay').remove()">❌ Annuler</button>
-                        </div>
+                        <div style="margin-bottom:15px;"><label style="display:block; font-weight:600;">Nom</label><input type="text" id="editCatName" value="${cat.name}" required></div>
+                        <div style="margin-bottom:15px;"><label style="display:block; font-weight:600;">Icône</label><input type="text" id="editCatIcon" value="${cat.icon || '📁'}"></div>
+                        <div style="margin-bottom:15px;"><label style="display:block; font-weight:600;">Ordre</label><input type="number" id="editCatOrder" value="${cat.order || 0}"></div>
+                        <div class="modal-actions"><button type="submit" class="btn-save">✅ Sauvegarder</button><button type="button" class="btn-cancel" onclick="this.closest('.modal-overlay').remove()">❌ Annuler</button></div>
                     </form>
                 </div>
             `;
             document.body.appendChild(overlay);
-            
             document.getElementById('editCategoryForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 const updates = {
@@ -1357,14 +1180,9 @@
         // ============================================
         function loadProducts() {
             if (!productsRef) return;
-            
             productsRef.on('value', (snapshot) => {
                 const data = snapshot.val();
-                if (data) {
-                    products = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-                } else {
-                    products = [];
-                }
+                if (data) { products = Object.keys(data).map(key => ({ id: key, ...data[key] })); } else { products = []; }
                 displayProducts();
                 const count = document.getElementById('productCount');
                 if (count) count.textContent = products.length;
@@ -1374,44 +1192,33 @@
         function displayProducts() {
             const container = document.getElementById('productsList');
             if (!container) return;
-            
             if (products.length === 0) {
                 container.innerHTML = '<p style="text-align:center; color:#999;">Aucun produit</p>';
                 return;
             }
-            
             container.innerHTML = '';
             products.forEach(p => {
                 const catName = categories[p.category]?.name || p.category || 'Non catégorisé';
                 const catIcon = categories[p.category]?.icon || '';
-                
                 let imageHtml = '';
                 if (p.image && p.image.trim() !== '') {
-                    imageHtml = `<img src="${p.image}" class="product-thumbnail" 
-                                   onerror="this.style.display='none'; this.parentElement.querySelector('.product-thumbnail-placeholder').style.display='flex';">`;
+                    imageHtml = `<img src="${p.image}" class="product-thumbnail" onerror="this.style.display='none'; this.parentElement.querySelector('.product-thumbnail-placeholder').style.display='flex';">`;
                 } else {
                     imageHtml = `<div class="product-thumbnail-placeholder">📷</div>`;
                 }
-                
                 const div = document.createElement('div');
                 div.className = 'product-item';
                 div.innerHTML = `
                     <div class="product-info">
                         ${imageHtml}
                         <div class="product-details">
-                            <div>
-                                <span class="name">${p.name}</span>
-                                <span class="price">${parseFloat(p.price).toFixed(2)} €</span>
-                                <span class="category">(${catIcon} ${catName})</span>
-                            </div>
+                            <div><span class="name">${p.name}</span> <span class="price">${parseFloat(p.price).toFixed(2)} €</span> <span class="category">(${catIcon} ${catName})</span></div>
                             <div class="description">${p.description || ''}</div>
                             ${p.image ? `<div style="font-size:10px; color:#999; margin-top:3px;">📷 Image présente</div>` : ''}
                         </div>
                     </div>
                     <div class="product-actions">
-                        <button class="${p.visible !== false ? 'status-visible' : 'status-hidden'}" onclick="toggleVisibility('${p.id}')">
-                            ${p.visible !== false ? '✓ Visible' : '✗ Masqué'}
-                        </button>
+                        <button class="${p.visible !== false ? 'status-visible' : 'status-hidden'}" onclick="toggleVisibility('${p.id}')">${p.visible !== false ? '✓ Visible' : '✗ Masqué'}</button>
                         <button class="btn-edit" onclick="editProduct('${p.id}')">✏️</button>
                         <button class="btn-photo" onclick="changeImage('${p.id}')">📷</button>
                         <button class="btn-delete" onclick="deleteProduct('${p.id}')">🗑</button>
@@ -1436,12 +1243,9 @@
                 description: document.getElementById('productDesc')?.value,
                 image: document.getElementById('productImage')?.value.trim() || null
             };
-            
             if (!validateProduct(productData)) return;
-            
             this.disabled = true;
             this.textContent = '⏳ Ajout...';
-            
             const newProduct = {
                 name: productData.name.trim(),
                 price: parseFloat(productData.price),
@@ -1451,24 +1255,15 @@
                 image: productData.image,
                 createdAt: Date.now()
             };
-            
             productsRef.push().set(newProduct)
-                .then(() => {
-                    showToast('✅ Produit ajouté !', 'success');
-                    document.getElementById('productForm')?.reset();
-                    clearPicXImage();
-                })
+                .then(() => { showToast('✅ Produit ajouté !', 'success'); document.getElementById('productForm')?.reset(); clearPicXImage(); })
                 .catch(error => showToast('❌ Erreur: ' + error.message, 'error'))
-                .finally(() => {
-                    this.disabled = false;
-                    this.textContent = '➕ Ajouter le produit';
-                });
+                .finally(() => { this.disabled = false; this.textContent = '➕ Ajouter le produit'; });
         });
         
         function editProduct(productId) {
             const product = products.find(p => p.id === productId);
             if (!product) return;
-            
             let catOptions = '';
             Object.keys(categories).sort((a, b) => (categories[a].order || 0) - (categories[b].order || 0))
                 .forEach(key => {
@@ -1477,42 +1272,22 @@
                         catOptions += `<option value="${key}" ${key === product.category ? 'selected' : ''}>${cat.icon || '📁'} ${cat.name}</option>`;
                     }
                 });
-            
             const overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
             overlay.innerHTML = `
                 <div class="modal-content">
                     <h2>✏️ Modifier le produit</h2>
                     <form id="editForm">
-                        <div style="margin-bottom:15px;">
-                            <label style="font-weight:600;">Nom</label>
-                            <input type="text" id="editName" value="${product.name}" required>
-                        </div>
-                        <div style="margin-bottom:15px;">
-                            <label style="font-weight:600;">Prix (€)</label>
-                            <input type="number" id="editPrice" value="${product.price}" step="0.01" required>
-                        </div>
-                        <div style="margin-bottom:15px;">
-                            <label style="font-weight:600;">Catégorie</label>
-                            <select id="editCategory">${catOptions}</select>
-                        </div>
-                        <div style="margin-bottom:15px;">
-                            <label style="font-weight:600;">Description</label>
-                            <textarea id="editDesc" rows="3">${product.description || ''}</textarea>
-                        </div>
-                        <div style="margin-bottom:15px;">
-                            <label style="font-weight:600;">Image</label>
-                            <input type="text" id="editImageUrl" value="${product.image || ''}" placeholder="https://...">
-                        </div>
-                        <div class="modal-actions">
-                            <button type="submit" class="btn-save">✅ Sauvegarder</button>
-                            <button type="button" class="btn-cancel" onclick="this.closest('.modal-overlay').remove()">❌ Annuler</button>
-                        </div>
+                        <div style="margin-bottom:15px;"><label style="font-weight:600;">Nom</label><input type="text" id="editName" value="${product.name}" required></div>
+                        <div style="margin-bottom:15px;"><label style="font-weight:600;">Prix (€)</label><input type="number" id="editPrice" value="${product.price}" step="0.01" required></div>
+                        <div style="margin-bottom:15px;"><label style="font-weight:600;">Catégorie</label><select id="editCategory">${catOptions}</select></div>
+                        <div style="margin-bottom:15px;"><label style="font-weight:600;">Description</label><textarea id="editDesc" rows="3">${product.description || ''}</textarea></div>
+                        <div style="margin-bottom:15px;"><label style="font-weight:600;">Image</label><input type="text" id="editImageUrl" value="${product.image || ''}" placeholder="https://..."></div>
+                        <div class="modal-actions"><button type="submit" class="btn-save">✅ Sauvegarder</button><button type="button" class="btn-cancel" onclick="this.closest('.modal-overlay').remove()">❌ Annuler</button></div>
                     </form>
                 </div>
             `;
             document.body.appendChild(overlay);
-            
             document.getElementById('editForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 const updates = {
@@ -1524,7 +1299,6 @@
                     updatedAt: Date.now()
                 };
                 if (!validateProduct(updates)) return;
-                
                 productsRef.child(productId).update(updates)
                     .then(() => { showToast('✅ Produit modifié !', 'success'); overlay.remove(); })
                     .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
@@ -1554,32 +1328,19 @@
                 const username = document.getElementById('githubUsername')?.value.trim() || 'simou-rayane';
                 const repo = document.getElementById('githubRepo')?.value.trim() || 'picx-images-hosting';
                 const branch = document.getElementById('githubBranch')?.value.trim() || 'master';
-                
                 const url = `https://api.github.com/repos/${username}/${repo}/contents?ref=${branch}`;
                 console.log('📡 Chargement depuis:', url);
-                
                 const response = await fetch(url);
-                
-                if (!response.ok) {
-                    throw new Error(`Erreur HTTP: ${response.status}`);
-                }
-                
+                if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
                 const data = await response.json();
                 console.log('📦 Fichiers trouvés:', data.length);
-                
                 const extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
-                const images = data
-                    .filter(item => item.type === 'file')
+                const images = data.filter(item => item.type === 'file')
                     .filter(item => extensions.some(ext => item.name.toLowerCase().endsWith(ext)))
-                    .map(item => ({
-                        name: item.name,
-                        download_url: item.download_url
-                    }));
-                
+                    .map(item => ({ name: item.name, download_url: item.download_url }));
                 console.log('🖼️ Images trouvées:', images.length);
                 picxImages = images;
                 return picxImages;
-                
             } catch (error) {
                 console.error('❌ Erreur chargement PicX:', error);
                 showToast('❌ Erreur: ' + error.message, 'error');
@@ -1589,46 +1350,25 @@
         
         async function loadPicXImagesForGallery() {
             const grid = document.getElementById('picxGalleryGrid');
-            if (!grid) {
-                console.error('❌ Élément picxGalleryGrid introuvable');
-                return;
-            }
-            
-            // Afficher un message de chargement
-            grid.innerHTML = `
-                <div style="grid-column:1/-1;text-align:center;padding:30px;color:#999;">
-                    <div style="font-size:48px;">⏳</div>
-                    <p>Chargement des images...</p>
-                </div>
-            `;
-            
+            if (!grid) { console.error('❌ Élément picxGalleryGrid introuvable'); return; }
+            grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:#999;"><div style="font-size:48px;">⏳</div><p>Chargement des images...</p></div>`;
             const images = await loadPicXImages();
-            
             if (!images || images.length === 0) {
                 grid.innerHTML = `
                     <div style="grid-column:1/-1;text-align:center;padding:30px;color:#999;">
                         <div style="font-size:48px;">📂</div>
                         <p>Aucune image trouvée dans <strong>simou-rayane/picx-images-hosting</strong></p>
-                        <p style="font-size:12px;margin-top:10px;">
-                            💡 Vérifiez que votre dépôt contient des images (jpg, png, gif, etc.)
-                        </p>
-                        <p style="font-size:12px;color:#666;">
-                            🔗 <a href="https://github.com/simou-rayane/picx-images-hosting" target="_blank">Voir le dépôt</a>
-                        </p>
+                        <p style="font-size:12px;margin-top:10px;">💡 Vérifiez que votre dépôt contient des images (jpg, png, gif, etc.)</p>
+                        <p style="font-size:12px;color:#666;">🔗 <a href="https://github.com/simou-rayane/picx-images-hosting" target="_blank">Voir le dépôt</a></p>
                     </div>
                 `;
                 return;
             }
-            
             grid.innerHTML = '';
             images.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'picx-item';
-                div.innerHTML = `
-                    <img src="${item.download_url}" 
-                         onerror="this.parentElement.innerHTML='<div style=\\'padding:20px;color:#999;font-size:12px;\\'>❌</div>'">
-                    <span class="picx-name">${item.name}</span>
-                `;
+                div.innerHTML = `<img src="${item.download_url}" onerror="this.parentElement.innerHTML='<div style=\\'padding:20px;color:#999;font-size:12px;\\'>❌</div>'"><span class="picx-name">${item.name}</span>`;
                 div.onclick = () => selectPicXImage(item.download_url);
                 grid.appendChild(div);
             });
@@ -1645,9 +1385,26 @@
             showToast('📷 Cliquez sur une image pour la sélectionner pour le produit', 'info');
         }
         
+        // ✅ FONCTION CORRIGÉE : Changement d'image pour un produit existant
+        function changeImage(productId) {
+            console.log('📷 Changement d\'image pour le produit:', productId);
+            pendingProductId = productId;
+            imageSelectorMode = 'product';
+            
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-tab="tab-images"]')?.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById('tab-images')?.classList.add('active');
+            
+            loadPicXImagesForGallery();
+            showToast('📷 Cliquez sur une image pour modifier le produit', 'info');
+        }
+        
+        // ✅ FONCTION CORRIGÉE : Sélection d'image
         function selectPicXImage(imageUrl) {
             console.log('🖼️ Image sélectionnée:', imageUrl);
             
+            // Logo
             if (imageSelectorMode === 'logo') {
                 updateLogoPreview(imageUrl);
                 const hidden = document.getElementById('restaurantLogo');
@@ -1658,6 +1415,7 @@
                 return;
             }
             
+            // Bannière
             if (imageSelectorMode === 'banner') {
                 updateBannerPreview(imageUrl);
                 const hidden = document.getElementById('restaurantBanner');
@@ -1668,19 +1426,34 @@
                 return;
             }
             
-            // ✅ Mode PRODUIT
-            const input = document.getElementById('productImage');
-            if (input) {
-                input.value = imageUrl;
-                console.log('✅ URL image mise dans le champ produit');
+            // ✅ Modification d'un produit existant
+            if (imageSelectorMode === 'product' && pendingProductId) {
+                productsRef.child(pendingProductId).update({ 
+                    image: imageUrl,
+                    updatedAt: Date.now()
+                })
+                .then(() => {
+                    showToast('✅ Image du produit mise à jour !', 'success');
+                    pendingProductId = null;
+                    imageSelectorMode = null;
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelector('[data-tab="tab-products"]')?.classList.add('active');
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    document.getElementById('tab-products')?.classList.add('active');
+                })
+                .catch(error => showToast('❌ Erreur: ' + error.message, 'error'));
+                return;
             }
+            
+            // ✅ Ajout d'un nouveau produit
+            const input = document.getElementById('productImage');
+            if (input) input.value = imageUrl;
             
             const preview = document.getElementById('picxPreview');
             const previewImg = document.getElementById('picxPreviewImg');
             if (preview && previewImg) {
                 previewImg.src = imageUrl;
                 preview.style.display = 'flex';
-                console.log('✅ Aperçu affiché');
             }
             
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -1696,13 +1469,6 @@
             if (input) input.value = '';
             const preview = document.getElementById('picxPreview');
             if (preview) preview.style.display = 'none';
-        }
-        
-        function changeImage(productId) {
-            imageSelectorMode = null;
-            pendingProductId = productId;
-            loadPicXImagesForGallery();
-            showToast('📷 Sélectionnez une nouvelle image', 'info');
         }
         
         // ============================================
@@ -1797,6 +1563,7 @@
         window.loadPicXImagesForAdd = loadPicXImagesForAdd;
         window.clearPicXImage = clearPicXImage;
         window.changeImage = changeImage;
+        window.selectPicXImage = selectPicXImage;
         window.addCategory = addCategory;
         window.editCategory = editCategory;
         window.toggleCategory = toggleCategory;
@@ -1807,7 +1574,6 @@
         window.exportProducts = exportProducts;
         window.importProducts = importProducts;
         window.resetFirebaseProducts = resetFirebaseProducts;
-        window.selectPicXImage = selectPicXImage;
         window.loadRestaurant = loadRestaurant;
         window.loadCategories = loadCategories;
         window.loadProducts = loadProducts;
@@ -1817,6 +1583,7 @@
         console.log('✅ Admin initialisé - Version complète et finale');
         console.log('🔐 UID attendu:', EXPECTED_UID);
         console.log('📷 Images depuis: simou-rayane/picx-images-hosting');
+        console.log('📷 Bouton 📷 pour modifier les images des produits');
     </script>
 </body>
 </html>
